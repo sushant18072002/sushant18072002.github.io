@@ -1,0 +1,3082 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Travel Platform - Create Your Perfect Journey</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-900: #0F172A;
+            --primary-800: #1E293B;
+            --primary-700: #334155;
+            --primary-600: #475569;
+            --primary-500: #64748B;
+            --primary-400: #94A3B8;
+            --primary-300: #CBD5E1;
+            --primary-200: #E2E8F0;
+            --primary-100: #F1F5F9;
+            --primary-50: #F8FAFC;
+
+            --ocean-blue: #1E40AF;
+            --mirage-blue: #4b90e6;
+            --governor-bay: #2553eb;
+            --emerald: #10B981;
+            --premium-amber: #F59E0B;
+            --soft-coral: #FF6B6B;
+
+            --space-1: 0.25rem;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-5: 1.25rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            --space-10: 2.5rem;
+            --space-12: 3rem;
+            --space-16: 4rem;
+            --space-20: 5rem;
+
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-2xl: 1.5rem;
+            --radius-full: 9999px;
+
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            --card-shadow-hover: 0 20px 64px rgba(0, 0, 0, 0.12);
+            --accent-warm: #FF6B6B;
+            --accent-success: #10B981;
+            --accent-warning: #F59E0B;
+            --text-light: #6B7280;
+            --gradient-card: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+
+            overflow-x: hidden;
+            background-image: url('bg-section-tour.jpg');
+        }
+
+
+        /* Navigation */
+        .nav-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-glass {
+            background: rgba(248, 250, 252, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-transparent {
+            background: transparent;
+        }
+
+        .nav-solid {
+            background: rgba(248, 250, 252, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-solid .nav-links a {
+            color: var(--primary-700);
+        }
+
+        .nav-solid .nav-links a:hover {
+            color: var(--governor-bay);
+            background: rgba(37, 83, 235, 0.1);
+        }
+
+
+
+        .navbar {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: var(--space-4) var(--space-6);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--governor-bay) 0%, var(--mirage-blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+
+        .nav-links {
+            display: flex;
+            gap: var(--space-4);
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: white;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            padding: var(--space-3) var(--space-5);
+            border-radius: var(--radius-lg);
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            display: block;
+            background: transparent;
+            border: 1px solid transparent;
+        }
+
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-links a.active::after,
+        .nav-links a:hover::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 2px;
+            background: currentColor;
+            border-radius: 1px;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 2px;
+            background: var(--governor-bay);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 60%;
+        }
+
+        .nav-cta {
+            background: linear-gradient(135deg, var(--governor-bay) 0%, var(--ocean-blue) 100%);
+            color: white;
+            padding: var(--space-3) var(--space-6);
+            border-radius: var(--radius-lg);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(37, 83, 235, 0.4);
+            border: 2px solid transparent;
+        }
+
+        .nav-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(37, 83, 235, 0.5);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .nav-scrolled .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(30px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-scrolled .logo {
+            background: linear-gradient(135deg, var(--governor-bay) 0%, var(--mirage-blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: none;
+        }
+
+        .nav-scrolled .nav-links {
+            background: rgba(248, 250, 252, 0.8);
+        }
+
+        .nav-scrolled .nav-links a {
+            color: var(--primary-700);
+            text-shadow: none;
+        }
+
+        .nav-scrolled .nav-links a:hover {
+            background: rgba(37, 83, 235, 0.1);
+            color: var(--governor-bay);
+        }
+
+        .nav-scrolled .nav-cta {
+            background: linear-gradient(135deg, var(--governor-bay) 0%, var(--ocean-blue) 100%);
+            color: white;
+            text-shadow: none;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--primary-700);
+            cursor: pointer;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--ocean-blue) 0%, var(--mirage-blue) 50%, var(--emerald) 100%);
+            position: relative;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            padding-top: 120px;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="40" r="1" fill="rgba(255,255,255,0.05)"/><circle cx="40" cy="80" r="1" fill="rgba(255,255,255,0.08)"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grain)"/></svg>');
+            opacity: 0.3;
+        }
+
+        /* Video Background Container */
+        .hero-video-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .hero-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
+        }
+
+        .hero-video.active {
+            opacity: 1;
+        }
+
+        /* Gradient Overlay */
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg,
+                    rgba(30, 64, 175, 0.85) 0%,
+                    rgba(75, 144, 230, 0.75) 50%,
+                    rgba(16, 185, 129, 0.85) 100%);
+            z-index: 2;
+        }
+
+        /* Animated Background Pattern */
+        .hero-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><pattern id="dots" width="50" height="50" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100%" height="100%" fill="url(%23dots)"/></svg>');
+            z-index: 3;
+            animation: patternMove 20s linear infinite;
+        }
+
+        @keyframes patternMove {
+            0% {
+                transform: translateX(0) translateY(0);
+            }
+
+            100% {
+                transform: translateX(50px) translateY(50px);
+            }
+        }
+
+
+        .hero-floating-elements {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .floating-icon {
+            position: absolute;
+            width: 70px;
+            /* Slightly larger */
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.25);
+            /* More opaque background */
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            /* Stronger border */
+            font-size: 2.2rem;
+            /* Larger icons */
+            color: white;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            /* Add text shadow for contrast */
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            /* Add shadow */
+            animation: float 6s ease-in-out infinite;
+            /* Faster animation */
+        }
+
+        /* Individual positioning and timing */
+        .floating-icon:nth-child(1) {
+            top: 15%;
+            left: 8%;
+            animation-delay: 0s;
+        }
+
+        .floating-icon:nth-child(2) {
+            top: 25%;
+            right: 12%;
+            animation-delay: 1.2s;
+        }
+
+        .floating-icon:nth-child(3) {
+            bottom: 35%;
+            left: 15%;
+            animation-delay: 2.4s;
+        }
+
+        .floating-icon:nth-child(4) {
+            top: 40%;
+            right: 25%;
+            animation-delay: 3.6s;
+        }
+
+        .floating-icon:nth-child(5) {
+            bottom: 20%;
+            right: 8%;
+            animation-delay: 4.8s;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px) rotate(0deg) scale(1);
+                opacity: 0.8;
+            }
+
+            25% {
+                transform: translateY(-15px) rotate(90deg) scale(1.05);
+                opacity: 1;
+            }
+
+            50% {
+                transform: translateY(-30px) rotate(180deg) scale(1.1);
+                opacity: 0.9;
+            }
+
+            75% {
+                transform: translateY(-15px) rotate(270deg) scale(1.05);
+                opacity: 1;
+            }
+        }
+
+        .hero-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 var(--space-6);
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            color: white;
+        }
+
+        /* .hero-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: var(--space-2) var(--space-4);
+            border-radius: var(--radius-full);
+            font-size: 0.875rem;
+            margin-bottom: var(--space-6);
+            animation: slideInUp 1s ease-out 0.2s both;
+        } */
+
+        .hero-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: var(--space-3) var(--space-6);
+            border-radius: var(--radius-full);
+            font-size: 1rem;
+            margin-bottom: var(--space-8);
+            animation: slideInUp 1s ease-out 0.2s both;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: var(--space-6);
+            animation: slideInUp 1s ease-out 0.4s both;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1.25rem, 3vw, 1.75rem);
+            /* Larger */
+            opacity: 0.95;
+            max-width: 700px;
+            /* Wider */
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            margin-bottom: var(--space-12);
+            margin-left: auto;
+            margin-right: auto;
+            animation: slideInUp 1s ease-out 0.6s both;
+        }
+
+        /* Search Widget */
+        .search-widget {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius-2xl);
+            padding: var(--space-8);
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 20px 64px rgba(0, 0, 0, 0.15);
+            animation: slideInUp 1s ease-out 0.8s both;
+        }
+
+        .search-tabs {
+            display: flex;
+            background: var(--primary-100);
+            border-radius: var(--radius-xl);
+            padding: var(--space-1);
+            margin-bottom: var(--space-6);
+        }
+
+        .search-tab {
+            flex: 1;
+            background: none;
+            border: none;
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius-lg);
+            font-weight: 500;
+            color: var(--primary-600);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .search-tab.active {
+            background: white;
+            color: var(--governor-bay);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .search-tab:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.7);
+            transform: translateY(-1px);
+        }
+
+
+        .search-tab.premium::after {
+            content: '⭐';
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-size: 0.75rem;
+        }
+
+        .search-content {
+            display: none;
+        }
+
+        .search-content.active {
+            display: block;
+        }
+
+        .itinerary-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-4);
+            margin-top: var(--space-6);
+        }
+
+        .option-card {
+            background: linear-gradient(135deg, rgba(37, 83, 235, 0.05) 0%, rgba(75, 144, 230, 0.05) 100%);
+            border: 2px solid rgba(37, 83, 235, 0.15);
+            border-radius: var(--radius-xl);
+            padding: var(--space-6);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+
+        }
+
+        .option-card.selected {
+            border-color: var(--governor-bay);
+            box-shadow: 0 12px 32px rgba(37, 83, 235, 0.2);
+            background: linear-gradient(135deg, rgba(37, 83, 235, 0.15) 0%, rgba(75, 144, 230, 0.15) 100%);
+            transform: translateY(-6px);
+        }
+
+        .option-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .option-card:hover::before {
+            left: 100%;
+        }
+
+        .option-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 60px rgba(37, 83, 235, 0.25);
+            border-color: var(--mirage-blue);
+        }
+
+        .option-icon {
+            font-size: 2rem;
+            margin-bottom: var(--space-3);
+        }
+
+        .option-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--primary-800);
+            margin-bottom: var(--space-2);
+        }
+
+        .option-description {
+            font-size: 0.875rem;
+            color: var(--primary-600);
+            margin-bottom: var(--space-4);
+        }
+
+        .option-badge {
+            display: inline-block;
+            background: var(--emerald);
+            color: white;
+            font-size: 0.75rem;
+            padding: var(--space-1) var(--space-2);
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--space-3);
+        }
+
+        .primary-cta {
+            background: linear-gradient(135deg, var(--governor-bay) 0%, var(--ocean-blue) 100%);
+            color: white;
+            border: none;
+            padding: var(--space-4) var(--space-8);
+            border-radius: var(--radius-lg);
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 30px rgba(37, 83, 235, 0.4);
+            width: 100%;
+            margin-top: var(--space-4);
+        }
+
+        .primary-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(37, 83, 235, 0.5);
+        }
+
+        .primary-cta::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .primary-cta:hover::before {
+            left: 100%;
+        }
+
+        /* AI Showcase Section - MISSING STYLES ADDED */
+        .ai-showcase {
+            padding: var(--space-20) var(--space-6);
+            background: linear-gradient(135deg, var(--primary-50) 0%, white 100%);
+            position: relative;
+        }
+
+        .ai-showcase::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><defs><pattern id="dots" width="40" height="40" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="1" fill="rgba(37,83,235,0.1)"/></pattern></defs><rect width="100%" height="100%" fill="url(%23dots)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .ai-showcase-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .ai-showcase-header {
+            text-align: center;
+            margin-bottom: var(--space-16);
+        }
+
+        .ai-showcase-header h2 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 700;
+            color: var(--primary-900);
+            margin-bottom: var(--space-4);
+        }
+
+        .ai-showcase-header p {
+            font-size: 1.25rem;
+            color: var(--primary-600);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .ai-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-12);
+            margin-bottom: var(--space-16);
+        }
+
+        .ai-step {
+            background: white;
+            border-radius: var(--radius-2xl);
+            padding: var(--space-8);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ai-step::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(135deg, var(--governor-bay) 0%, var(--mirage-blue) 100%);
+        }
+
+        .ai-step:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 64px rgba(0, 0, 0, 0.15);
+        }
+
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--governor-bay) 0%, var(--mirage-blue) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: var(--space-4);
+        }
+
+        .step-content h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-900);
+            margin-bottom: var(--space-3);
+        }
+
+        .step-content p {
+            color: var(--primary-600);
+            margin-bottom: var(--space-4);
+            line-height: 1.7;
+        }
+
+        .step-content ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .step-content li {
+            color: var(--primary-600);
+            margin-bottom: var(--space-2);
+            padding-left: var(--space-6);
+            position: relative;
+        }
+
+        .step-content li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--emerald);
+            font-weight: 600;
+        }
+
+        .ai-showcase-cta {
+            text-align: center;
+        }
+
+        .testimonial-snippet {
+            margin-top: var(--space-4);
+            color: var(--primary-600);
+            font-size: 0.875rem;
+        }
+
+        .testimonial-snippet a {
+            color: var(--governor-bay);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .testimonial-snippet a:hover {
+            text-decoration: underline;
+        }
+
+        /* Features Section */
+        .features {
+            padding: var(--space-20) var(--space-6);
+            background: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%);
+            position: relative;
+        }
+
+        .features-container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .features-header {
+            text-align: center;
+            margin-bottom: var(--space-16);
+        }
+
+        .features-title {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 700;
+            color: var(--primary-900);
+            margin-bottom: var(--space-4);
+        }
+
+        .features-subtitle {
+            font-size: 1.25rem;
+            color: var(--primary-600);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-8);
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: var(--radius-2xl);
+            padding: var(--space-8);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 64px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--governor-bay) 0%, var(--mirage-blue) 100%);
+            border-radius: var(--radius-xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            margin-bottom: var(--space-4);
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-900);
+            margin-bottom: var(--space-3);
+        }
+
+        .feature-description {
+            color: var(--primary-600);
+            line-height: 1.7;
+        }
+
+        /* Trust Section */
+        .trust-section {
+            padding: var(--space-16) var(--space-6);
+            background: white;
+        }
+
+        .trust-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .live-activity {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: var(--radius-xl);
+            padding: var(--space-4) var(--space-6);
+            margin-bottom: var(--space-8);
+            display: inline-block;
+        }
+
+        .activity-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: var(--emerald);
+            border-radius: 50%;
+            margin-right: var(--space-2);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.7;
+                transform: scale(1.2);
+            }
+        }
+
+        /* Destinations Section - MISSING STYLES ADDED */
+        .destinations {
+            padding: var(--space-20) var(--space-6);
+            background: linear-gradient(135deg, var(--primary-900) 0%, var(--primary-800) 100%);
+            color: white;
+        }
+
+        .destinations-container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .destinations-header {
+            text-align: center;
+            margin-bottom: var(--space-16);
+        }
+
+        .destinations-header h2 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 700;
+            margin-bottom: var(--space-4);
+        }
+
+        .destinations-header p {
+            font-size: 1.25rem;
+            opacity: 0.8;
+        }
+
+        .destinations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--space-6);
+        }
+
+        .destination-card {
+            border-radius: var(--radius-2xl);
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            height: 300px;
+        }
+
+        .destination-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 64px rgba(0, 0, 0, 0.3);
+        }
+
+        .destination-image {
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .destination-image::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.7) 100%);
+            transition: opacity 0.3s ease;
+        }
+
+        .destination-card:hover .destination-image::before {
+            opacity: 0.5;
+        }
+
+        .destination-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: var(--space-6);
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+        }
+
+        .destination-overlay h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: var(--space-2);
+        }
+
+        .destination-overlay p {
+            font-size: 1.125rem;
+            opacity: 0.9;
+            margin-bottom: var(--space-3);
+        }
+
+        .destination-tag {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: var(--space-1) var(--space-3);
+            border-radius: var(--radius-full);
+            font-size: 0.875rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Newsletter Section - MISSING STYLES ADDED */
+        .newsletter {
+            padding: var(--space-20) var(--space-6);
+            background: linear-gradient(135deg, var(--governor-bay) 0%, var(--mirage-blue) 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .newsletter-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .newsletter-content h2 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 700;
+            margin-bottom: var(--space-4);
+        }
+
+        .newsletter-content p {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            margin-bottom: var(--space-8);
+            line-height: 1.7;
+        }
+
+        .newsletter-form {
+            display: flex;
+            gap: var(--space-4);
+            max-width: 500px;
+            margin: 0 auto var(--space-6);
+        }
+
+        .newsletter-form input {
+            flex: 1;
+            padding: var(--space-4);
+            border: none;
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .newsletter-btn {
+            background: white;
+            color: var(--governor-bay);
+            border: none;
+            padding: var(--space-4) var(--space-6);
+            border-radius: var(--radius-lg);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .newsletter-btn:hover {
+            background: var(--primary-100);
+            transform: translateY(-2px);
+        }
+
+        /* Footer Section - MISSING STYLES ADDED */
+        .footer {
+            background: var(--primary-900);
+            color: white;
+            padding: var(--space-16) var(--space-6) var(--space-8);
+        }
+
+        .footer-container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-8);
+            margin-bottom: var(--space-8);
+        }
+
+        .footer-section h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: var(--space-4);
+        }
+
+        .footer-section h4 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: var(--space-4);
+            color: var(--primary-300);
+        }
+
+        .footer-section p {
+            color: var(--primary-400);
+            line-height: 1.7;
+            margin-bottom: var(--space-4);
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-section li {
+            margin-bottom: var(--space-2);
+        }
+
+        .footer-section a {
+            color: var(--primary-400);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .results-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: var(--space-8) var(--space-6);
+            /*display: none;
+            /* Show when search is performed */
+        }
+
+        .results-header {
+            text-align: center;
+            margin-bottom: var(--space-8);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--space-6);
+            margin-top: var(--space-6);
+        }
+
+        /* Flight Cards */
+        .flight-card {
+            background: var(--gradient-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-2xl);
+            padding: var(--space-6);
+            box-shadow: var(--card-shadow);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .flight-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.6s;
+        }
+
+        .flight-card:hover::before {
+            left: 100%;
+        }
+
+        .flight-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: var(--card-shadow-hover);
+            border-color: var(--governor-bay);
+        }
+
+        .flight-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-4);
+        }
+
+        .airline-info {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+
+        .airline-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-lg);
+            background: var(--primary-100);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .price-section {
+            text-align: right;
+        }
+
+        .price-main {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--governor-bay);
+        }
+
+        .price-savings {
+            font-size: 0.875rem;
+            color: var(--emerald);
+            font-weight: 500;
+        }
+
+        .flight-route {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: var(--space-6) 0;
+            position: relative;
+        }
+
+        .route-point {
+            text-align: center;
+            flex: 1;
+        }
+
+        .route-time {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary-900);
+        }
+
+        .route-code {
+            font-size: 0.875rem;
+            color: var(--text-light);
+            margin-top: var(--space-1);
+        }
+
+        .route-line {
+            flex: 2;
+            height: 2px;
+            background: linear-gradient(90deg, var(--governor-bay) 0%, var(--mirage-blue) 100%);
+            margin: 0 var(--space-4);
+            position: relative;
+        }
+
+        .route-plane {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .flight-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: var(--space-4);
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .flight-badges {
+            display: flex;
+            gap: var(--space-2);
+        }
+
+        .flight-badge {
+            padding: var(--space-1) var(--space-3);
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .badge-direct {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--emerald);
+        }
+
+        .badge-fast {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--accent-warning);
+        }
+
+        /* Hotel Cards */
+        .hotel-card {
+            background: var(--gradient-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-2xl);
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .hotel-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: var(--card-shadow-hover);
+        }
+
+        .hotel-image-container {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+        }
+
+        .hotel-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .hotel-card:hover .hotel-image {
+            transform: scale(1.1);
+        }
+
+        .hotel-rating-overlay {
+            position: absolute;
+            top: var(--space-3);
+            right: var(--space-3);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: var(--space-2) var(--space-3);
+            border-radius: var(--radius-lg);
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .hotel-content {
+            padding: var(--space-6);
+        }
+
+        .hotel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-3);
+        }
+
+        .hotel-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary-900);
+        }
+
+        .hotel-stars {
+            color: var(--accent-warning);
+        }
+
+        .hotel-location {
+            color: var(--text-light);
+            font-size: 0.875rem;
+            margin-bottom: var(--space-4);
+        }
+
+        .hotel-amenities {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-2);
+            margin-bottom: var(--space-4);
+        }
+
+        .amenity-tag {
+            background: rgba(37, 83, 235, 0.1);
+            color: var(--governor-bay);
+            padding: var(--space-1) var(--space-2);
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+        }
+
+        .hotel-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: var(--space-4);
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .hotel-price {
+            text-align: right;
+        }
+
+        .price-per-night {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--governor-bay);
+        }
+
+        .price-total {
+            font-size: 0.875rem;
+            color: var(--text-light);
+        }
+
+        /* Itinerary Cards */
+        .itinerary-card {
+            background: var(--gradient-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-2xl);
+            padding: var(--space-6);
+            box-shadow: var(--card-shadow);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .itinerary-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: var(--card-shadow-hover);
+        }
+
+        .itinerary-images {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: var(--space-2);
+            height: 150px;
+            margin-bottom: var(--space-4);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .itinerary-image {
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .itinerary-image.main {
+            grid-row: 1 / 3;
+        }
+
+        .image-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+            color: white;
+            padding: var(--space-2);
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .itinerary-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-4);
+        }
+
+        .itinerary-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-900);
+        }
+
+        .ai-match {
+            background: linear-gradient(135deg, var(--emerald) 0%, #34D399 100%);
+            color: white;
+            padding: var(--space-2) var(--space-3);
+            border-radius: var(--radius-lg);
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .itinerary-highlights {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-3);
+            margin-bottom: var(--space-4);
+        }
+
+        .highlight-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-size: 0.875rem;
+            color: var(--primary-700);
+        }
+
+        .highlight-icon {
+            font-size: 1rem;
+        }
+
+        .itinerary-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: var(--space-4);
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .itinerary-duration {
+            font-weight: 600;
+            color: var(--primary-800);
+        }
+
+        .itinerary-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--governor-bay);
+        }
+
+        /* Live Showcase Section */
+        .live-showcase {
+            padding: var(--space-20) var(--space-6);
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .live-showcase-container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .live-showcase-header {
+            text-align: center;
+            margin-bottom: var(--space-12);
+        }
+
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--emerald);
+            padding: var(--space-2) var(--space-4);
+            border-radius: var(--radius-full);
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: var(--space-4);
+        }
+
+        .showcase-tabs {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-4);
+            margin-bottom: var(--space-8);
+            flex-wrap: wrap;
+        }
+
+        .showcase-tab {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-1);
+            padding: var(--space-4);
+            background: var(--gradient-card);
+            border: 2px solid transparent;
+            border-radius: var(--radius-xl);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .showcase-tab:hover,
+        .showcase-tab.active {
+            border-color: var(--governor-bay);
+            transform: translateY(-2px);
+        }
+
+        .tab-icon {
+            font-size: 1.5rem;
+        }
+
+        .tab-count {
+            font-size: 0.75rem;
+            color: var(--emerald);
+            font-weight: 600;
+        }
+
+        .showcase-content {
+            position: relative;
+            min-height: 400px;
+        }
+
+        .showcase-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-6);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.4s ease;
+            position: absolute;
+            width: 100%;
+        }
+
+        .showcase-grid.active {
+            opacity: 1;
+            transform: translateY(0);
+            position: relative;
+        }
+
+        .showcase-cta {
+            text-align: center;
+            margin-top: var(--space-12);
+        }
+
+        .showcase-disclaimer {
+            margin-top: var(--space-4);
+            font-size: 0.875rem;
+            color: var(--text-light);
+        }
+
+        /* Live Booking Indicators for Cards */
+        .live-booking-badge {
+            position: absolute;
+            top: var(--space-3);
+            left: var(--space-3);
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
+            color: white;
+            padding: var(--space-1) var(--space-3);
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 600;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .floating-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5rem;
+            }
+
+            .hero-content {
+                padding: 0 var(--space-4);
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="nav-container nav-transparent" id="navbar">
+        <div class="navbar">
+            <div class="logo">
+                <img src="look_image.png" style="width: 200px; height: 50px;" alt="Logo" />
+            </div>
+
+            <ul class="nav-links">
+                <li><a href="#home" class="active">Home</a></li>
+                <li><a href="#flights">Flights</a></li>
+                <li><a href="#hotels">Hotels</a></li>
+                <li><a href="#itineraries">Itineraries</a></li>
+                <li><a href="#about">About</a></li>
+            </ul>
+            <a href="#login" class="nav-cta">Login / Sign Up</a>
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <!-- Video Background Container -->
+        <div class="hero-video-container">
+            <!-- Main Video -->
+            <video class="hero-video active" id="main-video" autoplay muted loop playsinline>
+                <source
+                    src="https://static.vecteezy.com/system/resources/previews/004/301/450/mp4/sassolungo-mountains-group-free-video.mp4"
+                    type="video/mp4">
+            </video>
+
+            <!-- Flights Video -->
+            <video class="hero-video" id="flights-video" autoplay muted loop playsinline>
+                <source
+                    src="https://static.vecteezy.com/system/resources/previews/009/007/368/mp4/moscow-russian-federation-september-12-2020-aeroflot-passenger-plane-arrives-at-sheremetyevo-airport-moscow-airbus-a320-214-vp-bil-flies-to-land-in-a-cloudy-sky-tourism-concept-free-video.mp4"
+                    type="video/mp4">
+            </video>
+
+            <!-- Hotels Video -->
+            <video class="hero-video" id="hotels-video" autoplay muted loop playsinline>
+                <source
+                    src="https://static.vecteezy.com/system/resources/previews/023/205/595/mp4/hotel-lights-reflection-in-ocean-waves-at-evening-by-drone-free-video.mp4"
+                    type="video/mp4">
+            </video>
+        </div>
+
+        <!-- Gradient Overlay -->
+        <div class="hero-overlay"></div>
+
+        <!-- Animated Pattern -->
+        <div class="hero-pattern"></div>
+
+        <!-- Floating Elements -->
+        <div class="hero-floating-elements">
+            <div class="floating-icon">✈️</div>
+            <div class="floating-icon">🏨</div>
+            <div class="floating-icon">🗺️</div>
+            <div class="floating-icon">🎒</div>
+            <div class="floating-icon">🌍</div>
+        </div>
+
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="activity-dot"></span>
+                <span id="live-counter">1,000+</span> trips planned this week
+            </div>
+
+            <h1 class="hero-title">
+                Create Your Perfect Journey<br>
+                in <span
+                    style="background: linear-gradient(135deg, #F59E0B 0%, #FFF 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Minutes</span>
+            </h1>
+
+            <p class="hero-subtitle">
+                AI-powered trip planning that learns your style and creates unforgettable experiences tailored just for
+                you
+            </p>
+
+            <!-- Search Widget -->
+            <div class="search-widget">
+                <div class="search-tabs">
+                    <button class="search-tab" onclick="switchTab('flights')">✈️ Flights</button>
+                    <button class="search-tab" onclick="switchTab('hotels')">🏨 Hotels</button>
+                    <button class="search-tab active premium" onclick="switchTab('itinerary')">🗺️ Complete
+                        Journey</button>
+                </div>
+
+                <!-- Flights Tab -->
+                <div class="search-content" id="flights-content">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <input type="text" id="flight-from" placeholder="From: New York"
+                            style="padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                        <input type="text" id="flight-to" placeholder="To: Anywhere 🌍"
+                            style="padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <input type="date" id="flight-depart"
+                            style="padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                        <input type="date" id="flight-return"
+                            style="padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    </div>
+                    <button class="primary-cta" onclick="searchFlights()">🔍 Search Flights</button>
+                </div>
+
+                <!-- Hotels Tab -->
+                <div class="search-content" id="hotels-content">
+                    <input type="text" id="hotel-location" placeholder="Where: Paris, France 🗺️"
+                        style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 1rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <input type="date" id="hotel-checkin" placeholder="Check-in"
+                            style="padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                        <input type="date" id="hotel-checkout" placeholder="Check-out"
+                            style="padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    </div>
+                    <button class="primary-cta" onclick="searchHotels()">🔍 Find Hotels</button>
+                </div>
+
+                <!-- Itinerary Tab (Active) -->
+                <div class="search-content active" id="itinerary-content">
+                    <h3 style="text-align: center; margin-bottom: 1.5rem; color: #334155;">How would you like to plan? ✨
+                    </h3>
+
+                    <div class="itinerary-options">
+                        <div class="option-card" onclick="selectOption('ai-magic')" data-option="ai-magic">
+                            <div class="option-badge">⚡ Most Popular</div>
+                            <div class="option-icon">🧠</div>
+                            <div class="option-title">AI Magic</div>
+                            <div class="option-description">"Tell us your preferences in 2 mins"</div>
+                        </div>
+
+                        <div class="option-card" onclick="selectOption('browse-packages')"
+                            data-option="browse-packages">
+                            <div class="option-badge">🌟 Popular</div>
+                            <div class="option-icon">📦</div>
+                            <div class="option-title">Browse Packages</div>
+                            <div class="option-description">"Ready-made adventures you can customize"</div>
+                        </div>
+
+                        <div class="option-card" onclick="selectOption('custom-builder')" data-option="custom-builder">
+                            <div class="option-badge">🎯 Advanced</div>
+                            <div class="option-icon">🛠️</div>
+                            <div class="option-title">Custom Builder</div>
+                            <div class="option-description">"Build from scratch with full control"</div>
+                        </div>
+                    </div>
+
+                    <button class="primary-cta" onclick="startPlanning()">🚀 Start Planning - Free!</button>
+
+                    <p style="text-align: center; margin-top: 1rem; font-size: 0.875rem; color: #64748b;">
+                        💡 Not sure? <a href="#" onclick="startQuiz()"
+                            style="color: #4b90e6; text-decoration: none;">Take 30-sec quiz to find your style</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Live Results Showcase - Insert after Hero section, before AI Showcase -->
+    <section class="live-showcase" id="live-showcase">
+        <div class="live-showcase-container">
+            <div class="live-showcase-header animate-on-scroll">
+                <div class="live-indicator">
+                    <span class="activity-dot"></span>
+                    <span>Live Results</span>
+                </div>
+                <h2>See What Others Are Booking Right Now</h2>
+                <p>Real travelers, real trips, real savings - updated every minute</p>
+            </div>
+
+            <!-- Showcase Tabs -->
+            <div class="showcase-tabs">
+                <button class="showcase-tab active" onclick="showShowcaseTab('flights')">
+                    <span class="tab-icon">✈️</span>
+                    <span>Flights</span>
+                    <span class="tab-count">12 live</span>
+                </button>
+                <button class="showcase-tab" onclick="showShowcaseTab('hotels')">
+                    <span class="tab-icon">🏨</span>
+                    <span>Hotels</span>
+                    <span class="tab-count">8 live</span>
+                </button>
+                <button class="showcase-tab" onclick="showShowcaseTab('itineraries')">
+                    <span class="tab-icon">🗺️</span>
+                    <span>Itineraries</span>
+                    <span class="tab-count">5 live</span>
+                </button>
+            </div>
+
+            <!-- Showcase Content -->
+            <div class="showcase-content">
+                <!-- Use your existing card HTML but with "live" indicators -->
+                <div class="showcase-grid active" id="showcase-flights">
+                    <!-- Flight Card 1 -->
+                    <div class="flight-card animate-on-scroll">
+                        <div class="flight-header">
+                            <div class="airline-info">
+                                <div class="airline-logo">✈️</div>
+                                <div>
+                                    <div style="font-weight: 600; color: var(--primary-900);">Emirates</div>
+                                    <div style="font-size: 0.875rem; color: var(--text-light);">Boeing 777</div>
+                                </div>
+                            </div>
+                            <div class="price-section">
+                                <div class="price-main">$899</div>
+                                <div class="price-savings">Save $120</div>
+                            </div>
+                        </div>
+
+                        <div class="flight-route">
+                            <div class="route-point">
+                                <div class="route-time">2:30 PM</div>
+                                <div class="route-code">JFK</div>
+                            </div>
+                            <div class="route-line">
+                                <div class="route-plane">✈️</div>
+                            </div>
+                            <div class="route-point">
+                                <div class="route-time">8:45 AM+1</div>
+                                <div class="route-code">DXB</div>
+                            </div>
+                        </div>
+
+                        <div class="flight-details">
+                            <div class="flight-badges">
+                                <span class="flight-badge badge-direct">Direct</span>
+                                <span class="flight-badge badge-fast">14h 15m</span>
+                            </div>
+                            <button class="primary-cta" style="padding: 8px 16px; font-size: 0.875rem;">Select</button>
+                        </div>
+                    </div>
+
+                    <!-- Flight Card 2 -->
+                    <div class="flight-card animate-on-scroll">
+                        <div class="flight-header">
+                            <div class="airline-info">
+                                <div class="airline-logo">🛫</div>
+                                <div>
+                                    <div style="font-weight: 600; color: var(--primary-900);">Qatar Airways</div>
+                                    <div style="font-size: 0.875rem; color: var(--text-light);">Airbus A350</div>
+                                </div>
+                            </div>
+                            <div class="price-section">
+                                <div class="price-main">$1,249</div>
+                                <div class="price-savings">Premium Deal</div>
+                            </div>
+                        </div>
+
+                        <div class="flight-route">
+                            <div class="route-point">
+                                <div class="route-time">11:15 PM</div>
+                                <div class="route-code">JFK</div>
+                            </div>
+                            <div class="route-line">
+                                <div class="route-plane">✈️</div>
+                            </div>
+                            <div class="route-point">
+                                <div class="route-time">6:30 PM+1</div>
+                                <div class="route-code">DOH</div>
+                            </div>
+                        </div>
+
+                        <div class="flight-details">
+                            <div class="flight-badges">
+                                <span class="flight-badge badge-direct">1 Stop</span>
+                                <span class="flight-badge badge-fast">16h 15m</span>
+                            </div>
+                            <button class="primary-cta" style="padding: 8px 16px; font-size: 0.875rem;">Select</button>
+                        </div>
+                    </div>
+
+                    <!-- Flight Card 1 -->
+                    <div class="flight-card animate-on-scroll">
+                        <div class="flight-header">
+                            <div class="airline-info">
+                                <div class="airline-logo">✈️</div>
+                                <div>
+                                    <div style="font-weight: 600; color: var(--primary-900);">Emirates</div>
+                                    <div style="font-size: 0.875rem; color: var(--text-light);">Boeing 777</div>
+                                </div>
+                            </div>
+                            <div class="price-section">
+                                <div class="price-main">$899</div>
+                                <div class="price-savings">Save $120</div>
+                            </div>
+                        </div>
+
+                        <div class="flight-route">
+                            <div class="route-point">
+                                <div class="route-time">2:30 PM</div>
+                                <div class="route-code">JFK</div>
+                            </div>
+                            <div class="route-line">
+                                <div class="route-plane">✈️</div>
+                            </div>
+                            <div class="route-point">
+                                <div class="route-time">8:45 AM+1</div>
+                                <div class="route-code">DXB</div>
+                            </div>
+                        </div>
+
+                        <div class="flight-details">
+                            <div class="flight-badges">
+                                <span class="flight-badge badge-direct">Direct</span>
+                                <span class="flight-badge badge-fast">14h 15m</span>
+                            </div>
+                            <button class="primary-cta" style="padding: 8px 16px; font-size: 0.875rem;">Select</button>
+                        </div>
+                    </div>
+
+                   
+                </div>
+                <div class="showcase-grid" id="showcase-hotels">
+                    <!-- 3 hotel cards with live booking indicators -->
+                </div>
+                <div class="showcase-grid" id="showcase-itineraries">
+                    <!-- 3 itinerary cards with live booking indicators -->
+                </div>
+            </div>
+
+            <div class="showcase-cta">
+                <button class="primary-cta" onclick="startPlanning()">
+                    🚀 Start Planning Your Trip - Free!
+                </button>
+                <p class="showcase-disclaimer">
+                    💡 These are live results from real searches. Prices update every 60 seconds.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI Magic Showcase Section -->
+    <section class="ai-showcase">
+        <div class="ai-showcase-container">
+            <div class="ai-showcase-header animate-on-scroll">
+                <h2>✨ AI Creates Your Perfect Trip in 3 Steps</h2>
+                <p>Watch how our intelligent system transforms your preferences into unforgettable experiences</p>
+            </div>
+
+            <div class="ai-steps">
+                <div class="ai-step animate-on-scroll">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Tell Us About You</h3>
+                        <p>Quick 2-minute conversation about your travel style, preferences, and dreams</p>
+                        <ul>
+                            <li>What excites you most about traveling?</li>
+                            <li>What's your ideal trip pace?</li>
+                            <li>What's your budget sweet spot?</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="ai-step animate-on-scroll">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Watch the Magic ✨</h3>
+                        <p>Our AI analyzes millions of data points to craft your perfect journey</p>
+                        <ul>
+                            <li>50,000+ similar successful trips</li>
+                            <li>Weather patterns & seasonal events</li>
+                            <li>Local insights & hidden gems</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="ai-step animate-on-scroll">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Customize & Book 🎯</h3>
+                        <p>Review, adjust, and book your personalized itinerary</p>
+                        <ul>
+                            <li>3 personalized options presented</li>
+                            <li>Every detail customizable</li>
+                            <li>One-click booking when ready</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ai-showcase-cta animate-on-scroll">
+                <button class="primary-cta" onclick="startAIMagic()">🚀 Try AI Planning - It's Free!</button>
+                <div class="testimonial-snippet">
+                    ⭐ "Sarah got her perfect 7-day Japan trip in 3 mins!"
+                    <a href="#" onclick="showTestimonial('sarah')">See Sarah's Story</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="features-container">
+            <div class="features-header animate-on-scroll">
+                <h2 class="features-title">Why Choose Our AI Travel Planner?</h2>
+                <p class="features-subtitle">Experience the future of travel planning with intelligent, personalized
+                    recommendations</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">🤖</div>
+                    <h3 class="feature-title">AI-Powered Intelligence</h3>
+                    <p class="feature-description">Our advanced AI analyzes 50,000+ similar trips, weather patterns, and
+                        local insights to create your perfect itinerary in minutes.</p>
+                </div>
+
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">🎯</div>
+                    <h3 class="feature-title">Personalized Experiences</h3>
+                    <p class="feature-description">Every recommendation is tailored to your travel style, budget, and
+                        preferences. No two itineraries are alike.</p>
+                </div>
+
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">💰</div>
+                    <h3 class="feature-title">Best Price Guarantee</h3>
+                    <p class="feature-description">Our partnerships with airlines and hotels ensure you get the best
+                        deals, with savings up to 15% compared to booking separately.</p>
+                </div>
+
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">🌟</div>
+                    <h3 class="feature-title">Hidden Gems Discovery</h3>
+                    <p class="feature-description">Discover local favorites and hidden gems that typical tourists miss,
+                        curated by our AI and local experts.</p>
+                </div>
+
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">📱</div>
+                    <h3 class="feature-title">Seamless Booking</h3>
+                    <p class="feature-description">Book flights, hotels, and activities all in one place. Real-time
+                        updates and 24/7 support throughout your journey.</p>
+                </div>
+
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">⚡</div>
+                    <h3 class="feature-title">Lightning Fast</h3>
+                    <p class="feature-description">What used to take hours of research now takes just minutes. Plan your
+                        entire trip before your coffee gets cold.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trust Section -->
+    <section class="trust-section">
+        <div class="trust-container">
+            <div class="live-activity animate-on-scroll">
+                <span class="activity-dot"></span>
+                <strong>Live:</strong> <span id="live-activity-text">Emma just completed her Paris romance itinerary |
+                    Michael saved $200 on Tokyo flights | The Johnsons booked their Bali family package</span>
+            </div>
+
+            <div
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-top: 2rem;">
+                <div class="animate-on-scroll">
+                    <div style="font-size: 2rem; font-weight: 800; color: #2553eb;" id="trips-counter">10,000+</div>
+                    <div style="color: #64748b;">Trips Planned</div>
+                </div>
+                <div class="animate-on-scroll">
+                    <div style="font-size: 2rem; font-weight: 800; color: #2553eb;">4.9★</div>
+                    <div style="color: #64748b;">User Rating</div>
+                </div>
+                <div class="animate-on-scroll">
+                    <div style="font-size: 2rem; font-weight: 800; color: #2553eb;">95%</div>
+                    <div style="color: #64748b;">Love Their Trip</div>
+                </div>
+                <div class="animate-on-scroll">
+                    <div style="font-size: 2rem; font-weight: 800; color: #2553eb;">2.5min</div>
+                    <div style="color: #64748b;">Average Planning Time</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Destinations -->
+    <section class="destinations" id="destinations">
+        <div class="destinations-container">
+            <div class="destinations-header animate-on-scroll">
+                <h2>🌍 Trending Destinations</h2>
+                <p>Discover where travelers are heading next</p>
+            </div>
+
+            <div class="destinations-grid">
+                <div class="destination-card animate-on-scroll" onclick="exploreDestination('bali')">
+                    <div class="destination-image"
+                        style="background-image: url('https://images.unsplash.com/photo-1537953773345-d172ccf13cf1?w=400');">
+                        <div class="destination-overlay">
+                            <h3>Bali, Indonesia</h3>
+                            <p>From $899</p>
+                            <span class="destination-tag">🔥 Trending</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="destination-card animate-on-scroll" onclick="exploreDestination('japan')">
+                    <div class="destination-image"
+                        style="background-image: url('https://images.unsplash.com/photo-1492571350019-22de08371fd3?w=400');">
+                        <div class="destination-overlay">
+                            <h3>Tokyo, Japan</h3>
+                            <p>From $1,299</p>
+                            <span class="destination-tag">🌸 Seasonal</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="destination-card animate-on-scroll" onclick="exploreDestination('maldives')">
+                    <div class="destination-image"
+                        style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400');">
+                        <div class="destination-overlay">
+                            <h3>Maldives</h3>
+                            <p>From $2,199</p>
+                            <span class="destination-tag">🏝️ Luxury</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="destination-card animate-on-scroll" onclick="exploreDestination('iceland')">
+                    <div class="destination-image"
+                        style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400');">
+                        <div class="destination-overlay">
+                            <h3>Iceland</h3>
+                            <p>From $1,599</p>
+                            <span class="destination-tag">❄️ Adventure</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Feature Section - -->
+    <div class="results-container" id="results-container">
+        <div class="results-header">
+            <h2 id="results-title">✈️ Available Flights</h2>
+            <p id="results-subtitle">Found 12 flights matching your preferences</p>
+        </div>
+
+        <!-- Flight Results -->
+        <div class="results-grid" id="flights-results">
+            <!-- Flight Card 1 -->
+            <div class="flight-card animate-on-scroll">
+                <div class="flight-header">
+                    <div class="airline-info">
+                        <div class="airline-logo">✈️</div>
+                        <div>
+                            <div style="font-weight: 600; color: var(--primary-900);">Emirates</div>
+                            <div style="font-size: 0.875rem; color: var(--text-light);">Boeing 777</div>
+                        </div>
+                    </div>
+                    <div class="price-section">
+                        <div class="price-main">$899</div>
+                        <div class="price-savings">Save $120</div>
+                    </div>
+                </div>
+
+                <div class="flight-route">
+                    <div class="route-point">
+                        <div class="route-time">2:30 PM</div>
+                        <div class="route-code">JFK</div>
+                    </div>
+                    <div class="route-line">
+                        <div class="route-plane">✈️</div>
+                    </div>
+                    <div class="route-point">
+                        <div class="route-time">8:45 AM+1</div>
+                        <div class="route-code">DXB</div>
+                    </div>
+                </div>
+
+                <div class="flight-details">
+                    <div class="flight-badges">
+                        <span class="flight-badge badge-direct">Direct</span>
+                        <span class="flight-badge badge-fast">14h 15m</span>
+                    </div>
+                    <button class="primary-cta" style="padding: 8px 16px; font-size: 0.875rem;">Select</button>
+                </div>
+            </div>
+
+            <!-- Flight Card 2 -->
+            <div class="flight-card animate-on-scroll">
+                <div class="flight-header">
+                    <div class="airline-info">
+                        <div class="airline-logo">🛫</div>
+                        <div>
+                            <div style="font-weight: 600; color: var(--primary-900);">Qatar Airways</div>
+                            <div style="font-size: 0.875rem; color: var(--text-light);">Airbus A350</div>
+                        </div>
+                    </div>
+                    <div class="price-section">
+                        <div class="price-main">$1,249</div>
+                        <div class="price-savings">Premium Deal</div>
+                    </div>
+                </div>
+
+                <div class="flight-route">
+                    <div class="route-point">
+                        <div class="route-time">11:15 PM</div>
+                        <div class="route-code">JFK</div>
+                    </div>
+                    <div class="route-line">
+                        <div class="route-plane">✈️</div>
+                    </div>
+                    <div class="route-point">
+                        <div class="route-time">6:30 PM+1</div>
+                        <div class="route-code">DOH</div>
+                    </div>
+                </div>
+
+                <div class="flight-details">
+                    <div class="flight-badges">
+                        <span class="flight-badge badge-direct">1 Stop</span>
+                        <span class="flight-badge badge-fast">16h 15m</span>
+                    </div>
+                    <button class="primary-cta" style="padding: 8px 16px; font-size: 0.875rem;">Select</button>
+                </div>
+            </div>
+
+            <!-- Flight Card 1 -->
+            <div class="flight-card animate-on-scroll">
+                <div class="flight-header">
+                    <div class="airline-info">
+                        <div class="airline-logo">✈️</div>
+                        <div>
+                            <div style="font-weight: 600; color: var(--primary-900);">Emirates</div>
+                            <div style="font-size: 0.875rem; color: var(--text-light);">Boeing 777</div>
+                        </div>
+                    </div>
+                    <div class="price-section">
+                        <div class="price-main">$899</div>
+                        <div class="price-savings">Save $120</div>
+                    </div>
+                </div>
+
+                <div class="flight-route">
+                    <div class="route-point">
+                        <div class="route-time">2:30 PM</div>
+                        <div class="route-code">JFK</div>
+                    </div>
+                    <div class="route-line">
+                        <div class="route-plane">✈️</div>
+                    </div>
+                    <div class="route-point">
+                        <div class="route-time">8:45 AM+1</div>
+                        <div class="route-code">DXB</div>
+                    </div>
+                </div>
+
+                <div class="flight-details">
+                    <div class="flight-badges">
+                        <span class="flight-badge badge-direct">Direct</span>
+                        <span class="flight-badge badge-fast">14h 15m</span>
+                    </div>
+                    <button class="primary-cta" style="padding: 8px 16px; font-size: 0.875rem;">Select</button>
+                </div>
+            </div>
+
+            <!-- Flight Card 2 -->
+            <div class="flight-card animate-on-scroll">
+                <div class="flight-header">
+                    <div class="airline-info">
+                        <div class="airline-logo">🛫</div>
+                        <div>
+                            <div style="font-weight: 600; color: var(--primary-900);">Qatar Airways</div>
+                            <div style="font-size: 0.875rem; color: var(--text-light);">Airbus A350</div>
+                        </div>
+                    </div>
+                    <div class="price-section">
+                        <div class="price-main">$1,249</div>
+                        <div class="price-savings">Premium Deal</div>
+                    </div>
+                </div>
+
+                <div class="flight-route">
+                    <div class="route-point">
+                        <div class="route-time">11:15 PM</div>
+                        <div class="route-code">JFK</div>
+                    </div>
+                    <div class="route-line">
+                        <div class="route-plane">✈️</div>
+                    </div>
+                    <div class="route-point">
+                        <div class="route-time">6:30 PM+1</div>
+                        <div class="route-code">DOH</div>
+                    </div>
+                </div>
+
+                <div class="flight-details">
+                    <div class="flight-badges">
+                        <span class="flight-badge badge-direct">1 Stop</span>
+                        <span class="flight-badge badge-fast">16h 15m</span>
+                    </div>
+                    <button class="primary-cta" style="padding: 8px 16px; font-size: 0.875rem;">Select</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hotel Results -->
+        <div class="results-grid" id="hotels-results">
+            <!-- Hotel Card 1 -->
+            <div class="hotel-card animate-on-scroll">
+                <div class="hotel-image-container">
+                    <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600" alt="Luxury Hotel"
+                        class="hotel-image">
+                    <div class="hotel-rating-overlay">
+                        ⭐ 4.8 (2,341)
+                    </div>
+                </div>
+                <div class="hotel-content">
+                    <div class="hotel-header">
+                        <div>
+                            <div class="hotel-name">The Ritz-Carlton</div>
+                            <div class="hotel-stars">⭐⭐⭐⭐⭐</div>
+                        </div>
+                    </div>
+                    <div class="hotel-location">📍 Downtown Dubai - 0.5km from center</div>
+                    <div class="hotel-amenities">
+                        <span class="amenity-tag">🏊 Pool</span>
+                        <span class="amenity-tag">🏋️ Gym</span>
+                        <span class="amenity-tag">🍳 Breakfast</span>
+                        <span class="amenity-tag">📶 WiFi</span>
+                    </div>
+                    <div class="hotel-footer">
+                        <button class="primary-cta" style="padding: 8px 16px; font-size: 0.875rem;">Book Now</button>
+                        <div class="hotel-price">
+                            <div class="price-per-night">$299</div>
+                            <div class="price-total">per night</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hotel Card 2 -->
+            <div class="hotel-card animate-on-scroll">
+                <div class="hotel-image-container">
+                    <img src="https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=600" alt="Boutique Hotel"
+                        class="hotel-image">
+                    <div class="hotel-rating-overlay">
+                        ⭐ 4.6 (1,876)
+                    </div>
+                </div>
+                <div class="hotel-content">
+                    <div class="hotel-header">
+                        <div>
+                            <div class="hotel-name">Atlantis The Palm</div>
+                            <div class="hotel-stars">⭐⭐⭐⭐⭐</div>
+                        </div>
+                    </div>
+                    <div class="hotel-location">📍 Palm Jumeirah - Beach Resort</div>
+                    <div class="hotel-amenities">
+                        <span class="amenity-tag">🏖️ Beach</span>
+                        <span class="amenity-tag">🎢 Waterpark</span>
+                        <span class="amenity-tag">🐠 Aquarium</span>
+                        <span class="amenity-tag">🍽️ Restaurant</span>
+                    </div>
+                    <div class="hotel-footer">
+                        <button class="primary-cta" style="padding: 8px 16px; font-size: 0.875rem;">Book Now</button>
+                        <div class="hotel-price">
+                            <div class="price-per-night">$599</div>
+                            <div class="price-total">per night</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hotel Card 1 -->
+            <div class="hotel-card animate-on-scroll">
+                <div class="hotel-image-container">
+                    <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600" alt="Luxury Hotel"
+                        class="hotel-image">
+                    <div class="hotel-rating-overlay">
+                        ⭐ 4.8 (2,341)
+                    </div>
+                </div>
+                <div class="hotel-content">
+                    <div class="hotel-header">
+                        <div>
+                            <div class="hotel-name">The Ritz-Carlton</div>
+                            <div class="hotel-stars">⭐⭐⭐⭐⭐</div>
+                        </div>
+                    </div>
+                    <div class="hotel-location">📍 Downtown Dubai - 0.5km from center</div>
+                    <div class="hotel-amenities">
+                        <span class="amenity-tag">🏊 Pool</span>
+                        <span class="amenity-tag">🏋️ Gym</span>
+                        <span class="amenity-tag">🍳 Breakfast</span>
+                        <span class="amenity-tag">📶 WiFi</span>
+                    </div>
+                    <div class="hotel-footer">
+                        <button class="primary-cta" style="padding: 8px 16px; font-size: 0.875rem;">Book Now</button>
+                        <div class="hotel-price">
+                            <div class="price-per-night">$299</div>
+                            <div class="price-total">per night</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hotel Card 2 -->
+            <div class="hotel-card animate-on-scroll">
+                <div class="hotel-image-container">
+                    <img src="https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=600" alt="Boutique Hotel"
+                        class="hotel-image">
+                    <div class="hotel-rating-overlay">
+                        ⭐ 4.6 (1,876)
+                    </div>
+                </div>
+                <div class="hotel-content">
+                    <div class="hotel-header">
+                        <div>
+                            <div class="hotel-name">Atlantis The Palm</div>
+                            <div class="hotel-stars">⭐⭐⭐⭐⭐</div>
+                        </div>
+                    </div>
+                    <div class="hotel-location">📍 Palm Jumeirah - Beach Resort</div>
+                    <div class="hotel-amenities">
+                        <span class="amenity-tag">🏖️ Beach</span>
+                        <span class="amenity-tag">🎢 Waterpark</span>
+                        <span class="amenity-tag">🐠 Aquarium</span>
+                        <span class="amenity-tag">🍽️ Restaurant</span>
+                    </div>
+                    <div class="hotel-footer">
+                        <button class="primary-cta" style="padding: 8px 16px; font-size: 0.875rem;">Book Now</button>
+                        <div class="hotel-price">
+                            <div class="price-per-night">$599</div>
+                            <div class="price-total">per night</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Itinerary Results -->
+        <div class="results-grid" id="itinerary-results">
+            <!-- Itinerary Card 1 -->
+            <div class="itinerary-card animate-on-scroll">
+                <div class="itinerary-images">
+                    <div class="itinerary-image main"
+                        style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400');">
+                        <div class="image-overlay">Burj Khalifa</div>
+                    </div>
+                    <div class="itinerary-image"
+                        style="background-image: url('https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=400');">
+                        <div class="image-overlay">Desert Safari</div>
+                    </div>
+                    <div class="itinerary-image"
+                        style="background-image: url('https://images.unsplash.com/photo-1580674285054-bed31e145f59?w=400');">
+                        <div class="image-overlay">Dubai Mall</div>
+                    </div>
+                </div>
+
+                <div class="itinerary-header">
+                    <div class="itinerary-title">Dubai Luxury Experience</div>
+                    <div class="ai-match">97% Match</div>
+                </div>
+
+                <div class="itinerary-highlights">
+                    <div class="highlight-item">
+                        <span class="highlight-icon">🏙️</span>
+                        <span>City & Skyline Tours</span>
+                    </div>
+                    <div class="highlight-item">
+                        <span class="highlight-icon">🏜️</span>
+                        <span>Desert Adventures</span>
+                    </div>
+                    <div class="highlight-item">
+                        <span class="highlight-icon">🛍️</span>
+                        <span>Premium Shopping</span>
+                    </div>
+                    <div class="highlight-item">
+                        <span class="highlight-icon">🍽️</span>
+                        <span>Fine Dining</span>
+                    </div>
+                </div>
+
+                <div class="itinerary-footer">
+                    <div class="itinerary-duration">7 Days • Luxury</div>
+                    <div class="itinerary-price">$2,899</div>
+                </div>
+            </div>
+
+            <!-- Itinerary Card 2 -->
+            <div class="itinerary-card animate-on-scroll">
+                <div class="itinerary-images">
+                    <div class="itinerary-image main"
+                        style="background-image: url('https://images.unsplash.com/photo-1492571350019-22de08371fd3?w=400');">
+                        <div class="image-overlay">Tokyo Temples</div>
+                    </div>
+                    <div class="itinerary-image"
+                        style="background-image: url('https://images.unsplash.com/photo-1554797589-7241bb691973?w=400');">
+                        <div class="image-overlay">Mount Fuji</div>
+                    </div>
+                    <div class="itinerary-image"
+                        style="background-image: url('https://images.unsplash.com/photo-1590559899731-a382839e5549?w=400');">
+                        <div class="image-overlay">Cherry Blossoms</div>
+                    </div>
+                </div>
+
+                <div class="itinerary-header">
+                    <div class="itinerary-title">Japan Cultural Journey</div>
+                    <div class="ai-match">93% Match</div>
+                </div>
+
+                <div class="itinerary-highlights">
+                    <div class="highlight-item">
+                        <span class="highlight-icon">🏯</span>
+                        <span>Temple Visits</span>
+                    </div>
+                    <div class="highlight-item">
+                        <span class="highlight-icon">🗾</span>
+                        <span>Cultural Immersion</span>
+                    </div>
+                    <div class="highlight-item">
+                        <span class="highlight-icon">🍣</span>
+                        <span>Authentic Cuisine</span>
+                    </div>
+                    <div class="highlight-item">
+                        <span class="highlight-icon">🚅</span>
+                        <span>Bullet Train</span>
+                    </div>
+                </div>
+
+                <div class="itinerary-footer">
+                    <div class="itinerary-duration">10 Days • Cultural</div>
+                    <div class="itinerary-price">$3,299</div>
+                </div>
+            </div>
+
+            <!-- Itinerary Card 1 -->
+            <div class="itinerary-card animate-on-scroll">
+                <div class="itinerary-images">
+                    <div class="itinerary-image main"
+                        style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400');">
+                        <div class="image-overlay">Burj Khalifa</div>
+                    </div>
+                    <div class="itinerary-image"
+                        style="background-image: url('https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=400');">
+                        <div class="image-overlay">Desert Safari</div>
+                    </div>
+                    <div class="itinerary-image"
+                        style="background-image: url('https://images.unsplash.com/photo-1580674285054-bed31e145f59?w=400');">
+                        <div class="image-overlay">Dubai Mall</div>
+                    </div>
+                </div>
+
+                <div class="itinerary-header">
+                    <div class="itinerary-title">Dubai Luxury Experience</div>
+                    <div class="ai-match">97% Match</div>
+                </div>
+
+                <div class="itinerary-highlights">
+                    <div class="highlight-item">
+                        <span class="highlight-icon">🏙️</span>
+                        <span>City & Skyline Tours</span>
+                    </div>
+                    <div class="highlight-item">
+                        <span class="highlight-icon">🏜️</span>
+                        <span>Desert Adventures</span>
+                    </div>
+                    <div class="highlight-item">
+                        <span class="highlight-icon">🛍️</span>
+                        <span>Premium Shopping</span>
+                    </div>
+                    <div class="highlight-item">
+                        <span class="highlight-icon">🍽️</span>
+                        <span>Fine Dining</span>
+                    </div>
+                </div>
+
+                <div class="itinerary-footer">
+                    <div class="itinerary-duration">7 Days • Luxury</div>
+                    <div class="itinerary-price">$2,899</div>
+                </div>
+            </div>
+
+            <!-- Itinerary Card 2 -->
+            <div class="itinerary-card animate-on-scroll">
+                <div class="itinerary-images">
+                    <div class="itinerary-image main"
+                        style="background-image: url('https://images.unsplash.com/photo-1492571350019-22de08371fd3?w=400');">
+                        <div class="image-overlay">Tokyo Temples</div>
+                    </div>
+                    <div class="itinerary-image"
+                        style="background-image: url('https://images.unsplash.com/photo-1554797589-7241bb691973?w=400');">
+                        <div class="image-overlay">Mount Fuji</div>
+                    </div>
+                    <div class="itinerary-image"
+                        style="background-image: url('https://images.unsplash.com/photo-1590559899731-a382839e5549?w=400');">
+                        <div class="image-overlay">Cherry Blossoms</div>
+                    </div>
+                </div>
+
+                <div class="itinerary-header">
+                    <div class="itinerary-title">Japan Cultural Journey</div>
+                    <div class="ai-match">93% Match</div>
+                </div>
+
+                <div class="itinerary-highlights">
+                    <div class="highlight-item">
+                        <span class="highlight-icon">🏯</span>
+                        <span>Temple Visits</span>
+                    </div>
+                    <div class="highlight-item">
+                        <span class="highlight-icon">🗾</span>
+                        <span>Cultural Immersion</span>
+                    </div>
+                    <div class="highlight-item">
+                        <span class="highlight-icon">🍣</span>
+                        <span>Authentic Cuisine</span>
+                    </div>
+                    <div class="highlight-item">
+                        <span class="highlight-icon">🚅</span>
+                        <span>Bullet Train</span>
+                    </div>
+                </div>
+
+                <div class="itinerary-footer">
+                    <div class="itinerary-duration">10 Days • Cultural</div>
+                    <div class="itinerary-price">$3,299</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Newsletter Section -->
+    <section class="newsletter">
+        <div class="newsletter-container">
+            <div class="newsletter-content animate-on-scroll">
+                <h2>🌟 Never Miss a Deal</h2>
+                <p>Get exclusive travel deals, destination guides, and AI-powered recommendations delivered to your
+                    inbox</p>
+
+                <form class="newsletter-form" onsubmit="subscribeNewsletter(event)">
+                    <input type="email" id="newsletter-email" placeholder="Enter your email address" required>
+                    <button type="submit" class="newsletter-btn">Subscribe Free</button>
+                </form>
+
+                <p style="font-size: 0.875rem; color: #64748b; margin-top: 1rem;">
+                    ✨ Join 50,000+ smart travelers • No spam, unsubscribe anytime
+                </p>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>✈️ TravelAI</h3>
+                    <p>AI-powered travel planning that creates unforgettable experiences tailored just for you.</p>
+                    <div class="social-links">
+                        <a href="#" onclick="openSocial('facebook')">📘</a>
+                        <a href="#" onclick="openSocial('twitter')">🐦</a>
+                        <a href="#" onclick="openSocial('instagram')">📷</a>
+                        <a href="#" onclick="openSocial('linkedin')">💼</a>
+                    </div>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Plan Your Trip</h4>
+                    <ul>
+                        <li><a href="#" onclick="navigateTo('flights')">Search Flights</a></li>
+                        <li><a href="#" onclick="navigateTo('hotels')">Find Hotels</a></li>
+                        <li><a href="#" onclick="navigateTo('packages')">Browse Packages</a></li>
+                        <li><a href="#" onclick="navigateTo('ai-magic')">AI Magic Planner</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#" onclick="openSupport('help')">Help Center</a></li>
+                        <li><a href="#" onclick="openSupport('contact')">Contact Us</a></li>
+                        <li><a href="#" onclick="openSupport('faq')">FAQ</a></li>
+                        <li><a href="#" onclick="openSupport('feedback')">Feedback</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#" onclick="openPage('about')">About Us</a></li>
+                        <li><a href="#" onclick="openPage('careers')">Careers</a></li>
+                        <li><a href="#" onclick="openPage('blog')">Travel Blog</a></li>
+                        <li><a href="#" onclick="openPage('press')">Press</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="footer-legal">
+                    <p>&copy; 2025 TravelAI. All rights reserved.</p>
+                    <div class="footer-links">
+                        <a href="#" onclick="openLegal('privacy')">Privacy Policy</a>
+                        <a href="#" onclick="openLegal('terms')">Terms of Service</a>
+                        <a href="#" onclick="openLegal('cookies')">Cookie Policy</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modals and Overlays -->
+    <div id="modal-overlay" class="modal-overlay" onclick="closeModal()">
+        <div id="modal-content" class="modal-content" onclick="event.stopPropagation()">
+            <!-- Dynamic modal content will be inserted here -->
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Global variables
+        let selectedOption = null;
+        let currentTab = 'itinerary';
+        let animationObserver = null;
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function () {
+            initializeAnimations();
+            initializeLiveCounters();
+            setDefaultDates();
+            detectUserLocation();
+        });
+
+        // Navigation scroll effect
+        window.addEventListener('scroll', function () {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.remove('nav-transparent');
+                navbar.classList.add('nav-solid');
+            } else {
+                navbar.classList.add('nav-transparent');
+                navbar.classList.remove('nav-solid');
+            }
+        });
+
+        // Tab switching functionality
+        function switchTab(tabName) {
+            currentTab = tabName;
+
+            // Update tab buttons
+            document.querySelectorAll('.search-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update content visibility
+            document.querySelectorAll('.search-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabName + '-content').classList.add('active');
+
+            // Add smooth transition effect
+            document.getElementById(tabName + '-content').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById(tabName + '-content').style.opacity = '1';
+            }, 100);
+        }
+
+        // Option selection for itinerary planning
+        function selectOption(option) {
+            selectedOption = option;
+
+            // Remove previous selections
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+
+            // Add selection to clicked option
+            event.currentTarget.classList.add('selected');
+
+            // Update the main CTA based on selection
+            const ctaButton = document.querySelector('#itinerary-content .primary-cta');
+            const ctaTexts = {
+                'ai-magic': '🧠 Start AI Magic - Free!',
+                'browse-packages': '📦 Browse Packages',
+                'custom-builder': '🛠️ Open Custom Builder'
+            };
+            ctaButton.textContent = ctaTexts[option] || '🚀 Start Planning - Free!';
+        }
+
+        // Start planning based on selected option
+        function startPlanning() {
+            if (!selectedOption) {
+                selectedOption = 'ai-magic'; // Default to AI Magic
+            }
+
+            switch (selectedOption) {
+                case 'ai-magic':
+                    startAIMagic();
+                    break;
+                case 'browse-packages':
+                    navigateTo('packages');
+                    break;
+                case 'custom-builder':
+                    navigateTo('custom-builder');
+                    break;
+                default:
+                    startAIMagic();
+            }
+        }
+
+        // AI Magic planning flow
+        function startAIMagic() {
+            showModal('ai-quiz');
+        }
+
+        // Start the personality quiz
+        function startQuiz() {
+            showModal('quick-quiz');
+        }
+
+        // Flight search functionality
+        function searchFlights() {
+            const from = document.getElementById('flight-from').value;
+            const to = document.getElementById('flight-to').value;
+            const depart = document.getElementById('flight-depart').value;
+            const returnDate = document.getElementById('flight-return').value;
+
+            if (!from || !to || !depart) {
+                showNotification('Please fill in all required fields', 'warning');
+                return;
+            }
+
+            // Simulate search loading
+            showLoadingState('Searching flights...');
+
+            setTimeout(() => {
+                hideLoadingState();
+                navigateTo('flight-results', {
+                    from: from,
+                    to: to,
+                    depart: depart,
+                    return: returnDate
+                });
+            }, 2000);
+        }
+
+        // Hotel search functionality
+        function searchHotels() {
+            const location = document.getElementById('hotel-location').value;
+            const checkin = document.getElementById('hotel-checkin').value;
+            const checkout = document.getElementById('hotel-checkout').value;
+
+            if (!location || !checkin || !checkout) {
+                showNotification('Please fill in all required fields', 'warning');
+                return;
+            }
+
+            // Simulate search loading
+            showLoadingState('Finding perfect hotels...');
+
+            setTimeout(() => {
+                hideLoadingState();
+                navigateTo('hotel-results', {
+                    location: location,
+                    checkin: checkin,
+                    checkout: checkout
+                });
+            }, 2000);
+        }
+
+        // Navigation functions
+        function navigateTo(page, params = {}) {
+            console.log(`Navigating to ${page}`, params);
+            showNotification(`Navigating to ${page.replace('-', ' ')}...`, 'info');
+        }
+
+        function exploreDestination(destination) {
+            showNotification(`Exploring ${destination}...`, 'info');
+            navigateTo('destination-details', { destination: destination });
+        }
+
+        // Newsletter subscription
+        function subscribeNewsletter(event) {
+            event.preventDefault();
+            const email = document.getElementById('newsletter-email').value;
+
+            if (!email) {
+                showNotification('Please enter your email address', 'warning');
+                return;
+            }
+
+            // Simulate subscription
+            showLoadingState('Subscribing...');
+
+            setTimeout(() => {
+                hideLoadingState();
+                showNotification('🎉 Successfully subscribed! Welcome to TravelAI!', 'success');
+                document.getElementById('newsletter-email').value = '';
+            }, 1500);
+        }
+
+        // Modal system
+        function showModal(type) {
+            const overlay = document.getElementById('modal-overlay');
+            const content = document.getElementById('modal-content');
+
+            let modalHTML = '';
+
+            switch (type) {
+                case 'ai-quiz':
+                    modalHTML = `
+                        <div class="modal-header">
+                            <h2>🧠 AI Magic Planning</h2>
+                            <button class="modal-close" onclick="closeModal()">×</button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Let's create your perfect trip! This will take just 2 minutes.</p>
+                            <div class="quiz-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 0%"></div>
+                                </div>
+                                <span>Step 1 of 8</span>
+                            </div>
+                            <div class="quiz-question">
+                                <h3>What type of traveler are you?</h3>
+                                <div class="quiz-options">
+                                    <button class="quiz-option" onclick="selectQuizOption('adventurer')">🏔️ Adventurer</button>
+                                    <button class="quiz-option" onclick="selectQuizOption('relaxer')">🏖️ Relaxer</button>
+                                    <button class="quiz-option" onclick="selectQuizOption('explorer')">🗺️ Explorer</button>
+                                    <button class="quiz-option" onclick="selectQuizOption('luxury')">✨ Luxury Seeker</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'quick-quiz':
+                    modalHTML = `
+                        <div class="modal-header">
+                            <h2>✨ Find Your Travel Style</h2>
+                            <button class="modal-close" onclick="closeModal()">×</button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Quick 30-second quiz to match you with the perfect planning method.</p>
+                            <div class="quiz-question">
+                                <h3>How do you prefer to plan trips?</h3>
+                                <div class="quiz-options">
+                                    <button class="quiz-option" onclick="recommendPlanning('ai-magic')">Let AI handle everything</button>
+                                    <button class="quiz-option" onclick="recommendPlanning('browse-packages')">Browse pre-made options</button>
+                                    <button class="quiz-option" onclick="recommendPlanning('custom-builder')">Build it myself</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+            }
+
+            content.innerHTML = modalHTML;
+            overlay.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            const overlay = document.getElementById('modal-overlay');
+            overlay.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function selectQuizOption(option) {
+            console.log('Quiz option selected:', option);
+            // Implement quiz progression logic here
+            showNotification('Answer recorded! Continuing quiz...', 'success');
+        }
+
+        function recommendPlanning(method) {
+            closeModal();
+            selectOption(method);
+            showNotification(`Perfect! ${method.replace('-', ' ')} is recommended for you.`, 'success');
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.textContent = message;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        // Loading state management
+        // function showLoadingState(message) {
+        //     const loader = document.createElement('div');
+        //     loader.id = 'global-loader';
+        //     loader.className = 'global-loader
+
+
+    </script>
+</body>
