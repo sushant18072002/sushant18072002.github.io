@@ -150,10 +150,10 @@ body {
     padding: 0 80px;
     display: grid;
     grid-template-columns: 450px 1fr;
-    gap: 40px;
-    align-items: flex-start;
+    gap: 20px;
+    align-items: center;
     width: 100%;
-    padding-top: 40px;
+    height: 100%;
 }
 
 .hero-text {
@@ -242,7 +242,7 @@ body {
     display: flex;
     background: rgba(255, 255, 255, 0);
     box-shadow: 0 -1px 0 var(--color-grey-91) inset;
-    margin-bottom: 24px;
+    margin-bottom: 8px;
 }
 
 .search-tab {
@@ -271,18 +271,19 @@ body {
 }
 
 #itinerary-content {
-    min-height: 450px;
+    min-height: 240px;
 }
 
 .search-form {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 4px;
 }
 
 .form-row {
-    display: flex;
-    gap: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
     align-items: flex-end;
 }
 
@@ -292,9 +293,9 @@ body {
     align-items: center;
     background: var(--color-grey-99);
     border-radius: 16px;
-    padding: 18px 16px 18px 56px;
+    padding: 12px 16px 12px 56px;
     position: relative;
-    min-height: 96px;
+    min-height: 56px;
 }
 
 .field-icon {
@@ -357,10 +358,10 @@ body {
 .search-btn.full-width {
     width: 100%;
     margin-left: 0;
-    margin-top: 8px;
+    margin-top: 4px;
     font-size: 16px;
     padding: 0 24px;
-    height: 56px;
+    height: 48px;
 }
 
 .form-field.full-width {
@@ -370,19 +371,19 @@ body {
 .itinerary-options {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin: 16px 0;
+    gap: 6px;
+    margin: 8px 0;
 }
 
 .option-card {
     background: linear-gradient(135deg, rgba(59, 113, 254, 0.05), rgba(16, 185, 129, 0.05));
     border: 2px solid rgba(59, 113, 254, 0.1);
-    border-radius: 12px;
-    padding: 12px 8px;
+    border-radius: 8px;
+    padding: 6px 4px;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s ease;
-    min-height: 85px;
+    min-height: 50px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -403,12 +404,12 @@ body {
 
 .option-badge {
     position: absolute;
-    top: -6px;
+    top: -4px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 0.6rem;
-    padding: 2px 6px;
-    border-radius: 8px;
+    font-size: 0.55rem;
+    padding: 1px 4px;
+    border-radius: 6px;
     font-weight: 700;
     font-family: 'DM Sans', sans-serif;
 }

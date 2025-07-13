@@ -297,7 +297,7 @@ function bookPackage(packageId) {
     const selectedPackage = packagesData.find(pkg => pkg.id === packageId);
     if (selectedPackage) {
         localStorage.setItem('bookingPackage', JSON.stringify(selectedPackage));
-        window.location.href = `booking.html?package=${packageId}`;
+        window.location.href = `hotel-booking.html?package=${packageId}`;
     }
 }
 
