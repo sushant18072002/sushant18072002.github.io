@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Support & Help Center | TravelAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="contact-styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav-container">
+        <div class="navbar">
+            <div class="logo">TravelAI</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="flights.html">Flights</a></li>
+                <li><a href="hotels.html">Hotels</a></li>
+                <li><a href="itinerary-master-hub.html">Itineraries</a></li>
+                <li><a href="packages.html">Packages</a></li>
+            </ul>
+            <a href="auth.html" class="nav-cta">Get Started</a>
+        </div>
+    </nav>
+
+
+
+    <!-- Help Categories -->
+    <section class="help-categories">
+        <div class="container">
+            <div class="categories-header">
+                <div class="support-badge">
+                    <span class="badge-icon">🤝</span>
+                    <span>We're Here to Help</span>
+                </div>
+                <h1>What can we help you with?</h1>
+                <p>Choose your topic for faster, more personalized support</p>
+                <div class="quick-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">< 2 min</div>
+                        <div class="stat-label">Response Time</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">Available</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">98%</div>
+                        <div class="stat-label">Resolved</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="categories-grid">
+                <div class="category-card" onclick="selectCategory('planning')">
+                    <div class="category-icon">🗺️</div>
+                    <h3>Trip Planning</h3>
+                    <p>Questions about destinations, itineraries, or travel advice</p>
+                    <div class="category-examples">
+                        <span>• Destination recommendations</span>
+                        <span>• Itinerary customization</span>
+                        <span>• Travel timing advice</span>
+                    </div>
+                </div>
+                
+                <div class="category-card" onclick="selectCategory('booking')">
+                    <div class="category-icon">💳</div>
+                    <h3>Booking & Payments</h3>
+                    <p>Help with reservations, payments, or booking changes</p>
+                    <div class="category-examples">
+                        <span>• Booking modifications</span>
+                        <span>• Payment issues</span>
+                        <span>• Cancellation policies</span>
+                    </div>
+                </div>
+                
+                <div class="category-card" onclick="selectCategory('technical')">
+                    <div class="category-icon">⚙️</div>
+                    <h3>Technical Support</h3>
+                    <p>Issues with our AI, website, or mobile app</p>
+                    <div class="category-examples">
+                        <span>• AI not working</span>
+                        <span>• Website problems</span>
+                        <span>• Account access</span>
+                    </div>
+                </div>
+                
+                <div class="category-card" onclick="selectCategory('emergency')">
+                    <div class="category-icon">🚨</div>
+                    <h3>Travel Emergency</h3>
+                    <p>Urgent help needed during your trip</p>
+                    <div class="category-examples">
+                        <span>• Flight cancellations</span>
+                        <span>• Hotel issues</span>
+                        <span>• Emergency rebooking</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Form Section -->
+    <section class="contact-form-section" id="contactForm" style="display: none;">
+        <div class="container">
+            <div class="form-container">
+                <div class="form-header">
+                    <button class="back-btn" onclick="goBackToCategories()">← Back to Categories</button>
+                    <h2 id="formTitle">Get Help with Trip Planning</h2>
+                    <p id="formSubtitle">Our travel experts will respond within 2 minutes</p>
+                </div>
+                
+                <div class="form-content">
+                    <div class="expert-info">
+                        <div class="expert-avatar">
+                            <img src="https://images.unsplash.com/photo-1494790108755-2616c9c0e8e0?w=80&h=80&fit=crop&crop=face" alt="Travel Expert" id="expertImage">
+                        </div>
+                        <div class="expert-details">
+                            <h4 id="expertName">Sarah Johnson</h4>
+                            <p id="expertTitle">Senior Travel Advisor</p>
+                            <div class="expert-stats">
+                                <span>⭐ 4.9 rating</span>
+                                <span>🌍 127 countries visited</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form class="support-form" onsubmit="submitForm(event)">
+                        <div class="form-group">
+                            <label for="name">Your Name</label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        
+                        <div class="form-group" id="urgencyGroup" style="display: none;">
+                            <label for="urgency">Urgency Level</label>
+                            <select id="urgency" name="urgency">
+                                <option value="low">Low - General question</option>
+                                <option value="medium">Medium - Need help soon</option>
+                                <option value="high">High - Urgent assistance needed</option>
+                                <option value="emergency">Emergency - Immediate help required</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="subject" id="subjectLabel">What's your question about?</label>
+                            <input type="text" id="subject" name="subject" placeholder="Brief description of your question" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="message" id="messageLabel">Tell us more details</label>
+                            <textarea id="message" name="message" rows="5" placeholder="The more details you provide, the better we can help you..." required></textarea>
+                        </div>
+                        
+                        <div class="form-group" id="tripDetailsGroup" style="display: none;">
+                            <label for="tripDetails">Trip Details (Optional)</label>
+                            <div class="trip-inputs">
+                                <input type="text" id="destination" name="destination" placeholder="Destination">
+                                <input type="date" id="travelDate" name="travelDate">
+                                <input type="number" id="travelers" name="travelers" placeholder="# of travelers" min="1">
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="submit-btn">
+                            <span class="btn-icon">📧</span>
+                            <span class="btn-text">Send Message</span>
+                            <div class="btn-subtitle">We'll respond within 2 minutes</div>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Alternative Contact Methods -->
+    <section class="contact-methods">
+        <div class="container">
+            <div class="methods-header">
+                <h2>Other ways to reach us</h2>
+                <p>Choose the method that works best for you</p>
+            </div>
+            
+            <div class="methods-grid">
+                <div class="method-card">
+                    <div class="method-icon">💬</div>
+                    <h3>Live Chat</h3>
+                    <p>Instant help from our travel experts</p>
+                    <div class="method-status">
+                        <span class="status-dot online"></span>
+                        <span>Available now</span>
+                    </div>
+                    <button class="method-btn" onclick="openLiveChat()">Start Chat</button>
+                </div>
+                
+                <div class="method-card">
+                    <div class="method-icon">📞</div>
+                    <h3>Phone Support</h3>
+                    <p>Speak directly with a travel advisor</p>
+                    <div class="method-info">
+                        <strong>+1 (555) 123-TRIP</strong>
+                        <span>24/7 availability</span>
+                    </div>
+                    <button class="method-btn" onclick="callSupport()">Call Now</button>
+                </div>
+                
+                <div class="method-card">
+                    <div class="method-icon">📱</div>
+                    <h3>WhatsApp</h3>
+                    <p>Quick messages and photo sharing</p>
+                    <div class="method-info">
+                        <span>Perfect for sharing screenshots</span>
+                        <span>or travel photos</span>
+                    </div>
+                    <button class="method-btn" onclick="openWhatsApp()">Message Us</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Help & FAQ Section -->
+    <section class="faq-section">
+        <div class="container">
+            <div class="faq-header">
+                <h2>Help Center & FAQ</h2>
+                <p>Find answers instantly or search for specific topics</p>
+                
+                <div class="faq-search">
+                    <div class="search-container">
+                        <input type="text" id="faqSearch" placeholder="Search help articles and FAQs..." onkeyup="searchFAQ()">
+                        <div class="search-icon">🔍</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="faq-categories">
+                <div class="faq-category" data-category="planning">
+                    <h3>🗺️ Trip Planning</h3>
+                    <div class="faq-list">
+                        <div class="faq-item" onclick="toggleFAQ(this)">
+                            <div class="faq-question">
+                                <span>How far in advance should I book my trip?</span>
+                                <span class="faq-toggle">+</span>
+                            </div>
+                            <div class="faq-answer">
+                                <p>For international trips, we recommend booking 2-3 months in advance for the best prices and availability. Domestic trips can be booked 4-6 weeks ahead. However, our AI can find great deals even for last-minute bookings!</p>
+                            </div>
+                        </div>
+                        
+                        <div class="faq-item" onclick="toggleFAQ(this)">
+                            <div class="faq-question">
+                                <span>Can I modify my AI-generated itinerary?</span>
+                                <span class="faq-toggle">+</span>
+                            </div>
+                            <div class="faq-answer">
+                                <p>Absolutely! All our itineraries are fully customizable. You can add, remove, or modify any activities, accommodations, or destinations. Our travel experts can help you make changes that fit your preferences perfectly.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="faq-item" onclick="toggleFAQ(this)">
+                            <div class="faq-question">
+                                <span>Do you provide travel insurance recommendations?</span>
+                                <span class="faq-toggle">+</span>
+                            </div>
+                            <div class="faq-answer">
+                                <p>Yes! We partner with leading travel insurance providers to offer comprehensive coverage options. Our experts can recommend the best policy based on your destination, trip duration, and activities planned.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-category" data-category="booking">
+                    <h3>💳 Booking & Payments</h3>
+                    <div class="faq-list">
+                        <div class="faq-item" onclick="toggleFAQ(this)">
+                            <div class="faq-question">
+                                <span>What payment methods do you accept?</span>
+                                <span class="faq-toggle">+</span>
+                            </div>
+                            <div class="faq-answer">
+                                <p>We accept all major credit cards (Visa, MasterCard, American Express), PayPal, Apple Pay, Google Pay, and bank transfers. All payments are secured with 256-bit SSL encryption.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="faq-item" onclick="toggleFAQ(this)">
+                            <div class="faq-question">
+                                <span>What's your cancellation policy?</span>
+                                <span class="faq-toggle">+</span>
+                            </div>
+                            <div class="faq-answer">
+                                <p>Cancellation policies vary by service provider. Most hotels offer free cancellation up to 24-48 hours before check-in. Flights typically have different rules. We'll clearly show all cancellation terms before you book.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="faq-item" onclick="toggleFAQ(this)">
+                            <div class="faq-question">
+                                <span>Can I pay in installments for expensive trips?</span>
+                                <span class="faq-toggle">+</span>
+                            </div>
+                            <div class="faq-answer">
+                                <p>Yes! For trips over $2,000, we offer flexible payment plans. You can split your payment into 2-4 installments with no additional fees. This makes luxury travel more accessible and helps with budgeting.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-category" data-category="technical">
+                    <h3>⚙️ Technical Support</h3>
+                    <div class="faq-list">
+                        <div class="faq-item" onclick="toggleFAQ(this)">
+                            <div class="faq-question">
+                                <span>Why isn't the AI working on my device?</span>
+                                <span class="faq-toggle">+</span>
+                            </div>
+                            <div class="faq-answer">
+                                <p>Most AI issues are browser-related. Try clearing your cache, updating your browser, or switching to Chrome/Safari. If problems persist, our technical team can help via live chat.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="faq-item" onclick="toggleFAQ(this)">
+                            <div class="faq-question">
+                                <span>How do I reset my account password?</span>
+                                <span class="faq-toggle">+</span>
+                            </div>
+                            <div class="faq-answer">
+                                <p>Click "Forgot Password" on the login page, enter your email, and we'll send reset instructions. If you don't receive the email within 5 minutes, check your spam folder or contact support.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-category" data-category="account">
+                    <h3>👤 Account & Profile</h3>
+                    <div class="faq-list">
+                        <div class="faq-item" onclick="toggleFAQ(this)">
+                            <div class="faq-question">
+                                <span>How do I update my travel preferences?</span>
+                                <span class="faq-toggle">+</span>
+                            </div>
+                            <div class="faq-answer">
+                                <p>Go to your Profile Settings and click "Travel Preferences". You can update your preferred destinations, budget range, travel style, and activity interests. This helps our AI create better recommendations.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="faq-item" onclick="toggleFAQ(this)">
+                            <div class="faq-question">
+                                <span>Can I save multiple trip ideas?</span>
+                                <span class="faq-toggle">+</span>
+                            </div>
+                            <div class="faq-answer">
+                                <p>Yes! You can save unlimited trip ideas to your "My Trips" dashboard. Each saved trip includes your itinerary, bookings, and notes. Perfect for planning multiple vacations or comparing options.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="help-guides">
+                <div class="guides-header">
+                    <h3>Step-by-step guides</h3>
+                    <p>Learn how to use our platform features</p>
+                </div>
+                
+                <div class="guides-grid">
+                    <div class="guide-card" onclick="openGuide('ai-magic')">
+                        <div class="guide-icon">🧠</div>
+                        <h4>Using AI Magic</h4>
+                        <p>Complete guide to creating trips with AI</p>
+                        <span class="guide-link">Read Guide →</span>
+                    </div>
+                    
+                    <div class="guide-card" onclick="openGuide('custom-quiz')">
+                        <div class="guide-icon">🎨</div>
+                        <h4>Custom Quiz Builder</h4>
+                        <p>How to answer questions for perfect trips</p>
+                        <span class="guide-link">Read Guide →</span>
+                    </div>
+                    
+                    <div class="guide-card" onclick="openGuide('booking-process')">
+                        <div class="guide-icon">💳</div>
+                        <h4>Booking Your Trip</h4>
+                        <p>Step-by-step booking and payment process</p>
+                        <span class="guide-link">Read Guide →</span>
+                    </div>
+                    
+                    <div class="guide-card" onclick="openGuide('managing-trips')">
+                        <div class="guide-icon">📋</div>
+                        <h4>Managing Your Trips</h4>
+                        <p>How to modify, cancel, or track bookings</p>
+                        <span class="guide-link">Read Guide →</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Success Stories -->
+    <section class="success-stories">
+        <div class="container">
+            <div class="stories-header">
+                <h2>How we've helped travelers like you</h2>
+                <p>Real stories from our support team</p>
+            </div>
+            
+            <div class="stories-grid">
+                <div class="story-card">
+                    <div class="story-header">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=50&h=50&fit=crop&crop=face" alt="Customer" class="customer-avatar">
+                        <div class="customer-info">
+                            <h4>Mike Chen</h4>
+                            <div class="story-rating">⭐⭐⭐⭐⭐</div>
+                        </div>
+                    </div>
+                    <div class="story-content">
+                        <p>"My flight got cancelled 2 hours before departure. Sarah from support found me a new flight within 10 minutes and even got me an upgrade. Incredible service!"</p>
+                        <div class="story-tag">Emergency Support</div>
+                    </div>
+                </div>
+                
+                <div class="story-card">
+                    <div class="story-header">
+                        <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=50&h=50&fit=crop&crop=face" alt="Customer" class="customer-avatar">
+                        <div class="customer-info">
+                            <h4>Emma Rodriguez</h4>
+                            <div class="story-rating">⭐⭐⭐⭐⭐</div>
+                        </div>
+                    </div>
+                    <div class="story-content">
+                        <p>"I was overwhelmed planning my honeymoon. The team helped me customize the perfect romantic itinerary for Bali. Every detail was perfect!"</p>
+                        <div class="story-tag">Trip Planning</div>
+                    </div>
+                </div>
+                
+                <div class="story-card">
+                    <div class="story-header">
+                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face" alt="Customer" class="customer-avatar">
+                        <div class="customer-info">
+                            <h4>David Park</h4>
+                            <div class="story-rating">⭐⭐⭐⭐⭐</div>
+                        </div>
+                    </div>
+                    <div class="story-content">
+                        <p>"The AI wasn't working on my phone. Support fixed it in 2 minutes via chat and even helped me plan my entire Europe trip. Amazing!"</p>
+                        <div class="story-tag">Technical Support</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>TravelAI</h3>
+                    <p>Turn your travel dreams into reality with AI-powered trip planning.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="flights.html">Flights</a></li>
+                        <li><a href="hotels.html">Hotels</a></li>
+                        <li><a href="itinerary-master-hub.html">Itineraries</a></li>
+                        <li><a href="packages.html">Packages</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="contact.html">Help & Contact</a></li>
+                        <li><a href="blog.html">Travel Blog</a></li>
+                        <li><a href="legal.html">Legal</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 TravelAI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="contact-script.js"></script>
+</body>
+</html>

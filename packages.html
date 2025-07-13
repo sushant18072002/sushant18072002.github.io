@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ready Packages | TravelAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="packages-styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav-container">
+        <div class="navbar">
+            <div class="logo">TravelAI</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="flights.html">Flights</a></li>
+                <li><a href="hotels.html">Hotels</a></li>
+                <li><a href="itinerary-master-hub.html">Itineraries</a></li>
+                <li><a href="packages.html" class="active">Packages</a></li>
+            </ul>
+            <a href="auth.html" class="nav-cta">Get Started</a>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <section class="page-header">
+        <div class="container">
+            <div class="header-content">
+                <div class="breadcrumb">
+                    <a href="itinerary-master-hub.html">← Back to Itineraries</a>
+                </div>
+                <div class="planning-tabs">
+                    <button class="tab-btn" onclick="location.href='itinerary-ai.html'">🤖 AI Builder</button>
+                    <button class="tab-btn active">📦 Packages</button>
+                    <button class="tab-btn" onclick="location.href='custom-builder.html'">🛠️ Custom</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Packages Main -->
+    <section class="packages-main">
+        <div class="container">
+            <div class="packages-header">
+                <h1>🌍 Ready-to-Go Packages</h1>
+                <p>Complete day-by-day itineraries. Just book and travel.</p>
+            </div>
+            
+            <!-- Search Bar (Flight-style) -->
+            <div class="search-section">
+                <div class="search-bar">
+                    <div class="search-input">
+                        <input type="text" id="searchInput" placeholder="Where do you want to go?" onkeyup="searchPackages()">
+                        <button class="search-btn">🔍</button>
+                    </div>
+                    <div class="quick-filters">
+                        <button class="filter-btn active" onclick="filterBy('all')">All</button>
+                        <button class="filter-btn" onclick="filterBy('europe')">Europe</button>
+                        <button class="filter-btn" onclick="filterBy('asia')">Asia</button>
+                        <button class="filter-btn" onclick="filterBy('americas')">Americas</button>
+                        <select class="sort-select" onchange="sortPackages()">
+                            <option value="popular">Most Popular</option>
+                            <option value="price-low">Price: Low to High</option>
+                            <option value="duration">Duration</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Packages Grid -->
+            <div class="packages-grid" id="packagesGrid">
+                <!-- Package cards will be populated by JavaScript -->
+            </div>
+            
+            <div class="results-footer">
+                <div class="results-count" id="resultsCount">Showing 8 packages</div>
+                <button class="load-more-btn" onclick="loadMorePackages()">Load More</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>TravelAI</h3>
+                    <p>Turn your travel dreams into reality with AI-powered trip planning.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="flights.html">Flights</a></li>
+                        <li><a href="hotels.html">Hotels</a></li>
+                        <li><a href="itinerary-master-hub.html">Itineraries</a></li>
+                        <li><a href="packages.html">Packages</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="contact.html">Help & Contact</a></li>
+                        <li><a href="blog.html">Travel Blog</a></li>
+                        <li><a href="legal.html">Legal</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 TravelAI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="packages-script.js"></script>
+</body>
+</html>

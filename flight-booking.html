@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Your Booking - NYC to Paris | TravelAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="flight-booking-styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav-container">
+        <div class="navbar">
+            <div class="logo">TravelAI</div>
+            <div class="booking-progress">
+                <div class="progress-step completed">
+                    <span class="step-number">1</span>
+                    <span class="step-label">Select</span>
+                </div>
+                <div class="progress-line completed"></div>
+                <div class="progress-step active">
+                    <span class="step-number">2</span>
+                    <span class="step-label">Book</span>
+                </div>
+                <div class="progress-line"></div>
+                <div class="progress-step">
+                    <span class="step-number">3</span>
+                    <span class="step-label">Confirm</span>
+                </div>
+            </div>
+            <div class="security-badge">
+                <span>🔒</span>
+                <span>Secure Checkout</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <section class="breadcrumb">
+        <div class="container">
+            <div class="breadcrumb-nav">
+                <a href="index.html">🏠 Home</a>
+                <span>›</span>
+                <a href="flights.html">Flights</a>
+                <span>›</span>
+                <a href="flight-details.html">NYC → Paris</a>
+                <span>›</span>
+                <span class="current">Booking</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Booking Hero -->
+    <section class="booking-hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="destination-preview">
+                    <img src="https://images.unsplash.com/photo-1502602898536-47ad22581b52?w=1200&h=200&fit=crop" alt="Paris">
+                    <div class="destination-overlay">
+                        <h1>Your Paris Adventure Awaits!</h1>
+                        <p>Just a few more steps to confirm your dream trip</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Booking Content -->
+    <section class="booking-content">
+        <div class="container">
+            <div class="booking-layout">
+                <!-- Main Booking Form -->
+                <div class="booking-form">
+                    <div class="form-section">
+                        <div class="section-header">
+                            <h2>Traveler Information</h2>
+                            <p>Enter details as they appear on your passport</p>
+                        </div>
+                        
+                        <div class="traveler-card">
+                            <div class="traveler-header">
+                                <h3>Adult 1 (Primary Contact)</h3>
+                                <div class="required-badge">Required</div>
+                            </div>
+                            
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="firstName">First Name *</label>
+                                    <input type="text" id="firstName" name="firstName" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="lastName">Last Name *</label>
+                                    <input type="text" id="lastName" name="lastName" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="email">Email Address *</label>
+                                    <input type="email" id="email" name="email" required>
+                                    <small>Confirmation will be sent here</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="phone">Phone Number *</label>
+                                    <input type="tel" id="phone" name="phone" required>
+                                    <small>For important travel updates</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="dateOfBirth">Date of Birth *</label>
+                                    <input type="date" id="dateOfBirth" name="dateOfBirth" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="gender">Gender *</label>
+                                    <select id="gender" name="gender" required>
+                                        <option value="">Select Gender</option>
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+
+                    
+                    <div class="form-section">
+                        <div class="section-header">
+                            <h2>Add-ons (Optional)</h2>
+                            <p>Enhance your trip with these popular options</p>
+                        </div>
+                        
+                        <div class="simple-addons">
+                            <label class="addon-option">
+                                <input type="checkbox" name="insurance" value="47" onchange="updateTotal()">
+                                <span class="addon-checkmark"></span>
+                                <div class="addon-content">
+                                    <div class="addon-header">
+                                        <span class="addon-title">🛡️ Travel Protection</span>
+                                        <span class="addon-price">+$47</span>
+                                    </div>
+                                    <div class="addon-description">Trip cancellation, delays, medical coverage</div>
+                                </div>
+                            </label>
+                            
+                            <label class="addon-option">
+                                <input type="checkbox" name="experiences" value="239" onchange="updateTotal()">
+                                <span class="addon-checkmark"></span>
+                                <div class="addon-content">
+                                    <div class="addon-header">
+                                        <span class="addon-title">🗼 Paris Highlights Tour</span>
+                                        <span class="addon-price">+$239</span>
+                                    </div>
+                                    <div class="addon-description">Eiffel Tower, Louvre, Seine cruise (3 days)</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <div class="section-header">
+                            <h2>Payment Information</h2>
+                            <p>Your payment is secure and encrypted</p>
+                        </div>
+                        
+                        <div class="payment-tabs">
+                            <button class="payment-tab active" onclick="selectPaymentMethod('card')">💳 Card</button>
+                            <button class="payment-tab" onclick="selectPaymentMethod('paypal')">🅿️ PayPal</button>
+                        </div>
+                        
+                        <div class="payment-form" id="cardPaymentForm">
+                            <div class="form-grid">
+                                <div class="form-group full-width">
+                                    <label for="cardNumber">Card Number *</label>
+                                    <input type="text" id="cardNumber" name="cardNumber" placeholder="1234 5678 9012 3456" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="expiryDate">Expiry Date *</label>
+                                    <input type="text" id="expiryDate" name="expiryDate" placeholder="MM/YY" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="cvv">CVV *</label>
+                                    <input type="text" id="cvv" name="cvv" placeholder="123" required>
+                                </div>
+                                
+                                <div class="form-group full-width">
+                                    <label for="cardName">Name on Card *</label>
+                                    <input type="text" id="cardName" name="cardName" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <div class="terms-section">
+                            <label class="checkbox-option">
+                                <input type="checkbox" id="agreeTerms" required>
+                                <span class="checkmark"></span>
+                                <span>I agree to the <a href="legal.html">Terms & Conditions</a> and <a href="legal.html">Privacy Policy</a></span>
+                            </label>
+                            
+                            <label class="checkbox-option">
+                                <input type="checkbox" id="marketingEmails">
+                                <span class="checkmark"></span>
+                                <span>Send me travel deals and updates (optional)</span>
+                            </label>
+                            
+                            <label class="checkbox-option">
+                                <input type="checkbox" id="smsUpdates">
+                                <span class="checkmark"></span>
+                                <span>Send SMS flight updates (optional)</span>
+                            </label>
+                            
+                            <div class="special-requests-compact">
+                                <details>
+                                    <summary>Special requests (meal, accessibility)</summary>
+                                    <div class="requests-content">
+                                        <select name="mealPreference">
+                                            <option value="">Standard meal</option>
+                                            <option value="vegetarian">Vegetarian</option>
+                                            <option value="vegan">Vegan</option>
+                                            <option value="gluten-free">Gluten-free</option>
+                                        </select>
+                                        <label class="simple-checkbox">
+                                            <input type="checkbox" name="wheelchairAssistance">
+                                            <span>Wheelchair assistance</span>
+                                        </label>
+                                    </div>
+                                </details>
+                            </div>
+                        </div>
+                        
+                        <div class="booking-actions">
+                            <button type="button" class="back-btn" onclick="goBack()">
+                                <span>← Back to Flight Details</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Booking Summary -->
+                <div class="booking-summary">
+                    <div class="summary-card">
+                        <div class="summary-header">
+                            <h3>Booking Summary</h3>
+                            <button class="edit-btn" onclick="editBooking()">Edit</button>
+                        </div>
+                        
+                        <div class="flight-summary-compact">
+                            <div class="flight-route-compact">
+                                <div class="route-info">
+                                    <span class="route">NYC → Paris</span>
+                                    <span class="dates">Dec 15-22 • 1 Adult</span>
+                                </div>
+                                <div class="airline-compact">
+                                    <img src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=24&h=24&fit=crop" alt="Delta">
+                                    <span>Delta DL1234</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="price-breakdown" id="priceBreakdown">
+                            <div class="price-item">
+                                <span>Flight (1 Adult)</span>
+                                <span>$599</span>
+                            </div>
+                            <div class="price-item">
+                                <span>Taxes & Fees</span>
+                                <span>$89</span>
+                            </div>
+                            <div class="price-item discount">
+                                <span>Early Bird Discount</span>
+                                <span>-$50</span>
+                            </div>
+                            <div class="price-item" id="addonsItem" style="display: none;">
+                                <span>Add-ons</span>
+                                <span id="addonsPrice">$0</span>
+                            </div>
+                            <div class="price-total">
+                                <span>Total</span>
+                                <span id="totalPrice">$638</span>
+                            </div>
+                        </div>
+                        
+                        <div class="price-protection-compact">
+                            <div class="protection-info">
+                                <span class="protection-icon">🔒</span>
+                                <span class="protection-text">Price locked: <span id="priceTimer">14:59</span></span>
+                            </div>
+                        </div>
+                        
+
+                        
+                        <div class="urgency-compact">
+                            <span class="urgency-icon">⏰</span>
+                            <span class="urgency-text">Only 2 seats left at this price</span>
+                        </div>
+                        
+                        <button class="complete-booking-btn" onclick="completeBooking()" id="completeBookingBtn">
+                            <span class="btn-icon">🔒</span>
+                            <span class="btn-text">Complete Secure Booking</span>
+                            <span class="btn-subtext" id="bookingBtnTotal">$638 Total</span>
+                        </button>
+                        
+                        <div class="security-badges">
+                            <div class="badge">🛡️ SSL Encrypted</div>
+                            <div class="badge">💳 Secure Payment</div>
+                            <div class="badge">📞 24/7 Support</div>
+                        </div>
+                    </div>
+                    
+                    <div class="trust-signals">
+                        <div class="trust-item">
+                            <div class="trust-icon">⭐</div>
+                            <div class="trust-content">
+                                <strong>4.8/5 Rating</strong>
+                                <p>Based on 12,847 bookings</p>
+                            </div>
+                        </div>
+                        
+                        <div class="trust-item">
+                            <div class="trust-icon">✅</div>
+                            <div class="trust-content">
+                                <strong>Free Cancellation</strong>
+                                <p>Cancel within 24 hours</p>
+                            </div>
+                        </div>
+                        
+                        <div class="trust-item">
+                            <div class="trust-icon">🏆</div>
+                            <div class="trust-content">
+                                <strong>Best Price Guarantee</strong>
+                                <p>We'll match any lower price</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recent Bookings Social Proof -->
+    <section class="social-proof">
+        <div class="container">
+            <div class="social-proof-header">
+                <h3>Join thousands of happy travelers</h3>
+                <p>Recent bookings from travelers like you</p>
+            </div>
+            
+            <div class="recent-bookings">
+                <div class="booking-notification">
+                    <div class="notification-avatar">
+                        <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=40&h=40&fit=crop&crop=face" alt="Sarah">
+                    </div>
+                    <div class="notification-content">
+                        <strong>Sarah M.</strong> just booked NYC → London
+                        <span class="time-ago">2 minutes ago</span>
+                    </div>
+                </div>
+                
+                <div class="booking-notification">
+                    <div class="notification-avatar">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face" alt="Mike">
+                    </div>
+                    <div class="notification-content">
+                        <strong>Mike R.</strong> just booked NYC → Tokyo
+                        <span class="time-ago">5 minutes ago</span>
+                    </div>
+                </div>
+                
+                <div class="booking-notification">
+                    <div class="notification-avatar">
+                        <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face" alt="Emma">
+                    </div>
+                    <div class="notification-content">
+                        <strong>Emma L.</strong> just booked NYC → Paris
+                        <span class="time-ago">8 minutes ago</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="booking-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <a href="contact.html">Need Help?</a>
+                    <a href="legal.html">Terms & Conditions</a>
+                    <a href="legal.html">Privacy Policy</a>
+                </div>
+                <div class="footer-security">
+                    <span>🔒 Your information is secure and encrypted</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="flight-booking-script.js"></script>
+</body>
+</html>

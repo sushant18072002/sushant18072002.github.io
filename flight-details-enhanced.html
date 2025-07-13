@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Details - American Airlines AA123 | TravelAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary-900: #0F172A; --primary-800: #1E293B; --primary-700: #334155; --primary-600: #475569; --primary-400: #94A3B8; --primary-100: #F1F5F9;
+            --ocean-blue: #1E40AF; --mirage-blue: #4b90e6; --governor-bay: #2553eb; --emerald: #10B981; --premium-amber: #F59E0B; --soft-coral: #FF6B6B;
+            --gradient-primary: linear-gradient(135deg, var(--governor-bay), var(--ocean-blue));
+            --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        body { font-family: 'Inter', sans-serif; line-height: 1.5; background: var(--primary-50); }
+
+        /* NAVIGATION */
+        .nav-container {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background: rgba(248, 250, 252, 0.95); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2); height: 70px;
+        }
+        .navbar {
+            max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; height: 100%;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo {
+            font-size: 1.4rem; font-weight: 800; color: var(--primary-900);
+            background: var(--gradient-primary);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        /* BREADCRUMBS */
+        .breadcrumbs {
+            background: white; padding: 1rem 1.5rem; margin-top: 70px; border-bottom: 1px solid var(--primary-200);
+        }
+        .breadcrumb-nav {
+            max-width: 1280px; margin: 0 auto; display: flex; align-items: center; gap: 0.5rem; 
+            font-size: 0.9rem; color: var(--primary-600);
+        }
+        .breadcrumb-nav a { color: var(--governor-bay); text-decoration: none; }
+
+        /* MAIN CONTENT */
+        .main-content { padding-top: 20px; min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+
+        /* ENHANCED FLIGHT HEADER */
+        .flight-header {
+            background: white; border-radius: 1rem; padding: 2rem; margin-bottom: 2rem;
+            box-shadow: var(--shadow-soft); position: relative;
+        }
+        .flight-header::before {
+            content: '🏆 Most Popular Choice';
+            position: absolute; top: -0.5rem; right: 1rem;
+            background: var(--emerald); color: white; padding: 0.25rem 0.75rem;
+            border-radius: 50px; font-size: 0.75rem; font-weight: 600;
+        }
+        .flight-route {
+            display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem;
+        }
+        .route-point { text-align: center; }
+        .route-time { font-size: 2rem; font-weight: 700; color: var(--primary-900); }
+        .route-code { font-size: 1.2rem; color: var(--primary-600); margin-bottom: 0.5rem; }
+        .route-city { color: var(--primary-700); }
+        .route-line {
+            flex: 1; height: 3px; background: var(--gradient-primary);
+            margin: 0 2rem; position: relative;
+        }
+        .route-plane {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: white; border-radius: 50%; width: 40px; height: 40px;
+            display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* FLIGHT INFO LAYOUT */
+        .flight-info { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; }
+        .flight-details {
+            background: white; border-radius: 1rem; padding: 2rem;
+            box-shadow: var(--shadow-soft);
+        }
+        .section-title { font-size: 1.3rem; font-weight: 600; color: var(--primary-900); margin-bottom: 1.5rem; }
+        .detail-item {
+            display: flex; justify-content: space-between; padding: 1rem 0;
+            border-bottom: 1px solid var(--primary-200);
+        }
+        .detail-item:last-child { border-bottom: none; }
+
+        /* ENHANCED BOOKING SIDEBAR */
+        .booking-sidebar {
+            background: white; border-radius: 1rem; padding: 2rem; height: fit-content;
+            box-shadow: var(--shadow-soft); position: sticky; top: 100px;
+        }
+        .price-display { font-size: 2rem; font-weight: 800; color: var(--governor-bay); margin-bottom: 1rem; }
+        .price-breakdown { margin-bottom: 2rem; }
+        .price-item {
+            display: flex; justify-content: space-between; margin-bottom: 0.5rem;
+            color: var(--primary-600);
+        }
+        .book-btn {
+            width: 100%; background: var(--gradient-primary);
+            color: white; border: none; padding: 1rem; border-radius: 0.75rem;
+            font-weight: 600; cursor: pointer; font-size: 1.1rem;
+            transition: all 0.3s ease; position: relative; overflow: hidden;
+        }
+        .book-btn::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        .book-btn:hover::before { left: 100%; }
+        .book-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(37, 83, 235, 0.6); }
+
+        /* URGENCY PSYCHOLOGY */
+        .urgency-banner {
+            background: linear-gradient(135deg, var(--soft-coral), #FF8E8E);
+            color: white; padding: 1rem; border-radius: 0.75rem; margin-bottom: 1rem;
+            text-align: center; animation: urgency-pulse 2s infinite;
+        }
+        @keyframes urgency-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        /* TRUST INDICATORS */
+        .trust-indicators {
+            display: flex; justify-content: center; gap: 1rem; margin: 1rem 0;
+            padding: 1rem; background: rgba(16, 185, 129, 0.1); border-radius: 0.5rem;
+        }
+        .trust-item {
+            text-align: center; font-size: 0.8rem; color: var(--emerald); font-weight: 600;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .flight-info { grid-template-columns: 1fr; }
+            .booking-sidebar { position: static; order: -1; }
+            .flight-route { flex-direction: column; gap: 1rem; }
+            .route-line { width: 3px; height: 50px; margin: 1rem 0; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-container">
+        <div class="navbar">
+            <div class="logo">TravelAI</div>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <button onclick="history.back()" style="background: var(--primary-100); color: var(--primary-700); border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer;">← Back to Results</button>
+                <a href="auth.html" style="background: var(--gradient-primary); color: white; padding: 0.5rem 1.5rem; border-radius: 0.5rem; text-decoration: none; font-weight: 600;">Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="breadcrumbs">
+        <nav class="breadcrumb-nav">
+            <a href="index.html">Home</a>
+            <span>›</span>
+            <a href="flights.html">Flights</a>
+            <span>›</span>
+            <span>Flight Details</span>
+        </nav>
+    </div>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="flight-header">
+                <div class="flight-route">
+                    <div class="route-point">
+                        <div class="route-code">JFK</div>
+                        <div class="route-city">New York</div>
+                        <div class="route-time">8:15 AM</div>
+                    </div>
+                    <div class="route-line">
+                        <div class="route-plane">✈️</div>
+                    </div>
+                    <div class="route-point">
+                        <div class="route-code">NRT</div>
+                        <div class="route-city">Tokyo</div>
+                        <div class="route-time">2:40 PM+1</div>
+                    </div>
+                </div>
+                <div style="text-align: center;">
+                    <h1 style="font-size: 1.5rem; font-weight: 600; color: var(--primary-900);">American Airlines Flight AA123</h1>
+                    <p style="color: var(--primary-600);">Direct Flight • 14h 25m • Boeing 787-9 Dreamliner</p>
+                </div>
+            </div>
+
+            <div class="flight-info">
+                <div>
+                    <div class="flight-details">
+                        <h2 class="section-title">✈️ Flight Information</h2>
+                        <div class="detail-item">
+                            <span>Aircraft</span>
+                            <span>Boeing 787-9 Dreamliner</span>
+                        </div>
+                        <div class="detail-item">
+                            <span>Flight Duration</span>
+                            <span>14 hours 25 minutes</span>
+                        </div>
+                        <div class="detail-item">
+                            <span>Distance</span>
+                            <span>6,740 miles</span>
+                        </div>
+                        <div class="detail-item">
+                            <span>Meal Service</span>
+                            <span>Dinner & Breakfast included</span>
+                        </div>
+                        <div class="detail-item">
+                            <span>Entertainment</span>
+                            <span>Personal screens with 300+ movies</span>
+                        </div>
+                        <div class="detail-item">
+                            <span>WiFi</span>
+                            <span>Available ($19.95)</span>
+                        </div>
+                    </div>
+
+                    <div class="flight-details" style="margin-top: 2rem;">
+                        <h2 class="section-title">🧳 Baggage Policy</h2>
+                        <div class="detail-item">
+                            <span>Carry-on</span>
+                            <span>1 bag (22" x 14" x 9") - Included</span>
+                        </div>
+                        <div class="detail-item">
+                            <span>Personal Item</span>
+                            <span>1 small bag - Included</span>
+                        </div>
+                        <div class="detail-item">
+                            <span>Checked Bag (1st)</span>
+                            <span>50 lbs - $75</span>
+                        </div>
+                        <div class="detail-item">
+                            <span>Checked Bag (2nd)</span>
+                            <span>50 lbs - $100</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="booking-sidebar">
+                    <!-- URGENCY BANNER -->
+                    <div class="urgency-banner">
+                        ⏰ Only 3 seats left at this price!
+                    </div>
+                    
+                    <div class="price-display">$1,299</div>
+                    <div class="price-breakdown">
+                        <div class="price-item">
+                            <span>Base Fare</span>
+                            <span>$1,150</span>
+                        </div>
+                        <div class="price-item">
+                            <span>Taxes & Fees</span>
+                            <span>$149</span>
+                        </div>
+                        <hr style="margin: 1rem 0;">
+                        <div class="price-item" style="font-weight: 600; color: var(--primary-900);">
+                            <span>Total</span>
+                            <span>$1,299</span>
+                        </div>
+                    </div>
+                    
+                    <!-- TRUST INDICATORS -->
+                    <div class="trust-indicators">
+                        <div class="trust-item">
+                            <i class="fas fa-lock" style="font-size: 1.2rem;"></i>
+                            <div>SSL Secure</div>
+                        </div>
+                        <div class="trust-item">
+                            <i class="fas fa-shield-alt" style="font-size: 1.2rem;"></i>
+                            <div>Protected</div>
+                        </div>
+                        <div class="trust-item">
+                            <i class="fas fa-award" style="font-size: 1.2rem;"></i>
+                            <div>Best Price</div>
+                        </div>
+                    </div>
+                    
+                    <button class="book-btn" onclick="bookFlight()">Book This Flight</button>
+                    <div style="text-align: center; margin-top: 1rem; font-size: 0.8rem; color: var(--primary-600);">
+                        ✅ Free cancellation within 24 hours
+                    </div>
+                    
+                    <!-- SOCIAL PROOF -->
+                    <div style="background: rgba(37, 83, 235, 0.05); padding: 1rem; border-radius: 0.5rem; margin-top: 1rem; border-left: 4px solid var(--governor-bay);">
+                        <div style="font-size: 0.9rem; color: var(--primary-700);">
+                            <strong>127 people</strong> viewed this flight in the last hour
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function bookFlight() {
+            // Show loading state
+            event.target.innerHTML = '⏳ Processing...';
+            event.target.disabled = true;
+            
+            // Redirect to booking
+            setTimeout(() => {
+                location.href = 'booking.html?flight=AA123';
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

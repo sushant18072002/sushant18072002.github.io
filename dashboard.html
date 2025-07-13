@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - TravelAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary-900: #0F172A; --primary-800: #1E293B; --primary-700: #334155; --primary-600: #475569; --primary-400: #94A3B8; --primary-100: #F1F5F9;
+            --ocean-blue: #1E40AF; --mirage-blue: #4b90e6; --governor-bay: #2553eb; --emerald: #10B981; --premium-amber: #F59E0B; --soft-coral: #FF6B6B;
+        }
+
+        body { font-family: 'Inter', sans-serif; line-height: 1.5; background: var(--primary-50); }
+
+        /* Navigation */
+        .nav-container {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background: rgba(248, 250, 252, 0.95); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2); height: 60px;
+        }
+        .navbar {
+            max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; height: 100%;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo {
+            font-size: 1.4rem; font-weight: 800; color: var(--primary-900);
+            background: linear-gradient(135deg, var(--governor-bay), var(--mirage-blue));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .nav-links { display: flex; gap: 1rem; list-style: none; }
+        .nav-links a {
+            text-decoration: none; color: var(--primary-700); font-weight: 500; padding: 0.5rem 1rem;
+            border-radius: 0.5rem; transition: all 0.3s ease; font-size: 0.9rem;
+        }
+        .nav-links a:hover, .nav-links a.active { background: rgba(37, 83, 235, 0.1); color: var(--governor-bay); }
+        .user-menu {
+            display: flex; align-items: center; gap: 1rem;
+        }
+        .notification-btn {
+            position: relative; background: none; border: none; color: var(--primary-700);
+            font-size: 1.2rem; cursor: pointer; padding: 0.5rem;
+        }
+        .notification-badge {
+            position: absolute; top: 0; right: 0; background: var(--soft-coral);
+            color: white; border-radius: 50%; width: 18px; height: 18px;
+            font-size: 0.7rem; display: flex; align-items: center; justify-content: center;
+        }
+        .quick-search {
+            position: relative; margin-right: 1rem;
+        }
+        .quick-search input {
+            padding: 0.5rem 1rem; border: 2px solid var(--primary-200); border-radius: 50px;
+            width: 250px; font-size: 0.9rem;
+        }
+        .quick-search input:focus { outline: none; border-color: var(--governor-bay); }
+        .user-avatar {
+            width: 36px; height: 36px; background: linear-gradient(135deg, var(--governor-bay), var(--mirage-blue));
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 600; cursor: pointer;
+        }
+
+        /* Main Content */
+        .main-content { padding-top: 80px; min-height: 100vh; }
+        .container { max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; }
+
+        /* Dashboard Header */
+        .dashboard-header { margin-bottom: 2rem; }
+        .welcome-section {
+            background: linear-gradient(135deg, var(--governor-bay), var(--mirage-blue));
+            color: white; padding: 2rem; border-radius: 1rem; margin-bottom: 2rem;
+        }
+        .welcome-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .welcome-subtitle { opacity: 0.9; font-size: 1.1rem; }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .action-card {
+            background: white; padding: 1.5rem; border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); transition: all 0.3s ease;
+            cursor: pointer; text-align: center;
+        }
+        .action-card:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15); }
+        .action-icon {
+            width: 50px; height: 50px; margin: 0 auto 1rem;
+            background: linear-gradient(135deg, var(--governor-bay), var(--mirage-blue));
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; color: white;
+        }
+        .action-title { font-weight: 600; color: var(--primary-900); margin-bottom: 0.5rem; }
+        .action-description { font-size: 0.9rem; color: var(--primary-600); }
+
+        /* Dashboard Grid */
+        .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; }
+
+        /* Main Content Area */
+        .main-section { display: flex; flex-direction: column; gap: 2rem; }
+
+        /* Trips Section */
+        .trips-section {
+            background: white; padding: 2rem; border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        .section-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;
+        }
+        .section-title { font-size: 1.3rem; font-weight: 600; color: var(--primary-900); }
+        .view-all-btn {
+            color: var(--governor-bay); text-decoration: none; font-weight: 500;
+            padding: 0.5rem 1rem; border-radius: 0.5rem; transition: all 0.3s ease;
+        }
+        .view-all-btn:hover { background: rgba(37, 83, 235, 0.1); }
+
+        .trip-card {
+            border: 1px solid var(--primary-200); border-radius: 0.75rem;
+            padding: 1.5rem; margin-bottom: 1rem; transition: all 0.3s ease;
+        }
+        .trip-card:hover { border-color: var(--governor-bay); box-shadow: 0 4px 15px rgba(37, 83, 235, 0.1); }
+        .trip-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
+        .trip-title { font-weight: 600; color: var(--primary-900); font-size: 1.1rem; }
+        .trip-status {
+            padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.8rem; font-weight: 500;
+        }
+        .status-confirmed { background: rgba(16, 185, 129, 0.1); color: var(--emerald); }
+        .status-pending { background: rgba(245, 158, 11, 0.1); color: var(--premium-amber); }
+        .trip-details { display: flex; gap: 2rem; margin-bottom: 1rem; font-size: 0.9rem; color: var(--primary-600); }
+        .trip-actions { display: flex; gap: 1rem; }
+        .trip-btn {
+            padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.8rem; font-weight: 500;
+            text-decoration: none; transition: all 0.3s ease; border: none; cursor: pointer;
+        }
+        .btn-primary { background: var(--governor-bay); color: white; }
+        .btn-secondary { background: var(--primary-100); color: var(--primary-700); }
+        .trip-btn:hover { transform: translateY(-1px); }
+
+        /* Sidebar */
+        .sidebar { display: flex; flex-direction: column; gap: 2rem; }
+
+        /* Planning Progress */
+        .planning-section {
+            background: white; padding: 1.5rem; border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        .progress-item {
+            padding: 1rem; border: 1px solid var(--primary-200); border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+        .progress-title { font-weight: 500; color: var(--primary-900); }
+        .progress-percentage { font-size: 0.8rem; color: var(--governor-bay); font-weight: 600; }
+        .progress-bar {
+            width: 100%; height: 6px; background: var(--primary-200); border-radius: 3px; overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%; background: linear-gradient(90deg, var(--governor-bay), var(--mirage-blue));
+            border-radius: 3px; transition: width 0.5s ease;
+        }
+        .progress-actions { margin-top: 0.5rem; }
+        .continue-btn {
+            background: var(--governor-bay); color: white; border: none;
+            padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.8rem;
+            cursor: pointer; transition: all 0.3s ease;
+        }
+        .continue-btn:hover { background: var(--ocean-blue); }
+
+        /* Recommendations */
+        .recommendations-section {
+            background: white; padding: 1.5rem; border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        .recommendation-card {
+            display: flex; gap: 1rem; padding: 1rem; border: 1px solid var(--primary-200);
+            border-radius: 0.5rem; margin-bottom: 1rem; transition: all 0.3s ease;
+        }
+        .recommendation-card:hover { border-color: var(--governor-bay); }
+        .rec-image {
+            width: 60px; height: 60px; background: linear-gradient(45deg, var(--primary-100), var(--primary-200));
+            border-radius: 0.5rem; display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
+        }
+        .rec-content { flex: 1; }
+        .rec-title { font-weight: 500; color: var(--primary-900); margin-bottom: 0.25rem; }
+        .rec-description { font-size: 0.8rem; color: var(--primary-600); margin-bottom: 0.5rem; }
+        .rec-price { font-weight: 600; color: var(--governor-bay); }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .quick-actions { grid-template-columns: repeat(2, 1fr); }
+            .trip-details { flex-direction: column; gap: 0.5rem; }
+            .trip-actions { flex-direction: column; }
+            .nav-links { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-container">
+        <div class="navbar">
+            <div class="logo">TravelAI</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="flights.html">Flights</a></li>
+                <li><a href="hotels.html">Hotels</a></li>
+                <li><a href="itinerary-hub.html">Itineraries</a></li>
+                <li><a href="dashboard.html" class="active">Dashboard</a></li>
+            </ul>
+            <div class="user-menu">
+                <div class="quick-search">
+                    <input type="text" placeholder="Quick search..." />
+                </div>
+                <button class="notification-btn">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge">3</span>
+                </button>
+                <div class="user-avatar" onclick="location.href='user-profile.html'">SJ</div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="dashboard-header">
+                <div class="welcome-section">
+                    <h1 class="welcome-title">👋 Good morning, Sarah!</h1>
+                    <p class="welcome-subtitle">Ready to plan your next adventure?</p>
+                </div>
+
+                <div class="quick-actions">
+                    <div class="action-card" onclick="location.href='itinerary.html'">
+                        <div class="action-icon">🎯</div>
+                        <div class="action-title">Plan New Trip</div>
+                        <div class="action-description">AI-powered itinerary builder</div>
+                    </div>
+                    <div class="action-card" onclick="location.href='flights.html'">
+                        <div class="action-icon">✈️</div>
+                        <div class="action-title">Book Flight</div>
+                        <div class="action-description">Find best flight deals</div>
+                    </div>
+                    <div class="action-card" onclick="location.href='hotels.html'">
+                        <div class="action-icon">🏨</div>
+                        <div class="action-title">Find Hotel</div>
+                        <div class="action-description">Perfect accommodations</div>
+                    </div>
+                    <div class="action-card" onclick="location.href='packages.html'">
+                        <div class="action-icon">📦</div>
+                        <div class="action-title">Browse Packages</div>
+                        <div class="action-description">Curated travel packages</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="main-section">
+                    <div class="trips-section">
+                        <div class="section-header">
+                            <h2 class="section-title">🗓️ Upcoming Trips</h2>
+                            <a href="#" class="view-all-btn">View All</a>
+                        </div>
+
+                        <div class="trip-card">
+                            <div class="trip-header">
+                                <div class="trip-title">Japan Adventure</div>
+                                <div class="trip-status status-confirmed">✅ Confirmed</div>
+                            </div>
+                            <div class="trip-details">
+                                <div>📅 Mar 15-22, 2024</div>
+                                <div>✈️ United Airlines</div>
+                                <div>🏨 Hotel Gracery Shinjuku</div>
+                                <div>💰 $2,400</div>
+                            </div>
+                            <div class="trip-actions">
+                                <button class="trip-btn btn-primary">View Itinerary</button>
+                                <button class="trip-btn btn-secondary">Manage Booking</button>
+                                <button class="trip-btn btn-secondary">Download Vouchers</button>
+                            </div>
+                        </div>
+
+                        <div class="trip-card">
+                            <div class="trip-header">
+                                <div class="trip-title">Europe City Hop</div>
+                                <div class="trip-status status-pending">⏳ Payment Pending</div>
+                            </div>
+                            <div class="trip-details">
+                                <div>📅 Apr 10-17, 2024</div>
+                                <div>✈️ Lufthansa</div>
+                                <div>🏨 Multiple Hotels</div>
+                                <div>💰 $2,850</div>
+                            </div>
+                            <div class="trip-actions">
+                                <button class="trip-btn btn-primary">Complete Payment</button>
+                                <button class="trip-btn btn-secondary">Modify Booking</button>
+                                <button class="trip-btn btn-secondary">Contact Support</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="trips-section">
+                        <div class="section-header">
+                            <h2 class="section-title">📅 Past Trips</h2>
+                            <a href="#" class="view-all-btn">View All</a>
+                        </div>
+
+                        <div class="trip-card">
+                            <div class="trip-header">
+                                <div class="trip-title">Bali Romance Getaway</div>
+                                <div class="trip-status status-confirmed">⭐ Completed</div>
+                            </div>
+                            <div class="trip-details">
+                                <div>📅 Jan 5-12, 2024</div>
+                                <div>⭐⭐⭐⭐⭐ Reviewed</div>
+                            </div>
+                            <div class="trip-actions">
+                                <button class="trip-btn btn-secondary">Write Review</button>
+                                <button class="trip-btn btn-secondary">Book Again</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar">
+                    <!-- Travel Statistics -->
+                    <div class="planning-section">
+                        <div class="section-header">
+                            <h3 class="section-title">📊 Travel Stats</h3>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <div style="background: var(--primary-50); padding: 1rem; border-radius: 0.5rem; text-align: center;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: var(--governor-bay);">12</div>
+                                <div style="font-size: 0.8rem; color: var(--primary-600);">Countries</div>
+                            </div>
+                            <div style="background: var(--primary-50); padding: 1rem; border-radius: 0.5rem; text-align: center;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: var(--emerald);">$18.5K</div>
+                                <div style="font-size: 0.8rem; color: var(--primary-600);">Total Spent</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Weather Widget -->
+                    <div class="planning-section">
+                        <div class="section-header">
+                            <h3 class="section-title">🌤️ Destination Weather</h3>
+                        </div>
+                        <div style="background: linear-gradient(135deg, #87CEEB, #4682B4); color: white; padding: 1rem; border-radius: 0.75rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-weight: 600;">Tokyo, Japan</div>
+                                    <div style="font-size: 0.8rem; opacity: 0.9;">Your next destination</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-size: 1.5rem;">22°C</div>
+                                    <div style="font-size: 0.8rem;">☀️ Sunny</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="planning-section">
+                        <div class="section-header">
+                            <h3 class="section-title">🎯 Trip Planning Progress</h3>
+                        </div>
+
+                        <div class="progress-item">
+                            <div class="progress-header">
+                                <div class="progress-title">"Japan Adventure"</div>
+                                <div class="progress-percentage">75%</div>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 75%;"></div>
+                            </div>
+                            <div style="font-size: 0.8rem; color: var(--primary-600); margin-top: 0.5rem;">
+                                ✅ Flights booked • ✅ Hotels selected • ⏳ Activities pending
+                            </div>
+                            <div class="progress-actions">
+                                <button class="continue-btn">Continue Planning</button>
+                            </div>
+                        </div>
+
+                        <div class="progress-item">
+                            <div class="progress-header">
+                                <div class="progress-title">"Bali Romance"</div>
+                                <div class="progress-percentage">25%</div>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 25%;"></div>
+                            </div>
+                            <div style="font-size: 0.8rem; color: var(--primary-600); margin-top: 0.5rem;">
+                                Just started planning
+                            </div>
+                            <div class="progress-actions">
+                                <button class="continue-btn">Resume Planning</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="recommendations-section">
+                        <div class="section-header">
+                            <h3 class="section-title">💡 Personalized Recommendations</h3>
+                        </div>
+
+                        <div class="recommendation-card">
+                            <div class="rec-image">🏔️</div>
+                            <div class="rec-content">
+                                <div class="rec-title">Iceland Northern Lights</div>
+                                <div class="rec-description">Perfect for Feb-Mar travel</div>
+                                <div class="rec-price">$2,299</div>
+                            </div>
+                        </div>
+
+                        <div class="recommendation-card">
+                            <div class="rec-image">🏛️</div>
+                            <div class="rec-content">
+                                <div class="rec-title">Morocco Cultural Journey</div>
+                                <div class="rec-description">Great weather in March</div>
+                                <div class="rec-price">$1,599</div>
+                            </div>
+                        </div>
+
+                        <div class="recommendation-card">
+                            <div class="rec-image">🏖️</div>
+                            <div class="rec-content">
+                                <div class="rec-title">Thailand Beach Escape</div>
+                                <div class="rec-description">Perfect for Apr-May</div>
+                                <div class="rec-price">$1,299</div>
+                            </div>
+                        </div>
+
+                        <button class="continue-btn" style="width: 100%; margin-top: 1rem;">Explore These Destinations</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

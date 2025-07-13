@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trip Details - TravelAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary-900: #0F172A; --primary-800: #1E293B; --primary-700: #334155; --primary-600: #475569; --primary-400: #94A3B8; --primary-100: #F1F5F9;
+            --ocean-blue: #1E40AF; --mirage-blue: #4b90e6; --governor-bay: #2553eb; --emerald: #10B981; --premium-amber: #F59E0B; --soft-coral: #FF6B6B;
+        }
+
+        body { font-family: 'Inter', sans-serif; line-height: 1.5; background: var(--primary-50); }
+
+        .nav-container {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background: rgba(248, 250, 252, 0.95); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2); height: 60px;
+        }
+        .navbar {
+            max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; height: 100%;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo {
+            font-size: 1.4rem; font-weight: 800; color: var(--primary-900);
+            background: linear-gradient(135deg, var(--governor-bay), var(--mirage-blue));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        .main-content { padding-top: 80px; min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+
+        .trip-header {
+            background: linear-gradient(135deg, var(--governor-bay), var(--mirage-blue));
+            color: white; border-radius: 1rem; padding: 2rem; margin-bottom: 2rem;
+            position: relative; overflow: hidden;
+        }
+        .trip-header::before {
+            content: ''; position: absolute; top: 0; right: 0; width: 200px; height: 200px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="rgba(255,255,255,0.1)"/></svg>');
+            background-size: contain; opacity: 0.3;
+        }
+        .trip-title { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .trip-subtitle { font-size: 1.1rem; opacity: 0.9; margin-bottom: 1rem; }
+        .trip-meta { display: flex; gap: 2rem; flex-wrap: wrap; }
+        .meta-item { display: flex; align-items: center; gap: 0.5rem; }
+
+        .trip-content { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; }
+        
+        .itinerary-timeline {
+            background: white; border-radius: 1rem; padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        .timeline-day {
+            position: relative; padding-left: 2rem; margin-bottom: 2rem;
+            border-left: 3px solid var(--primary-200);
+        }
+        .timeline-day::before {
+            content: ''; position: absolute; left: -8px; top: 0;
+            width: 14px; height: 14px; background: var(--governor-bay);
+            border-radius: 50%; border: 3px solid white;
+        }
+        .day-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .day-title { font-size: 1.2rem; font-weight: 600; color: var(--primary-900); }
+        .day-date { font-size: 0.9rem; color: var(--primary-600); }
+        .activity-list { display: flex; flex-direction: column; gap: 1rem; }
+        .activity-item {
+            background: var(--primary-50); border-radius: 0.5rem; padding: 1rem;
+            border-left: 4px solid var(--governor-bay);
+        }
+        .activity-time { font-size: 0.8rem; color: var(--governor-bay); font-weight: 600; margin-bottom: 0.25rem; }
+        .activity-title { font-weight: 500; color: var(--primary-900); margin-bottom: 0.25rem; }
+        .activity-description { font-size: 0.9rem; color: var(--primary-600); }
+
+        .trip-sidebar {
+            display: flex; flex-direction: column; gap: 1.5rem;
+        }
+        .sidebar-card {
+            background: white; border-radius: 1rem; padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        .card-title { font-size: 1.1rem; font-weight: 600; color: var(--primary-900); margin-bottom: 1rem; }
+        
+        .weather-widget {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;
+        }
+        .weather-day {
+            text-align: center; padding: 0.75rem; background: var(--primary-50); border-radius: 0.5rem;
+        }
+        .weather-date { font-size: 0.8rem; color: var(--primary-600); margin-bottom: 0.25rem; }
+        .weather-icon { font-size: 1.5rem; margin-bottom: 0.25rem; }
+        .weather-temp { font-size: 0.9rem; font-weight: 600; color: var(--primary-900); }
+
+        .booking-info { margin-bottom: 1rem; }
+        .info-item {
+            display: flex; justify-content: space-between; padding: 0.5rem 0;
+            border-bottom: 1px solid var(--primary-200);
+        }
+        .info-item:last-child { border-bottom: none; }
+
+        .action-buttons { display: flex; flex-direction: column; gap: 0.5rem; }
+        .action-btn {
+            padding: 0.75rem; border-radius: 0.5rem; border: none; cursor: pointer;
+            font-weight: 600; transition: all 0.3s ease; text-align: center;
+        }
+        .btn-primary { background: var(--governor-bay); color: white; }
+        .btn-secondary { background: var(--primary-200); color: var(--primary-700); }
+        .action-btn:hover { transform: translateY(-1px); }
+
+        @media (max-width: 768px) {
+            .trip-content { grid-template-columns: 1fr; }
+            .trip-sidebar { order: -1; }
+            .trip-meta { flex-direction: column; gap: 1rem; }
+            .weather-widget { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-container">
+        <div class="navbar">
+            <div class="logo">TravelAI</div>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <a href="dashboard.html" style="color: var(--governor-bay); text-decoration: none;">← Back to Dashboard</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="trip-header">
+                <h1 class="trip-title">🇯🇵 Perfect Balance Japan Adventure</h1>
+                <p class="trip-subtitle">7-day cultural and modern experience in Tokyo & Kyoto</p>
+                <div class="trip-meta">
+                    <div class="meta-item">
+                        <i class="fas fa-calendar"></i>
+                        <span>March 15-22, 2024</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-users"></i>
+                        <span>2 Travelers</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Tokyo → Kyoto → Tokyo</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-star"></i>
+                        <span>95% Match Score</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="trip-content">
+                <div class="itinerary-timeline">
+                    <h2 style="margin-bottom: 2rem; color: var(--primary-900);">📅 Daily Itinerary</h2>
+                    
+                    <div class="timeline-day">
+                        <div class="day-header">
+                            <h3 class="day-title">Day 1 - Arrival in Tokyo</h3>
+                            <span class="day-date">March 15, 2024</span>
+                        </div>
+                        <div class="activity-list">
+                            <div class="activity-item">
+                                <div class="activity-time">2:40 PM</div>
+                                <div class="activity-title">✈️ Arrive at Narita Airport (NRT)</div>
+                                <div class="activity-description">American Airlines Flight AA123 from JFK</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-time">4:30 PM</div>
+                                <div class="activity-title">🚄 Airport Express to Shibuya</div>
+                                <div class="activity-description">45-minute journey to city center</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-time">6:00 PM</div>
+                                <div class="activity-title">🏨 Check-in at Hotel Shibuya</div>
+                                <div class="activity-description">4-star hotel in the heart of Tokyo</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-time">8:00 PM</div>
+                                <div class="activity-title">🍜 Welcome Dinner at Ramen Yokocho</div>
+                                <div class="activity-description">Traditional ramen experience in Memory Lane</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timeline-day">
+                        <div class="day-header">
+                            <h3 class="day-title">Day 2 - Tokyo Exploration</h3>
+                            <span class="day-date">March 16, 2024</span>
+                        </div>
+                        <div class="activity-list">
+                            <div class="activity-item">
+                                <div class="activity-time">9:00 AM</div>
+                                <div class="activity-title">🏯 Visit Senso-ji Temple</div>
+                                <div class="activity-description">Tokyo's oldest temple in historic Asakusa</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-time">12:00 PM</div>
+                                <div class="activity-title">🍱 Lunch at Tsukiji Outer Market</div>
+                                <div class="activity-description">Fresh sushi and street food experience</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-time">3:00 PM</div>
+                                <div class="activity-title">🌸 Stroll through Imperial Palace Gardens</div>
+                                <div class="activity-description">Beautiful gardens and cherry blossoms</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-time">7:00 PM</div>
+                                <div class="activity-title">🌃 Shibuya Crossing & Shopping</div>
+                                <div class="activity-description">Experience the world's busiest intersection</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timeline-day">
+                        <div class="day-header">
+                            <h3 class="day-title">Day 3 - Travel to Kyoto</h3>
+                            <span class="day-date">March 17, 2024</span>
+                        </div>
+                        <div class="activity-list">
+                            <div class="activity-item">
+                                <div class="activity-time">10:00 AM</div>
+                                <div class="activity-title">🚄 Shinkansen to Kyoto</div>
+                                <div class="activity-description">2.5-hour bullet train journey</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-time">1:00 PM</div>
+                                <div class="activity-title">🏨 Check-in at Traditional Ryokan</div>
+                                <div class="activity-description">Authentic Japanese inn experience</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-time">3:00 PM</div>
+                                <div class="activity-title">⛩️ Fushimi Inari Shrine</div>
+                                <div class="activity-description">Famous thousand torii gates hike</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-time">7:00 PM</div>
+                                <div class="activity-title">🍽️ Kaiseki Dinner at Ryokan</div>
+                                <div class="activity-description">Multi-course traditional Japanese meal</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="trip-sidebar">
+                    <div class="sidebar-card">
+                        <h3 class="card-title">🌤️ Weather Forecast</h3>
+                        <div class="weather-widget">
+                            <div class="weather-day">
+                                <div class="weather-date">Mar 15</div>
+                                <div class="weather-icon">☀️</div>
+                                <div class="weather-temp">22°C</div>
+                            </div>
+                            <div class="weather-day">
+                                <div class="weather-date">Mar 16</div>
+                                <div class="weather-icon">⛅</div>
+                                <div class="weather-temp">19°C</div>
+                            </div>
+                            <div class="weather-day">
+                                <div class="weather-date">Mar 17</div>
+                                <div class="weather-icon">🌧️</div>
+                                <div class="weather-temp">16°C</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sidebar-card">
+                        <h3 class="card-title">📋 Booking Details</h3>
+                        <div class="booking-info">
+                            <div class="info-item">
+                                <span>Booking ID</span>
+                                <span>TRV-2024-001</span>
+                            </div>
+                            <div class="info-item">
+                                <span>Total Cost</span>
+                                <span>$2,400</span>
+                            </div>
+                            <div class="info-item">
+                                <span>Status</span>
+                                <span style="color: var(--emerald); font-weight: 600;">Confirmed</span>
+                            </div>
+                            <div class="info-item">
+                                <span>Travelers</span>
+                                <span>2 Adults</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sidebar-card">
+                        <h3 class="card-title">🎯 Quick Actions</h3>
+                        <div class="action-buttons">
+                            <button class="action-btn btn-primary" onclick="downloadItinerary()">
+                                📱 Download Mobile App
+                            </button>
+                            <button class="action-btn btn-secondary" onclick="shareTrip()">
+                                📤 Share Trip
+                            </button>
+                            <button class="action-btn btn-secondary" onclick="modifyTrip()">
+                                ✏️ Modify Trip
+                            </button>
+                            <button class="action-btn btn-secondary" onclick="contactSupport()">
+                                💬 Contact Support
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="sidebar-card">
+                        <h3 class="card-title">📞 Emergency Contacts</h3>
+                        <div style="font-size: 0.9rem; color: var(--primary-600);">
+                            <div style="margin-bottom: 0.5rem;">
+                                <strong>TravelAI Support:</strong><br>
+                                +1-800-TRAVEL-AI
+                            </div>
+                            <div style="margin-bottom: 0.5rem;">
+                                <strong>Local Emergency (Japan):</strong><br>
+                                Police: 110 | Fire/Ambulance: 119
+                            </div>
+                            <div>
+                                <strong>US Embassy Tokyo:</strong><br>
+                                +81-3-3224-5000
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function downloadItinerary() {
+            alert('Mobile app download would start here');
+        }
+
+        function shareTrip() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'My Japan Adventure',
+                    text: 'Check out my amazing trip to Japan!',
+                    url: window.location.href
+                });
+            } else {
+                copyToClipboard(window.location.href);
+                alert('Trip link copied to clipboard!');
+            }
+        }
+
+        function modifyTrip() {
+            location.href = 'custom-builder.html?modify=TRV-2024-001';
+        }
+
+        function contactSupport() {
+            location.href = 'contact.html?trip=TRV-2024-001';
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text);
+        }
+    </script>
+</body>
+</html>

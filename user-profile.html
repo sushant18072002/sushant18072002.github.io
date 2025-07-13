@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - TravelAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary-900: #0F172A; --primary-800: #1E293B; --primary-700: #334155; --primary-600: #475569; --primary-400: #94A3B8; --primary-100: #F1F5F9;
+            --ocean-blue: #1E40AF; --mirage-blue: #4b90e6; --governor-bay: #2553eb; --emerald: #10B981; --premium-amber: #F59E0B;
+        }
+
+        body { font-family: 'Inter', sans-serif; line-height: 1.5; background: var(--primary-50); }
+
+        .nav-container {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background: rgba(248, 250, 252, 0.95); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2); height: 60px;
+        }
+        .navbar {
+            max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; height: 100%;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo {
+            font-size: 1.4rem; font-weight: 800; color: var(--primary-900);
+            background: linear-gradient(135deg, var(--governor-bay), var(--mirage-blue));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        .main-content { padding-top: 80px; min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+
+        .profile-layout { display: grid; grid-template-columns: 300px 1fr; gap: 2rem; }
+        
+        .profile-sidebar {
+            background: white; border-radius: 1rem; padding: 2rem; height: fit-content;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        .profile-avatar {
+            width: 100px; height: 100px; background: linear-gradient(135deg, var(--governor-bay), var(--mirage-blue));
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 2.5rem; color: white; margin: 0 auto 1rem;
+        }
+        .profile-name { text-align: center; font-size: 1.3rem; font-weight: 600; color: var(--primary-900); margin-bottom: 0.5rem; }
+        .profile-email { text-align: center; color: var(--primary-600); margin-bottom: 2rem; }
+        .profile-stats {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;
+        }
+        .stat-item {
+            text-align: center; background: var(--primary-50); padding: 1rem; border-radius: 0.5rem;
+        }
+        .stat-number { font-size: 1.5rem; font-weight: 700; color: var(--governor-bay); }
+        .stat-label { font-size: 0.8rem; color: var(--primary-600); }
+        
+        .sidebar-menu {
+            display: flex; flex-direction: column; gap: 0.5rem;
+        }
+        .menu-item {
+            display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem;
+            border-radius: 0.5rem; cursor: pointer; transition: all 0.3s ease;
+            color: var(--primary-700); text-decoration: none;
+        }
+        .menu-item:hover, .menu-item.active {
+            background: rgba(37, 83, 235, 0.1); color: var(--governor-bay);
+        }
+        .menu-icon { width: 20px; text-align: center; }
+
+        .profile-content {
+            background: white; border-radius: 1rem; padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        .section-title { font-size: 1.5rem; font-weight: 600; color: var(--primary-900); margin-bottom: 2rem; }
+        
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-label { font-weight: 500; color: var(--primary-700); margin-bottom: 0.5rem; }
+        .form-input {
+            padding: 0.75rem; border: 2px solid var(--primary-200); border-radius: 0.5rem;
+            font-size: 0.9rem; transition: all 0.3s ease;
+        }
+        .form-input:focus { outline: none; border-color: var(--governor-bay); box-shadow: 0 0 0 3px rgba(37, 83, 235, 0.1); }
+        
+        .preferences-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;
+        }
+        .preference-card {
+            border: 2px solid var(--primary-200); border-radius: 0.75rem; padding: 1.5rem;
+            cursor: pointer; transition: all 0.3s ease;
+        }
+        .preference-card:hover, .preference-card.selected {
+            border-color: var(--governor-bay); background: rgba(37, 83, 235, 0.05);
+        }
+        .preference-icon { font-size: 2rem; margin-bottom: 1rem; }
+        .preference-title { font-weight: 600; color: var(--primary-900); margin-bottom: 0.5rem; }
+        .preference-description { color: var(--primary-600); font-size: 0.9rem; }
+        
+        .save-btn {
+            background: linear-gradient(135deg, var(--governor-bay), var(--ocean-blue));
+            color: white; border: none; padding: 0.75rem 2rem; border-radius: 0.5rem;
+            font-weight: 600; cursor: pointer; transition: all 0.3s ease;
+        }
+        .save-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(37, 83, 235, 0.4); }
+        
+        .trip-history {
+            display: flex; flex-direction: column; gap: 1rem;
+        }
+        .trip-item {
+            border: 1px solid var(--primary-200); border-radius: 0.75rem; padding: 1.5rem;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .trip-info h4 { color: var(--primary-900); margin-bottom: 0.25rem; }
+        .trip-info p { color: var(--primary-600); font-size: 0.9rem; }
+        .trip-status {
+            padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.8rem; font-weight: 500;
+        }
+        .status-completed { background: rgba(16, 185, 129, 0.1); color: var(--emerald); }
+        .status-upcoming { background: rgba(37, 83, 235, 0.1); color: var(--governor-bay); }
+        
+        @media (max-width: 768px) {
+            .profile-layout { grid-template-columns: 1fr; }
+            .profile-sidebar { order: 2; }
+            .form-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-container">
+        <div class="navbar">
+            <div class="logo">TravelAI</div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="profile-layout">
+                <div class="profile-sidebar">
+                    <div class="profile-avatar">SJ</div>
+                    <div class="profile-name">Sarah Johnson</div>
+                    <div class="profile-email">sarah@example.com</div>
+                    
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">12</div>
+                            <div class="stat-label">Trips</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">8</div>
+                            <div class="stat-label">Countries</div>
+                        </div>
+                    </div>
+                    
+                    <div class="sidebar-menu">
+                        <a href="#" class="menu-item active" onclick="showSection('personal')">
+                            <i class="fas fa-user menu-icon"></i>
+                            <span>Personal Info</span>
+                        </a>
+                        <a href="#" class="menu-item" onclick="showSection('preferences')">
+                            <i class="fas fa-heart menu-icon"></i>
+                            <span>Travel Preferences</span>
+                        </a>
+                        <a href="#" class="menu-item" onclick="showSection('history')">
+                            <i class="fas fa-history menu-icon"></i>
+                            <span>Trip History</span>
+                        </a>
+                        <a href="#" class="menu-item" onclick="showSection('security')">
+                            <i class="fas fa-shield-alt menu-icon"></i>
+                            <span>Security</span>
+                        </a>
+                        <a href="#" class="menu-item" onclick="showSection('notifications')">
+                            <i class="fas fa-bell menu-icon"></i>
+                            <span>Notifications</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="profile-content">
+                    <!-- Personal Information Section -->
+                    <div id="personal-section" class="profile-section">
+                        <h2 class="section-title">👤 Personal Information</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">First Name</label>
+                                <input type="text" class="form-input" value="Sarah">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Last Name</label>
+                                <input type="text" class="form-input" value="Johnson">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-input" value="sarah@example.com">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Phone</label>
+                                <input type="tel" class="form-input" value="+1 555 123 4567">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Date of Birth</label>
+                                <input type="date" class="form-input" value="1990-05-15">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Nationality</label>
+                                <select class="form-input">
+                                    <option>United States</option>
+                                    <option>Canada</option>
+                                    <option>United Kingdom</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button class="save-btn">Save Changes</button>
+                    </div>
+
+                    <!-- Travel Preferences Section -->
+                    <div id="preferences-section" class="profile-section" style="display: none;">
+                        <h2 class="section-title">❤️ Travel Preferences</h2>
+                        <div class="preferences-grid">
+                            <div class="preference-card selected">
+                                <div class="preference-icon">🏖️</div>
+                                <div class="preference-title">Beach & Relaxation</div>
+                                <div class="preference-description">Love sunny beaches and peaceful getaways</div>
+                            </div>
+                            <div class="preference-card">
+                                <div class="preference-icon">🏔️</div>
+                                <div class="preference-title">Adventure & Outdoors</div>
+                                <div class="preference-description">Hiking, climbing, and outdoor activities</div>
+                            </div>
+                            <div class="preference-card selected">
+                                <div class="preference-icon">🏛️</div>
+                                <div class="preference-title">Culture & History</div>
+                                <div class="preference-description">Museums, historical sites, and local culture</div>
+                            </div>
+                            <div class="preference-card">
+                                <div class="preference-icon">🍽️</div>
+                                <div class="preference-title">Food & Culinary</div>
+                                <div class="preference-description">Local cuisine and food experiences</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 2rem;">
+                            <h3 style="margin-bottom: 1rem;">Budget Preference</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Typical Trip Budget</label>
+                                    <select class="form-input">
+                                        <option>$500 - $1,000</option>
+                                        <option>$1,000 - $2,500</option>
+                                        <option selected>$2,500 - $5,000</option>
+                                        <option>$5,000+</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Accommodation Type</label>
+                                    <select class="form-input">
+                                        <option>Budget Hotels</option>
+                                        <option selected>Mid-range Hotels</option>
+                                        <option>Luxury Hotels</option>
+                                        <option>Vacation Rentals</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="save-btn">Save Preferences</button>
+                    </div>
+
+                    <!-- Trip History Section -->
+                    <div id="history-section" class="profile-section" style="display: none;">
+                        <h2 class="section-title">📅 Trip History</h2>
+                        <div class="trip-history">
+                            <div class="trip-item">
+                                <div class="trip-info">
+                                    <h4>Japan Cultural Discovery</h4>
+                                    <p>March 15-22, 2024 • Tokyo, Kyoto, Osaka</p>
+                                </div>
+                                <div class="trip-status status-completed">Completed</div>
+                            </div>
+                            <div class="trip-item">
+                                <div class="trip-info">
+                                    <h4>Europe City Hop</h4>
+                                    <p>April 10-17, 2024 • Paris, Rome, Barcelona</p>
+                                </div>
+                                <div class="trip-status status-upcoming">Upcoming</div>
+                            </div>
+                            <div class="trip-item">
+                                <div class="trip-info">
+                                    <h4>Bali Romance Getaway</h4>
+                                    <p>January 5-12, 2024 • Ubud, Seminyak</p>
+                                </div>
+                                <div class="trip-status status-completed">Completed</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security Section -->
+                    <div id="security-section" class="profile-section" style="display: none;">
+                        <h2 class="section-title">🔒 Security Settings</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Current Password</label>
+                                <input type="password" class="form-input" placeholder="Enter current password">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">New Password</label>
+                                <input type="password" class="form-input" placeholder="Enter new password">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Confirm New Password</label>
+                                <input type="password" class="form-input" placeholder="Confirm new password">
+                            </div>
+                        </div>
+                        <div style="margin: 2rem 0;">
+                            <h3 style="margin-bottom: 1rem;">Two-Factor Authentication</h3>
+                            <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--primary-50); border-radius: 0.5rem;">
+                                <i class="fas fa-shield-alt" style="color: var(--emerald); font-size: 1.5rem;"></i>
+                                <div>
+                                    <div style="font-weight: 600;">Two-factor authentication is enabled</div>
+                                    <div style="color: var(--primary-600); font-size: 0.9rem;">Your account is protected with 2FA</div>
+                                </div>
+                                <button class="save-btn" style="margin-left: auto;">Disable</button>
+                            </div>
+                        </div>
+                        <button class="save-btn">Update Password</button>
+                    </div>
+
+                    <!-- Notifications Section -->
+                    <div id="notifications-section" class="profile-section" style="display: none;">
+                        <h2 class="section-title">🔔 Notification Preferences</h2>
+                        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border: 1px solid var(--primary-200); border-radius: 0.5rem;">
+                                <div>
+                                    <div style="font-weight: 600;">Email Notifications</div>
+                                    <div style="color: var(--primary-600); font-size: 0.9rem;">Receive booking confirmations and updates</div>
+                                </div>
+                                <input type="checkbox" checked style="accent-color: var(--governor-bay); transform: scale(1.2);">
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border: 1px solid var(--primary-200); border-radius: 0.5rem;">
+                                <div>
+                                    <div style="font-weight: 600;">Price Alerts</div>
+                                    <div style="color: var(--primary-600); font-size: 0.9rem;">Get notified when prices drop</div>
+                                </div>
+                                <input type="checkbox" checked style="accent-color: var(--governor-bay); transform: scale(1.2);">
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border: 1px solid var(--primary-200); border-radius: 0.5rem;">
+                                <div>
+                                    <div style="font-weight: 600;">Marketing Emails</div>
+                                    <div style="color: var(--primary-600); font-size: 0.9rem;">Receive travel deals and promotions</div>
+                                </div>
+                                <input type="checkbox" style="accent-color: var(--governor-bay); transform: scale(1.2);">
+                            </div>
+                        </div>
+                        <button class="save-btn" style="margin-top: 2rem;">Save Preferences</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.profile-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Remove active class from all menu items
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionName + '-section').style.display = 'block';
+            
+            // Add active class to clicked menu item
+            event.target.closest('.menu-item').classList.add('active');
+        }
+        
+        // Preference card selection
+        document.querySelectorAll('.preference-card').forEach(card => {
+            card.addEventListener('click', function() {
+                this.classList.toggle('selected');
+            });
+        });
+    </script>
+</body>
+</html>

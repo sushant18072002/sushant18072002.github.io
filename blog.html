@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Blog & Guides | TravelAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="blog-styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav-container">
+        <div class="navbar">
+            <div class="logo">TravelAI</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="flights.html">Flights</a></li>
+                <li><a href="hotels.html">Hotels</a></li>
+                <li><a href="itinerary-master-hub.html">Itineraries</a></li>
+                <li><a href="packages.html">Packages</a></li>
+            </ul>
+            <a href="auth.html" class="nav-cta">Get Started</a>
+        </div>
+    </nav>
+
+    <!-- Blog Header -->
+    <section class="blog-header">
+        <div class="container">
+            <div class="header-content">
+                <div class="blog-badge">
+                    <span class="badge-icon">✈️</span>
+                    <span>Travel Inspiration</span>
+                </div>
+                <h1>Travel Blog & Guides</h1>
+                <p>Discover amazing destinations, get expert travel tips, and find inspiration for your next adventure</p>
+                
+                <div class="blog-search">
+                    <div class="search-container">
+                        <input type="text" id="blogSearch" placeholder="Search destinations, tips, or guides..." onkeyup="searchBlog()">
+                        <div class="search-icon">🔍</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Article -->
+    <section class="featured-article">
+        <div class="container">
+            <div class="featured-card" onclick="readArticle('bali-guide')">
+                <div class="featured-image">
+                    <img src="https://images.unsplash.com/photo-1537953773345-d172ccf13cf1?w=800&h=400&fit=crop" alt="Bali Paradise">
+                    <div class="featured-badge">Featured Guide</div>
+                </div>
+                <div class="featured-content">
+                    <div class="article-meta">
+                        <span class="category">Destination Guide</span>
+                        <span class="read-time">12 min read</span>
+                    </div>
+                    <h2>Ultimate Bali Travel Guide: Paradise Found</h2>
+                    <p>Discover the magic of Bali with our comprehensive guide covering the best beaches, temples, restaurants, and hidden gems that make this Indonesian paradise unforgettable.</p>
+                    <div class="article-stats">
+                        <span>📍 Bali, Indonesia</span>
+                        <span>❤️ 2.4K likes</span>
+                        <span>💬 156 comments</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Blog Categories -->
+    <section class="blog-categories">
+        <div class="container">
+            <div class="categories-header">
+                <h2>Browse by category</h2>
+                <p>Find exactly what you're looking for</p>
+            </div>
+            
+            <div class="category-filters">
+                <button class="filter-btn active" onclick="filterCategory('all')">All Posts</button>
+                <button class="filter-btn" onclick="filterCategory('destinations')">Destinations</button>
+                <button class="filter-btn" onclick="filterCategory('tips')">Travel Tips</button>
+                <button class="filter-btn" onclick="filterCategory('guides')">How-to Guides</button>
+                <button class="filter-btn" onclick="filterCategory('food')">Food & Culture</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Blog Grid -->
+    <section class="blog-grid">
+        <div class="container">
+            <div class="articles-grid" id="articlesGrid">
+                <article class="blog-card" data-category="destinations" onclick="readArticle('tokyo-guide')">
+                    <div class="card-image">
+                        <img src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=400&h=250&fit=crop" alt="Tokyo">
+                        <div class="card-category">Destinations</div>
+                    </div>
+                    <div class="card-content">
+                        <h3>Tokyo: Where Tradition Meets Future</h3>
+                        <p>Explore Japan's capital through ancient temples, neon-lit streets, and incredible cuisine...</p>
+                        <div class="card-meta">
+                            <span>8 min read</span>
+                            <span>❤️ 1.8K</span>
+                        </div>
+                        <button class="read-more-btn">Read More</button>
+                    </div>
+                </article>
+
+                <article class="blog-card" data-category="tips" onclick="readArticle('packing-tips')">
+                    <div class="card-image">
+                        <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=250&fit=crop" alt="Packing">
+                        <div class="card-category">Travel Tips</div>
+                    </div>
+                    <div class="card-content">
+                        <h3>Smart Packing: Travel Light, Travel Right</h3>
+                        <p>Master the art of efficient packing with our expert tips and essential item checklist...</p>
+                        <div class="card-meta">
+                            <span>5 min read</span>
+                            <span>❤️ 3.2K</span>
+                        </div>
+                        <button class="read-more-btn">Read More</button>
+                    </div>
+                </article>
+
+                <article class="blog-card" data-category="guides" onclick="readArticle('budget-travel')">
+                    <div class="card-image">
+                        <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=250&fit=crop" alt="Budget Travel">
+                        <div class="card-category">How-to Guides</div>
+                    </div>
+                    <div class="card-content">
+                        <h3>Budget Travel: Amazing Trips Under $1000</h3>
+                        <p>Discover how to explore the world without breaking the bank with these money-saving strategies...</p>
+                        <div class="card-meta">
+                            <span>10 min read</span>
+                            <span>❤️ 4.1K</span>
+                        </div>
+                        <button class="read-more-btn">Read More</button>
+                    </div>
+                </article>
+
+                <article class="blog-card" data-category="food" onclick="readArticle('street-food')">
+                    <div class="card-image">
+                        <img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&h=250&fit=crop" alt="Street Food">
+                        <div class="card-category">Food & Culture</div>
+                    </div>
+                    <div class="card-content">
+                        <h3>Street Food Adventures Around the World</h3>
+                        <p>From Bangkok's night markets to Mexico City's tacos, explore the world's best street food...</p>
+                        <div class="card-meta">
+                            <span>7 min read</span>
+                            <span>❤️ 2.7K</span>
+                        </div>
+                        <button class="read-more-btn">Read More</button>
+                    </div>
+                </article>
+
+                <article class="blog-card" data-category="destinations" onclick="readArticle('iceland-guide')">
+                    <div class="card-image">
+                        <img src="https://images.unsplash.com/photo-1539066909543-e6217c3c7168?w=400&h=250&fit=crop" alt="Iceland">
+                        <div class="card-category">Destinations</div>
+                    </div>
+                    <div class="card-content">
+                        <h3>Iceland: Land of Fire and Ice</h3>
+                        <p>Experience the raw beauty of Iceland's glaciers, geysers, and northern lights...</p>
+                        <div class="card-meta">
+                            <span>15 min read</span>
+                            <span>❤️ 1.9K</span>
+                        </div>
+                        <button class="read-more-btn">Read More</button>
+                    </div>
+                </article>
+
+                <article class="blog-card" data-category="tips" onclick="readArticle('solo-travel')">
+                    <div class="card-image">
+                        <img src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=400&h=250&fit=crop" alt="Solo Travel">
+                        <div class="card-category">Travel Tips</div>
+                    </div>
+                    <div class="card-content">
+                        <h3>Solo Travel: Your Guide to Safe Adventures</h3>
+                        <p>Everything you need to know about traveling alone, from safety tips to meeting people...</p>
+                        <div class="card-meta">
+                            <span>12 min read</span>
+                            <span>❤️ 5.3K</span>
+                        </div>
+                        <button class="read-more-btn">Read More</button>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter Signup -->
+    <section class="newsletter-signup">
+        <div class="container">
+            <div class="newsletter-content">
+                <h2>Never miss a travel story</h2>
+                <p>Get our latest guides, tips, and destination inspiration delivered to your inbox</p>
+                <form class="newsletter-form" onsubmit="subscribeNewsletter(event)">
+                    <input type="email" placeholder="Enter your email address" required>
+                    <button type="submit" class="subscribe-btn">Subscribe</button>
+                </form>
+                <p class="newsletter-note">Join 50,000+ travelers getting weekly inspiration</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>TravelAI</h3>
+                    <p>Turn your travel dreams into reality with AI-powered trip planning.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="flights.html">Flights</a></li>
+                        <li><a href="hotels.html">Hotels</a></li>
+                        <li><a href="itinerary-master-hub.html">Itineraries</a></li>
+                        <li><a href="packages.html">Packages</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="contact.html">Help & Contact</a></li>
+                        <li><a href="blog.html">Travel Blog</a></li>
+                        <li><a href="legal.html">Legal</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 TravelAI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="blog-script.js"></script>
+</body>
+</html>

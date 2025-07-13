@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TravelAI - Complete Travel Platform | Master System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary-900: #0F172A; --primary-800: #1E293B; --primary-700: #334155; --primary-600: #475569; --primary-400: #94A3B8; --primary-100: #F1F5F9; --primary-50: #F8FAFC;
+            --ocean-blue: #1E40AF; --mirage-blue: #4b90e6; --governor-bay: #2553eb; --emerald: #10B981; --premium-amber: #F59E0B; --soft-coral: #FF6B6B;
+            --gradient-primary: linear-gradient(135deg, var(--governor-bay), var(--ocean-blue));
+            --gradient-success: linear-gradient(135deg, var(--emerald), #059669);
+            --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --shadow-strong: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        body { font-family: 'Inter', sans-serif; line-height: 1.6; background: var(--primary-50); }
+
+        /* UNIFIED NAVIGATION SYSTEM */
+        .nav-container {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background: rgba(248, 250, 252, 0.95); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2); height: 70px;
+            transition: all 0.3s ease;
+        }
+        .nav-scrolled {
+            background: rgba(15, 23, 42, 0.95);
+            box-shadow: var(--shadow-soft);
+        }
+        .nav-scrolled .logo, .nav-scrolled .nav-links a {
+            color: white;
+        }
+        .navbar {
+            max-width: 1400px; margin: 0 auto; padding: 0 1.5rem; height: 100%;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo {
+            font-size: 1.5rem; font-weight: 800; color: var(--primary-900);
+            background: var(--gradient-primary);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-decoration: none; cursor: pointer;
+        }
+        .nav-links {
+            display: flex; gap: 0.5rem; list-style: none; align-items: center;
+        }
+        .nav-links a {
+            text-decoration: none; color: var(--primary-700); font-weight: 500;
+            padding: 0.75rem 1rem; border-radius: 0.75rem; transition: all 0.3s ease;
+            font-size: 0.9rem; position: relative;
+        }
+        .nav-links a:hover, .nav-links a.active {
+            background: rgba(37, 83, 235, 0.1); color: var(--governor-bay);
+            transform: translateY(-1px);
+        }
+        .nav-cta {
+            background: var(--gradient-primary); color: white; padding: 0.75rem 1.5rem; 
+            border-radius: 0.75rem; text-decoration: none; font-weight: 600; 
+            transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(37, 83, 235, 0.4);
+        }
+        .nav-cta:hover {
+            transform: translateY(-2px); box-shadow: 0 8px 25px rgba(37, 83, 235, 0.6);
+        }
+
+        /* MOBILE NAVIGATION */
+        .mobile-menu-toggle {
+            display: none; background: none; border: none; color: var(--primary-700);
+            font-size: 1.5rem; cursor: pointer; padding: 0.5rem;
+        }
+        .mobile-menu {
+            position: fixed; top: 70px; left: 0; right: 0; bottom: 0;
+            background: rgba(248, 250, 252, 0.98); backdrop-filter: blur(20px);
+            transform: translateX(-100%); transition: transform 0.3s ease;
+            padding: 2rem; display: flex; flex-direction: column; gap: 1rem;
+        }
+        .mobile-menu.active { transform: translateX(0); }
+        .mobile-menu a {
+            padding: 1.25rem; border-radius: 0.75rem; text-decoration: none;
+            color: var(--primary-700); font-weight: 500; font-size: 1.1rem;
+            transition: all 0.3s ease; border: 1px solid rgba(37, 83, 235, 0.1);
+        }
+        .mobile-menu a:hover {
+            background: rgba(37, 83, 235, 0.1); color: var(--governor-bay);
+            transform: translateX(10px);
+        }
+
+        /* MAIN CONTENT */
+        .main-content { padding-top: 90px; min-height: 100vh; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 1.5rem; }
+
+        /* UNIFIED SEARCH SYSTEM */
+        .unified-search {
+            background: white; border-radius: 1.5rem; padding: 2rem; margin-bottom: 3rem;
+            box-shadow: var(--shadow-soft); position: relative;
+        }
+        .search-tabs {
+            display: flex; background: var(--primary-100); border-radius: 1rem;
+            padding: 4px; margin-bottom: 2rem;
+        }
+        .search-tab {
+            flex: 1; background: none; border: none; padding: 0.75rem 1rem;
+            border-radius: 0.75rem; font-weight: 500; color: var(--primary-600);
+            cursor: pointer; transition: all 0.3s ease;
+        }
+        .search-tab.active {
+            background: white; color: var(--governor-bay); font-weight: 600;
+            box-shadow: 0 4px 15px rgba(37, 83, 235, 0.2); transform: translateY(-2px);
+        }
+        .search-form {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 1rem; align-items: end;
+        }
+        .form-input {
+            padding: 1rem; border: 2px solid var(--primary-200); border-radius: 0.75rem;
+            font-size: 0.9rem; transition: all 0.3s ease; width: 100%;
+        }
+        .form-input:focus {
+            outline: none; border-color: var(--governor-bay);
+            box-shadow: 0 0 0 4px rgba(37, 83, 235, 0.1);
+            transform: translateY(-1px);
+        }
+        .search-btn {
+            background: var(--gradient-primary); color: white; border: none;
+            padding: 1rem 2rem; border-radius: 0.75rem; font-weight: 600;
+            cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(37, 83, 235, 0.4);
+        }
+        .search-btn:hover {
+            transform: translateY(-2px); box-shadow: 0 8px 25px rgba(37, 83, 235, 0.6);
+        }
+
+        /* COMPONENT SHOWCASE */
+        .component-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem; margin-bottom: 3rem;
+        }
+        .component-card {
+            background: white; border-radius: 1.5rem; padding: 2rem;
+            box-shadow: var(--shadow-soft); transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .component-card:hover {
+            transform: translateY(-4px); box-shadow: var(--shadow-strong);
+            border-color: var(--governor-bay);
+        }
+        .component-title {
+            font-size: 1.3rem; font-weight: 600; color: var(--primary-900);
+            margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;
+        }
+        .component-description {
+            color: var(--primary-600); margin-bottom: 1.5rem; line-height: 1.6;
+        }
+        .component-features {
+            display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem;
+        }
+        .feature-item {
+            display: flex; align-items: center; gap: 0.5rem;
+            color: var(--primary-700); font-size: 0.9rem;
+        }
+        .feature-icon {
+            color: var(--emerald); font-size: 0.8rem;
+        }
+        .component-btn {
+            background: var(--gradient-primary); color: white; border: none;
+            padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600;
+            cursor: pointer; transition: all 0.3s ease; width: 100%;
+        }
+        .component-btn:hover {
+            transform: translateY(-1px); box-shadow: 0 4px 15px rgba(37, 83, 235, 0.4);
+        }
+
+        /* PSYCHOLOGY INDICATORS */
+        .psychology-banner {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(37, 83, 235, 0.1));
+            padding: 1.5rem; border-radius: 1rem; margin-bottom: 3rem;
+            border-left: 4px solid var(--emerald);
+        }
+        .psychology-title {
+            font-weight: 600; color: var(--primary-900); margin-bottom: 0.5rem;
+        }
+        .psychology-text {
+            color: var(--primary-600); font-size: 0.9rem;
+        }
+
+        /* UNIFIED FOOTER */
+        .footer {
+            background: linear-gradient(135deg, var(--primary-900), var(--primary-800));
+            color: white; padding: 4rem 1.5rem 2rem; margin-top: 5rem;
+        }
+        .footer-content {
+            max-width: 1400px; margin: 0 auto;
+            display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem;
+            margin-bottom: 3rem;
+        }
+        .footer-brand h3 {
+            font-size: 1.8rem; font-weight: 800; margin-bottom: 1rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .footer-section h4 {
+            font-size: 1.2rem; font-weight: 600; margin-bottom: 1.5rem;
+        }
+        .footer-section ul {
+            list-style: none; display: flex; flex-direction: column; gap: 0.75rem;
+        }
+        .footer-section a {
+            color: rgba(255, 255, 255, 0.7); text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .footer-section a:hover {
+            color: white; transform: translateX(4px);
+        }
+
+        /* RESPONSIVE DESIGN */
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .mobile-menu-toggle { display: block; }
+            .search-form { grid-template-columns: 1fr; }
+            .component-grid { grid-template-columns: 1fr; }
+            .footer-content { grid-template-columns: 1fr; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <!-- UNIFIED NAVIGATION -->
+    <nav class="nav-container" id="navbar">
+        <div class="navbar">
+            <a href="index.html" class="logo">TravelAI</a>
+            
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="flights.html">Flights</a></li>
+                <li><a href="hotels.html">Hotels</a></li>
+                <li><a href="itinerary.html">Itineraries</a></li>
+                <li><a href="packages.html">Packages</a></li>
+                <li><a href="dashboard.html">Dashboard</a></li>
+            </ul>
+            
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <a href="auth.html" class="nav-cta">Get Started</a>
+                <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="mobile-menu" id="mobile-menu">
+            <a href="index.html">🏠 Home</a>
+            <a href="flights.html">✈️ Flights</a>
+            <a href="hotels.html">🏨 Hotels</a>
+            <a href="itinerary.html">🗺️ Itineraries</a>
+            <a href="packages.html">📦 Packages</a>
+            <a href="about.html">ℹ️ About</a>
+            <a href="contact.html">📞 Contact</a>
+            <a href="dashboard.html">📊 Dashboard</a>
+            <a href="auth.html">🔐 Get Started</a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container">
+            <!-- PSYCHOLOGY BANNER -->
+            <div class="psychology-banner">
+                <div class="psychology-title">🧠 Psychology-Driven Design System</div>
+                <div class="psychology-text">
+                    Every component is designed with behavioral psychology principles to maximize user engagement and conversion rates.
+                </div>
+            </div>
+
+            <!-- UNIFIED SEARCH SYSTEM -->
+            <div class="unified-search">
+                <h2 style="text-align: center; margin-bottom: 2rem; color: var(--primary-900); font-size: 1.5rem;">
+                    🔍 Unified Search System
+                </h2>
+                <div class="search-tabs">
+                    <button class="search-tab active" onclick="switchSearchTab('flights')">✈️ Flights</button>
+                    <button class="search-tab" onclick="switchSearchTab('hotels')">🏨 Hotels</button>
+                    <button class="search-tab" onclick="switchSearchTab('packages')">📦 Packages</button>
+                </div>
+                <div class="search-form" id="search-form">
+                    <input type="text" placeholder="From: New York" class="form-input">
+                    <input type="text" placeholder="To: Tokyo" class="form-input">
+                    <input type="date" class="form-input">
+                    <input type="date" class="form-input">
+                    <button class="search-btn">🔍 Search Flights</button>
+                </div>
+            </div>
+
+            <!-- COMPONENT SHOWCASE -->
+            <h2 style="text-align: center; margin-bottom: 3rem; color: var(--primary-900); font-size: 2rem;">
+                🎯 Master Component System
+            </h2>
+            
+            <div class="component-grid">
+                <div class="component-card">
+                    <div class="component-title">
+                        <i class="fas fa-plane" style="color: var(--ocean-blue);"></i>
+                        Flight Search Engine
+                    </div>
+                    <div class="component-description">
+                        Advanced flight search with real-time pricing, filters, and comparison tools.
+                    </div>
+                    <div class="component-features">
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            Real-time price updates
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            Advanced filtering system
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            Price comparison widget
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            Mobile-optimized interface
+                        </div>
+                    </div>
+                    <button class="component-btn" onclick="location.href='flights.html'">
+                        View Flight System
+                    </button>
+                </div>
+
+                <div class="component-card">
+                    <div class="component-title">
+                        <i class="fas fa-hotel" style="color: var(--emerald);"></i>
+                        Hotel Booking System
+                    </div>
+                    <div class="component-description">
+                        Comprehensive hotel search with reviews, amenities, and instant booking.
+                    </div>
+                    <div class="component-features">
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            Interactive maps
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            Review aggregation
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            Amenity filtering
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            Instant confirmation
+                        </div>
+                    </div>
+                    <button class="component-btn" onclick="location.href='hotels.html'">
+                        View Hotel System
+                    </button>
+                </div>
+
+                <div class="component-card">
+                    <div class="component-title">
+                        <i class="fas fa-route" style="color: var(--premium-amber);"></i>
+                        AI Itinerary Builder
+                    </div>
+                    <div class="component-description">
+                        Intelligent trip planning with AI-powered recommendations and customization.
+                    </div>
+                    <div class="component-features">
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            AI-powered suggestions
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            Drag-and-drop builder
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            Local insights
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            Collaborative planning
+                        </div>
+                    </div>
+                    <button class="component-btn" onclick="location.href='itinerary.html'">
+                        View AI Builder
+                    </button>
+                </div>
+
+                <div class="component-card">
+                    <div class="component-title">
+                        <i class="fas fa-credit-card" style="color: var(--soft-coral);"></i>
+                        Unified Booking Flow
+                    </div>
+                    <div class="component-description">
+                        Streamlined booking process with progress indicators and security features.
+                    </div>
+                    <div class="component-features">
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            Progress psychology
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            Security indicators
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            Multiple payment options
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            Instant confirmation
+                        </div>
+                    </div>
+                    <button class="component-btn" onclick="location.href='booking.html'">
+                        View Booking Flow
+                    </button>
+                </div>
+
+                <div class="component-card">
+                    <div class="component-title">
+                        <i class="fas fa-tachometer-alt" style="color: var(--governor-bay);"></i>
+                        User Dashboard
+                    </div>
+                    <div class="component-description">
+                        Comprehensive dashboard for managing bookings, preferences, and travel history.
+                    </div>
+                    <div class="component-features">
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            Trip management
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            Booking history
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            Preference settings
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            Loyalty tracking
+                        </div>
+                    </div>
+                    <button class="component-btn" onclick="location.href='dashboard.html'">
+                        View Dashboard
+                    </button>
+                </div>
+
+                <div class="component-card">
+                    <div class="component-title">
+                        <i class="fas fa-mobile-alt" style="color: var(--mirage-blue);"></i>
+                        Mobile Experience
+                    </div>
+                    <div class="component-description">
+                        Fully responsive design optimized for mobile devices and touch interactions.
+                    </div>
+                    <div class="component-features">
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            Touch-optimized UI
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            Thumb-zone design
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            Offline capabilities
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            Progressive web app
+                        </div>
+                    </div>
+                    <button class="component-btn" onclick="location.href='mobile-optimized.html'">
+                        View Mobile Design
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- UNIFIED FOOTER -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h3>TravelAI</h3>
+                <p>Revolutionizing travel planning with AI-powered personalization. Create unforgettable journeys tailored just for you.</p>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Services</h4>
+                <ul>
+                    <li><a href="flights.html">Flight Booking</a></li>
+                    <li><a href="hotels.html">Hotel Reservations</a></li>
+                    <li><a href="itinerary.html">AI Itineraries</a></li>
+                    <li><a href="packages.html">Travel Packages</a></li>
+                    <li><a href="custom-builder.html">Custom Trips</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="contact.html">Contact Us</a></li>
+                    <li><a href="help-center.html">Help Center</a></li>
+                    <li><a href="booking-confirmation.html">Manage Booking</a></li>
+                    <li><a href="travel-insurance.html">Travel Insurance</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="contact.html">Careers</a></li>
+                    <li><a href="contact.html">Press</a></li>
+                    <li><a href="contact.html">Partnerships</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // UNIFIED NAVIGATION SYSTEM
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            const toggle = document.querySelector('.mobile-menu-toggle i');
+            
+            menu.classList.toggle('active');
+            toggle.classList.toggle('fa-bars');
+            toggle.classList.toggle('fa-times');
+        }
+
+        // SCROLL EFFECTS
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('nav-scrolled');
+            } else {
+                navbar.classList.remove('nav-scrolled');
+            }
+        });
+
+        // UNIFIED SEARCH SYSTEM
+        function switchSearchTab(type) {
+            document.querySelectorAll('.search-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const form = document.getElementById('search-form');
+            if (type === 'flights') {
+                form.innerHTML = `
+                    <input type="text" placeholder="From: New York" class="form-input">
+                    <input type="text" placeholder="To: Tokyo" class="form-input">
+                    <input type="date" class="form-input">
+                    <input type="date" class="form-input">
+                    <button class="search-btn" onclick="location.href='flights.html'">🔍 Search Flights</button>
+                `;
+            } else if (type === 'hotels') {
+                form.innerHTML = `
+                    <input type="text" placeholder="Destination: Paris" class="form-input">
+                    <input type="date" class="form-input">
+                    <input type="date" class="form-input">
+                    <select class="form-input">
+                        <option>2 Guests</option>
+                        <option>1 Guest</option>
+                        <option>3+ Guests</option>
+                    </select>
+                    <button class="search-btn" onclick="location.href='hotels.html'">🔍 Find Hotels</button>
+                `;
+            } else if (type === 'packages') {
+                form.innerHTML = `
+                    <input type="text" placeholder="Where to?" class="form-input">
+                    <select class="form-input">
+                        <option>Trip Duration</option>
+                        <option>3-5 days</option>
+                        <option>1 week</option>
+                        <option>2+ weeks</option>
+                    </select>
+                    <select class="form-input">
+                        <option>Travel Style</option>
+                        <option>Adventure</option>
+                        <option>Relaxation</option>
+                        <option>Cultural</option>
+                    </select>
+                    <input type="date" class="form-input">
+                    <button class="search-btn" onclick="location.href='packages.html'">🔍 Find Packages</button>
+                `;
+            }
+        }
+
+        // ACTIVE PAGE HIGHLIGHTING
+        document.addEventListener('DOMContentLoaded', () => {
+            const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+            const navLinks = document.querySelectorAll('.nav-links a, .mobile-menu a');
+            
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === currentPage) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // CLOSE MOBILE MENU ON LINK CLICK
+        document.querySelectorAll('.mobile-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('mobile-menu').classList.remove('active');
+                document.querySelector('.mobile-menu-toggle i').classList.add('fa-bars');
+                document.querySelector('.mobile-menu-toggle i').classList.remove('fa-times');
+            });
+        });
+    </script>
+</body>
+</html>

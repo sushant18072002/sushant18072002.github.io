@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amazing Trips Made Simple | TravelAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="itinerary-master-hub-styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav-container">
+        <div class="navbar">
+            <div class="logo">TravelAI</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="flights.html">Flights</a></li>
+                <li><a href="hotels.html">Hotels</a></li>
+                <li><a href="itinerary-master-hub.html" class="active">Itineraries</a></li>
+                <li><a href="packages.html">Packages</a></li>
+            </ul>
+            <a href="auth.html" class="nav-cta">Get Started</a>
+        </div>
+    </nav>
+
+    <!-- Simple Hero -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Your next amazing trip starts here</h1>
+                <p>See beautiful itineraries, pick what you love, customize to make it yours</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Trips -->
+    <section class="featured-trips">
+        <div class="container">
+            <div class="section-header">
+                <h2>✨ Amazing Trips People Love</h2>
+                <p>Real itineraries, real experiences, ready to customize</p>
+            </div>
+            
+            <!-- Search & Filters -->
+            <div class="trip-controls">
+                <div class="search-bar">
+                    <input type="text" id="tripSearch" placeholder="Search destinations, activities, or vibes..." onkeyup="searchTrips()">
+                    <span class="search-icon">🔍</span>
+                </div>
+                <div class="filter-tags">
+                    <button class="tag-btn active" onclick="filterByTag('all')">All</button>
+                    <button class="tag-btn" onclick="filterByTag('romance')">💕 Romance</button>
+                    <button class="tag-btn" onclick="filterByTag('adventure')">🏔️ Adventure</button>
+                    <button class="tag-btn" onclick="filterByTag('culture')">🎭 Culture</button>
+                    <button class="tag-btn" onclick="filterByTag('wellness')">🧘 Wellness</button>
+                    <button class="tag-btn" onclick="filterByTag('budget')">💰 Budget</button>
+                    <button class="tag-btn" onclick="filterByTag('luxury')">💎 Luxury</button>
+                </div>
+            </div>
+            
+            <!-- Pinterest-style Feed -->
+            <div class="trips-feed" id="tripsFeed">
+                <div class="trip-card" data-tags="romance luxury europe" onclick="viewTrip('paris-romance')">
+                    <div class="trip-image">
+                        <img src="https://images.unsplash.com/photo-1502602898536-47ad22581b52?w=400&h=300&fit=crop" alt="Paris Romance">
+                        <div class="trip-overlay">
+                            <div class="trip-badges">
+                                <span class="badge trending">🔥 Trending</span>
+                                <span class="badge duration">5 Days</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="trip-content">
+                        <div class="trip-tags">
+                            <span class="tag">💕 Romance</span>
+                            <span class="tag">🇫🇷 France</span>
+                        </div>
+                        <h3>Paris Romance</h3>
+                        <p>Eiffel Tower dinners, Seine cruises, cozy cafes</p>
+                        <div class="trip-footer">
+                            <div class="trip-price">From $2,400</div>
+                            <div class="trip-rating">⭐ 4.9 (89)</div>
+                        </div>
+                        <div class="trip-actions">
+                            <button class="action-btn customize" onclick="customizeTrip(event, 'paris-romance')">Customize</button>
+                            <button class="action-btn ai" onclick="createSimilar(event, 'paris-romance')">AI Similar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="trip-card" data-tags="culture adventure asia" onclick="viewTrip('japan-culture')">
+                    <div class="trip-image">
+                        <img src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=400&h=300&fit=crop" alt="Japan Culture">
+                        <div class="trip-overlay">
+                            <div class="trip-badges">
+                                <span class="badge cultural">Cultural</span>
+                                <span class="badge duration">10 Days</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="trip-content">
+                        <div class="trip-tags">
+                            <span class="tag">🎭 Culture</span>
+                            <span class="tag">🇯🇵 Japan</span>
+                        </div>
+                        <h3>Japan Discovery</h3>
+                        <p>Temples, sushi, cherry blossoms</p>
+                        <div class="trip-footer">
+                            <div class="trip-price">From $3,200</div>
+                            <div class="trip-rating">⭐ 4.8 (156)</div>
+                        </div>
+                        <div class="trip-actions">
+                            <button class="action-btn customize" onclick="customizeTrip(event, 'japan-culture')">Customize</button>
+                            <button class="action-btn ai" onclick="createSimilar(event, 'japan-culture')">AI Similar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="trip-card" data-tags="wellness relaxation asia" onclick="viewTrip('bali-wellness')">
+                    <div class="trip-image">
+                        <img src="https://images.unsplash.com/photo-1537953773345-d172ccf13cf1?w=400&h=300&fit=crop" alt="Bali Wellness">
+                        <div class="trip-overlay">
+                            <div class="trip-badges">
+                                <span class="badge wellness">Wellness</span>
+                                <span class="badge duration">7 Days</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="trip-content">
+                        <div class="trip-tags">
+                            <span class="tag">🧘 Wellness</span>
+                            <span class="tag">🇮🇩 Indonesia</span>
+                        </div>
+                        <h3>Bali Wellness Retreat</h3>
+                        <p>Yoga, spas, beaches, meditation</p>
+                        <div class="trip-footer">
+                            <div class="trip-price">From $1,800</div>
+                            <div class="trip-rating">⭐ 4.9 (203)</div>
+                        </div>
+                        <div class="trip-actions">
+                            <button class="action-btn customize" onclick="customizeTrip(event, 'bali-wellness')">Customize</button>
+                            <button class="action-btn ai" onclick="createSimilar(event, 'bali-wellness')">AI Similar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="trip-card" data-tags="adventure nature europe" onclick="viewTrip('iceland-adventure')">
+                    <div class="trip-image">
+                        <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop" alt="Iceland Adventure">
+                        <div class="trip-overlay">
+                            <div class="trip-badges">
+                                <span class="badge adventure">Adventure</span>
+                                <span class="badge duration">8 Days</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="trip-content">
+                        <div class="trip-tags">
+                            <span class="tag">🏔️ Adventure</span>
+                            <span class="tag">🇮🇸 Iceland</span>
+                        </div>
+                        <h3>Iceland Adventure</h3>
+                        <p>Northern lights, glaciers, waterfalls</p>
+                        <div class="trip-footer">
+                            <div class="trip-price">From $3,600</div>
+                            <div class="trip-rating">⭐ 4.7 (134)</div>
+                        </div>
+                        <div class="trip-actions">
+                            <button class="action-btn customize" onclick="customizeTrip(event, 'iceland-adventure')">Customize</button>
+                            <button class="action-btn ai" onclick="createSimilar(event, 'iceland-adventure')">AI Similar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="trip-card" data-tags="romance luxury europe" onclick="viewTrip('greece-islands')">
+                    <div class="trip-image">
+                        <img src="https://images.unsplash.com/photo-1533105079780-92b9be482077?w=400&h=300&fit=crop" alt="Greek Islands">
+                        <div class="trip-overlay">
+                            <div class="trip-badges">
+                                <span class="badge romance">Romance</span>
+                                <span class="badge duration">9 Days</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="trip-content">
+                        <div class="trip-tags">
+                            <span class="tag">💕 Romance</span>
+                            <span class="tag">🇬🇷 Greece</span>
+                        </div>
+                        <h3>Greek Islands</h3>
+                        <p>Santorini sunsets, Mykonos beaches</p>
+                        <div class="trip-footer">
+                            <div class="trip-price">From $2,900</div>
+                            <div class="trip-rating">⭐ 4.8 (178)</div>
+                        </div>
+                        <div class="trip-actions">
+                            <button class="action-btn customize" onclick="customizeTrip(event, 'greece-islands')">Customize</button>
+                            <button class="action-btn ai" onclick="createSimilar(event, 'greece-islands')">AI Similar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="trip-card" data-tags="budget adventure asia" onclick="viewTrip('thailand-adventure')">
+                    <div class="trip-image">
+                        <img src="https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=400&h=300&fit=crop" alt="Thailand Adventure">
+                        <div class="trip-overlay">
+                            <div class="trip-badges">
+                                <span class="badge budget">Budget</span>
+                                <span class="badge duration">12 Days</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="trip-content">
+                        <div class="trip-tags">
+                            <span class="tag">💰 Budget</span>
+                            <span class="tag">🇹🇭 Thailand</span>
+                        </div>
+                        <h3>Thailand Explorer</h3>
+                        <p>Temples, street food, islands</p>
+                        <div class="trip-footer">
+                            <div class="trip-price">From $1,200</div>
+                            <div class="trip-rating">⭐ 4.6 (267)</div>
+                        </div>
+                        <div class="trip-actions">
+                            <button class="action-btn customize" onclick="customizeTrip(event, 'thailand-adventure')">Customize</button>
+                            <button class="action-btn ai" onclick="createSimilar(event, 'thailand-adventure')">AI Similar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="view-more">
+                <button class="view-more-btn" onclick="viewAllTrips()">
+                    🌍 View All 300+ Itineraries
+                </button>
+                <p class="view-more-subtitle">Or create something new with AI</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <h2>It's This Simple</h2>
+                <p>Three easy ways to get your perfect trip</p>
+            </div>
+            
+            <div class="steps-grid">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>See & Love</h3>
+                    <p>Browse beautiful trips and find one you love</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Customize</h3>
+                    <p>Adjust dates, activities, and budget to fit you</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Book & Go</h3>
+                    <p>Everything's planned - just pack and enjoy</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Alternative Options -->
+    <section class="alternatives">
+        <div class="container">
+            <div class="section-header">
+                <h2>Or Try These Options</h2>
+                <p>Different ways to create your perfect trip</p>
+            </div>
+            
+            <div class="options-grid">
+                <div class="option-card" onclick="startFromScratch()">
+                    <div class="option-icon">🧠</div>
+                    <h3>Start From Scratch</h3>
+                    <p>Tell AI your dream trip and get 3 custom options in minutes</p>
+                    <button class="option-btn">Try AI Builder</button>
+                </div>
+                
+                <div class="option-card" onclick="buildStepByStep()">
+                    <div class="option-icon">🛠️</div>
+                    <h3>Build Step-by-Step</h3>
+                    <p>Full control with guided questions to create exactly what you want</p>
+                    <button class="option-btn">Custom Builder</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Social Proof -->
+    <section class="social-proof">
+        <div class="container">
+            <div class="stats-row">
+                <div class="stat">
+                    <div class="stat-number">47K+</div>
+                    <div class="stat-label">Happy Travelers</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">4.9★</div>
+                    <div class="stat-label">Average Rating</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">95%</div>
+                    <div class="stat-label">Would Recommend</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Travel Blog -->
+    <section class="travel-blog">
+        <div class="container">
+            <div class="section-header">
+                <h2>Latest travel insights & tips</h2>
+                <p>Expert advice and inspiration for your next adventure</p>
+            </div>
+            
+            <div class="blog-grid">
+                <div class="blog-card" onclick="window.location.href='blog-article.html?id=best-destinations-2024'">
+                    <div class="blog-image">
+                        <img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=350&h=200&fit=crop" alt="Best Destinations">
+                        <div class="blog-category">Destinations</div>
+                    </div>
+                    <div class="blog-content">
+                        <h4>Best Travel Destinations for 2024</h4>
+                        <p>Discover the most amazing places to visit this year</p>
+                        <div class="blog-meta">
+                            <span>Dec 15, 2024</span>
+                            <span>8 min read</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="blog-card" onclick="window.location.href='blog-article.html?id=itinerary-planning'">
+                    <div class="blog-image">
+                        <img src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=350&h=200&fit=crop" alt="Itinerary Planning">
+                        <div class="blog-category">Planning</div>
+                    </div>
+                    <div class="blog-content">
+                        <h4>How to Plan the Perfect Itinerary</h4>
+                        <p>Step-by-step guide to creating unforgettable travel experiences</p>
+                        <div class="blog-meta">
+                            <span>Dec 12, 2024</span>
+                            <span>6 min read</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="blog-card" onclick="window.location.href='blog-article.html?id=budget-travel-tips'">
+                    <div class="blog-image">
+                        <img src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=350&h=200&fit=crop" alt="Budget Travel">
+                        <div class="blog-category">Budget Tips</div>
+                    </div>
+                    <div class="blog-content">
+                        <h4>Budget Travel: Save More, Experience More</h4>
+                        <p>Smart strategies to travel the world without breaking the bank</p>
+                        <div class="blog-meta">
+                            <span>Dec 10, 2024</span>
+                            <span>7 min read</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="blog-cta">
+                <a href="blog.html" class="view-all-btn">View All Articles</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>TravelAI</h3>
+                    <p>Turn your travel dreams into reality with AI-powered trip planning.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="flights.html">Flights</a></li>
+                        <li><a href="hotels.html">Hotels</a></li>
+                        <li><a href="itinerary-master-hub.html">Itineraries</a></li>
+                        <li><a href="packages.html">Packages</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="contact.html">Help & Contact</a></li>
+                        <li><a href="blog.html">Travel Blog</a></li>
+                        <li><a href="legal.html">Legal</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 TravelAI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="itinerary-master-hub-script.js"></script>
+</body>
+</html>

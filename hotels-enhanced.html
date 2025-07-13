@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Search & Booking | TravelAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/hotels-enhanced.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav-container">
+        <div class="navbar">
+            <div class="logo">TravelAI</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="flights.html">Flights</a></li>
+                <li><a href="hotels.html" class="active">Hotels</a></li>
+                <li><a href="itinerary-master-hub.html">Itineraries</a></li>
+                <li><a href="packages.html">Packages</a></li>
+            </ul>
+            <a href="auth.html" class="nav-cta">Get Started</a>
+        </div>
+    </nav>
+
+    <!-- Hotel Search Header -->
+    <section class="hotel-header">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="index.html">← Back to Home</a>
+                <span>Hotel Search</span>
+            </div>
+            
+            <div class="hotel-title">
+                <h1>Find your perfect stay</h1>
+                <p>From luxury resorts to cozy boutique hotels</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Hotel Search Form -->
+    <section class="hotel-search">
+        <div class="container">
+            <div class="search-form">
+                <div class="search-inputs">
+                    <div class="input-group">
+                        <label>Where</label>
+                        <input type="text" id="destination" placeholder="City, hotel, or landmark" value="Paris, France">
+                        <div class="input-icon">📍</div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Check-in</label>
+                        <input type="date" id="checkin">
+                        <div class="input-icon">📅</div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Check-out</label>
+                        <input type="date" id="checkout">
+                        <div class="input-icon">📅</div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Guests</label>
+                        <select id="guests">
+                            <option>2 Adults, 1 Room</option>
+                            <option>1 Adult, 1 Room</option>
+                            <option>2 Adults, 2 Children</option>
+                            <option>4 Adults, 2 Rooms</option>
+                        </select>
+                        <div class="input-icon">👥</div>
+                    </div>
+                    
+                    <button class="search-btn" onclick="searchHotels()">
+                        <span>🔍</span>
+                        <span>Search Hotels</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Hotel Results -->
+    <section class="hotel-results" id="hotelResults" style="display: none;">
+        <div class="container">
+            <div class="results-header">
+                <div class="results-info">
+                    <h2 id="locationTitle">Hotels in Paris</h2>
+                    <p id="searchSummary">Dec 15 - Dec 18 • 2 Adults, 1 Room</p>
+                    <div class="results-count" id="resultsCount">Found 247 hotels</div>
+                </div>
+                <div class="results-actions">
+                    <button class="modify-search-btn" onclick="modifySearch()">
+                        <span>✏️</span>
+                        <span>Modify Search</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="filters-bar">
+                <div class="sort-filters">
+                    <button class="filter-btn active" onclick="filterHotels('recommended')">
+                        <span>⭐</span>
+                        <span>Recommended</span>
+                    </button>
+                    <button class="filter-btn" onclick="filterHotels('price')">
+                        <span>💰</span>
+                        <span>Price</span>
+                    </button>
+                    <button class="filter-btn" onclick="filterHotels('rating')">
+                        <span>🏆</span>
+                        <span>Guest Rating</span>
+                    </button>
+                    <button class="filter-btn" onclick="filterHotels('distance')">
+                        <span>📍</span>
+                        <span>Distance</span>
+                    </button>
+                </div>
+                
+                <div class="view-options">
+                    <button class="view-btn active" onclick="setView('list')">📋</button>
+                    <button class="view-btn" onclick="setView('grid')">⊞</button>
+                    <button class="map-btn">🗺️ Map</button>
+                </div>
+            </div>
+            
+            <div class="results-layout">
+                <div class="filters-sidebar">
+                    <div class="filter-section">
+                        <h4>Price per night</h4>
+                        <div class="price-range">
+                            <input type="range" id="priceRange" min="50" max="500" value="250">
+                            <div class="price-labels">
+                                <span>$50</span>
+                                <span id="maxPrice">$250</span>
+                                <span>$500+</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="filter-section">
+                        <h4>Star Rating</h4>
+                        <div class="star-filters">
+                            <label class="filter-checkbox">
+                                <input type="checkbox" checked>
+                                <span>⭐⭐⭐⭐⭐ Luxury</span>
+                                <span class="hotel-count">(47)</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" checked>
+                                <span>⭐⭐⭐⭐ Upscale</span>
+                                <span class="hotel-count">(89)</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox">
+                                <span>⭐⭐⭐ Mid-range</span>
+                                <span class="hotel-count">(156)</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="filter-section">
+                        <h4>Amenities</h4>
+                        <div class="amenity-filters">
+                            <label class="filter-checkbox">
+                                <input type="checkbox" checked>
+                                <span>🌐 Free WiFi</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox">
+                                <span>🍳 Breakfast</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox">
+                                <span>🏊 Pool</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox">
+                                <span>🚗 Parking</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="filter-section">
+                        <h4>Property Type</h4>
+                        <div class="property-filters">
+                            <label class="filter-checkbox">
+                                <input type="checkbox" checked>
+                                <span>🏨 Hotels</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox">
+                                <span>🏠 Apartments</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox">
+                                <span>🏡 Villas</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="hotels-list" id="hotelsList">
+                    <!-- Hotel results populated by JS -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Popular Destinations -->
+    <section class="popular-destinations">
+        <div class="container">
+            <div class="section-header">
+                <h2>Popular destinations worldwide</h2>
+                <p>Discover amazing places with great hotel deals</p>
+            </div>
+            
+            <div class="destinations-grid">
+                <div class="destination-card" onclick="selectDestination('paris')">
+                    <img src="https://images.unsplash.com/photo-1502602898536-47ad22581b52?w=400&h=250&fit=crop" alt="Paris">
+                    <div class="price-badge">From $89/night</div>
+                    <div class="card-content">
+                        <h3>Paris, France</h3>
+                        <p>City of Light & Romance</p>
+                        <div class="hotel-info">
+                            <span>🏨 2,847 hotels</span>
+                            <span>⭐ 4.2 avg rating</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="destination-card" onclick="selectDestination('tokyo')">
+                    <img src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=400&h=250&fit=crop" alt="Tokyo">
+                    <div class="price-badge">From $75/night</div>
+                    <div class="card-content">
+                        <h3>Tokyo, Japan</h3>
+                        <p>Modern Metropolis & Tradition</p>
+                        <div class="hotel-info">
+                            <span>🏨 3,156 hotels</span>
+                            <span>⭐ 4.4 avg rating</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="destination-card" onclick="selectDestination('london')">
+                    <img src="https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&h=250&fit=crop" alt="London">
+                    <div class="price-badge">From $95/night</div>
+                    <div class="card-content">
+                        <h3>London, UK</h3>
+                        <p>Royal Heritage & Culture</p>
+                        <div class="hotel-info">
+                            <span>🏨 4,231 hotels</span>
+                            <span>⭐ 4.1 avg rating</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="destination-card" onclick="selectDestination('bali')">
+                    <img src="https://images.unsplash.com/photo-1537953773345-d172ccf13cf1?w=400&h=250&fit=crop" alt="Bali">
+                    <div class="price-badge">From $45/night</div>
+                    <div class="card-content">
+                        <h3>Bali, Indonesia</h3>
+                        <p>Tropical Paradise & Temples</p>
+                        <div class="hotel-info">
+                            <span>🏨 1,923 hotels</span>
+                            <span>⭐ 4.5 avg rating</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us -->
+    <section class="why-choose-us">
+        <div class="container">
+            <div class="section-header">
+                <h2>Why book hotels with TravelAI?</h2>
+                <p>We make hotel booking simple, transparent, and rewarding</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">💰</div>
+                    <h3>Best Price Guarantee</h3>
+                    <p>Find a lower price? We'll match it and give you 110% of the difference back</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3>AI-Powered Matching</h3>
+                    <p>Our smart algorithms find hotels that perfectly match your preferences and budget</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🛡️</div>
+                    <h3>Flexible Cancellation</h3>
+                    <p>Free cancellation on most bookings and easy modifications for peace of mind</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Complete Trip Planning</h3>
+                    <p>Book hotels with flights and activities for seamless travel experiences</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>TravelAI</h3>
+                    <p>Turn your travel dreams into reality with AI-powered trip planning.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="flights.html">Flights</a></li>
+                        <li><a href="hotels.html">Hotels</a></li>
+                        <li><a href="itinerary-master-hub.html">Itineraries</a></li>
+                        <li><a href="packages.html">Packages</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="contact.html">Help & Contact</a></li>
+                        <li><a href="blog.html">Travel Blog</a></li>
+                        <li><a href="legal.html">Legal</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 TravelAI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/hotels-enhanced.js"></script>
+</body>
+</html>

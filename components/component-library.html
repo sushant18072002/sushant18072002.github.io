@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TravelAI Component Library</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary-900: #0F172A; --primary-800: #1E293B; --primary-700: #334155; --primary-600: #475569; --primary-400: #94A3B8; --primary-100: #F1F5F9;
+            --ocean-blue: #1E40AF; --mirage-blue: #4b90e6; --governor-bay: #2553eb; --emerald: #10B981; --premium-amber: #F59E0B; --soft-coral: #FF6B6B;
+        }
+
+        body { font-family: 'Inter', sans-serif; line-height: 1.5; background: var(--primary-50); }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        
+        /* Component Sections */
+        .component-section { margin-bottom: 4rem; }
+        .section-title { font-size: 2rem; font-weight: 700; color: var(--primary-900); margin-bottom: 2rem; }
+        .component-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
+        .component-card { background: white; border-radius: 1rem; padding: 2rem; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); }
+        .component-title { font-size: 1.2rem; font-weight: 600; color: var(--primary-900); margin-bottom: 1rem; }
+        
+        /* Navigation Components */
+        .nav-demo {
+            background: rgba(15, 23, 42, 0.95); color: white; padding: 1rem; border-radius: 0.5rem;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo { font-size: 1.2rem; font-weight: 800; background: linear-gradient(135deg, var(--governor-bay), var(--mirage-blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-links { display: flex; gap: 1rem; list-style: none; }
+        .nav-links a { color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 0.25rem; }
+        .nav-links a:hover { background: rgba(255, 255, 255, 0.1); }
+        
+        /* Button Components */
+        .btn-primary { background: linear-gradient(135deg, var(--governor-bay), var(--ocean-blue)); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+        .btn-secondary { background: var(--primary-100); color: var(--primary-700); border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600; cursor: pointer; }
+        .btn-outline { background: none; color: var(--governor-bay); border: 2px solid var(--governor-bay); padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600; cursor: pointer; }
+        
+        /* Card Components */
+        .card-basic { background: white; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); }
+        .card-hover { transition: all 0.3s ease; cursor: pointer; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15); }
+        
+        /* Form Components */
+        .form-input { padding: 0.75rem; border: 2px solid var(--primary-200); border-radius: 0.5rem; font-size: 0.9rem; width: 100%; }
+        .form-input:focus { outline: none; border-color: var(--governor-bay); box-shadow: 0 0 0 3px rgba(37, 83, 235, 0.1); }
+        .form-label { font-weight: 500; color: var(--primary-700); margin-bottom: 0.5rem; display: block; }
+        
+        /* Badge Components */
+        .badge { padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.8rem; font-weight: 500; }
+        .badge-success { background: rgba(16, 185, 129, 0.1); color: var(--emerald); }
+        .badge-warning { background: rgba(245, 158, 11, 0.1); color: var(--premium-amber); }
+        .badge-error { background: rgba(255, 107, 107, 0.1); color: var(--soft-coral); }
+        .badge-info { background: rgba(37, 83, 235, 0.1); color: var(--governor-bay); }
+        
+        /* Loading Components */
+        .loading-spinner { width: 40px; height: 40px; border: 4px solid var(--primary-200); border-top: 4px solid var(--governor-bay); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Modal Components */
+        .modal-demo { background: white; border-radius: 1rem; padding: 2rem; max-width: 400px; box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--primary-600); }
+        
+        /* Search Components */
+        .search-widget { background: white; border-radius: 1rem; padding: 2rem; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); }
+        .search-tabs { display: flex; background: var(--primary-100); border-radius: 0.5rem; padding: 0.25rem; margin-bottom: 1rem; }
+        .search-tab { flex: 1; background: none; border: none; padding: 0.5rem; border-radius: 0.25rem; cursor: pointer; }
+        .search-tab.active { background: white; color: var(--governor-bay); font-weight: 600; }
+        
+        /* Price Components */
+        .price-display { font-size: 2rem; font-weight: 800; color: var(--governor-bay); }
+        .price-comparison { display: flex; gap: 1rem; }
+        .price-card { border: 2px solid var(--primary-200); border-radius: 0.5rem; padding: 1rem; text-align: center; }
+        .price-card.best { border-color: var(--emerald); background: rgba(16, 185, 129, 0.05); }
+        
+        /* Timeline Components */
+        .timeline { position: relative; }
+        .timeline-item { position: relative; padding-left: 2rem; margin-bottom: 2rem; }
+        .timeline-item::before { content: ''; position: absolute; left: 0.5rem; top: 0; bottom: -2rem; width: 2px; background: var(--primary-200); }
+        .timeline-marker { position: absolute; left: 0; top: 0; width: 1.5rem; height: 1.5rem; background: var(--governor-bay); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; }
+        
+        /* Filter Components */
+        .filter-group { margin-bottom: 1.5rem; }
+        .filter-title { font-weight: 600; color: var(--primary-900); margin-bottom: 0.5rem; }
+        .filter-option { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+        .filter-option input[type="checkbox"] { accent-color: var(--governor-bay); }
+        
+        /* Rating Components */
+        .rating-stars { color: var(--premium-amber); }
+        .rating-score { background: var(--governor-bay); color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-weight: 600; }
+        
+        /* Progress Components */
+        .progress-bar { width: 100%; height: 8px; background: var(--primary-200); border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--governor-bay), var(--mirage-blue)); border-radius: 4px; transition: width 0.5s ease; }
+        
+        /* Alert Components */
+        .alert { padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; }
+        .alert-success { background: rgba(16, 185, 129, 0.1); color: var(--emerald); border: 1px solid rgba(16, 185, 129, 0.2); }
+        .alert-warning { background: rgba(245, 158, 11, 0.1); color: var(--premium-amber); border: 1px solid rgba(245, 158, 11, 0.2); }
+        .alert-error { background: rgba(255, 107, 107, 0.1); color: var(--soft-coral); border: 1px solid rgba(255, 107, 107, 0.2); }
+        
+        /* Tooltip Components */
+        .tooltip { position: relative; cursor: pointer; }
+        .tooltip-text { position: absolute; bottom: 125%; left: 50%; transform: translateX(-50%); background: var(--primary-900); color: white; padding: 0.5rem; border-radius: 0.25rem; font-size: 0.8rem; white-space: nowrap; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+        .tooltip:hover .tooltip-text { opacity: 1; visibility: visible; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="font-size: 3rem; font-weight: 800; color: var(--primary-900); margin-bottom: 3rem; text-align: center;">TravelAI Component Library</h1>
+        
+        <!-- Navigation Components -->
+        <div class="component-section">
+            <h2 class="section-title">🧭 Navigation Components</h2>
+            <div class="component-grid">
+                <div class="component-card">
+                    <h3 class="component-title">Primary Navigation</h3>
+                    <div class="nav-demo">
+                        <div class="logo">TravelAI</div>
+                        <ul class="nav-links">
+                            <li><a href="#">Home</a></li>
+                            <li><a href="#">Flights</a></li>
+                            <li><a href="#">Hotels</a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="component-card">
+                    <h3 class="component-title">Breadcrumb Navigation</h3>
+                    <nav style="display: flex; align-items: center; gap: 0.5rem; color: var(--primary-600);">
+                        <a href="#" style="color: var(--governor-bay); text-decoration: none;">Home</a>
+                        <span>›</span>
+                        <a href="#" style="color: var(--governor-bay); text-decoration: none;">Flights</a>
+                        <span>›</span>
+                        <span>Search Results</span>
+                    </nav>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Button Components -->
+        <div class="component-section">
+            <h2 class="section-title">🔘 Button Components</h2>
+            <div class="component-grid">
+                <div class="component-card">
+                    <h3 class="component-title">Button Variants</h3>
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <button class="btn-primary">Primary Button</button>
+                        <button class="btn-secondary">Secondary Button</button>
+                        <button class="btn-outline">Outline Button</button>
+                    </div>
+                </div>
+                
+                <div class="component-card">
+                    <h3 class="component-title">Icon Buttons</h3>
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn-primary"><i class="fas fa-search"></i> Search</button>
+                        <button class="btn-secondary"><i class="fas fa-heart"></i> Save</button>
+                        <button class="btn-outline"><i class="fas fa-share"></i> Share</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Card Components -->
+        <div class="component-section">
+            <h2 class="section-title">🃏 Card Components</h2>
+            <div class="component-grid">
+                <div class="component-card">
+                    <h3 class="component-title">Basic Card</h3>
+                    <div class="card-basic">
+                        <h4 style="margin-bottom: 0.5rem;">Card Title</h4>
+                        <p style="color: var(--primary-600);">This is a basic card component with some content.</p>
+                    </div>
+                </div>
+                
+                <div class="component-card">
+                    <h3 class="component-title">Hover Card</h3>
+                    <div class="card-basic card-hover">
+                        <h4 style="margin-bottom: 0.5rem;">Hover Card</h4>
+                        <p style="color: var(--primary-600);">This card has hover effects and animations.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Form Components -->
+        <div class="component-section">
+            <h2 class="section-title">📝 Form Components</h2>
+            <div class="component-grid">
+                <div class="component-card">
+                    <h3 class="component-title">Input Fields</h3>
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div>
+                            <label class="form-label">Text Input</label>
+                            <input type="text" class="form-input" placeholder="Enter text...">
+                        </div>
+                        <div>
+                            <label class="form-label">Date Input</label>
+                            <input type="date" class="form-input">
+                        </div>
+                        <div>
+                            <label class="form-label">Select Input</label>
+                            <select class="form-input">
+                                <option>Option 1</option>
+                                <option>Option 2</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="component-card">
+                    <h3 class="component-title">Search Widget</h3>
+                    <div class="search-widget">
+                        <div class="search-tabs">
+                            <button class="search-tab active">Flights</button>
+                            <button class="search-tab">Hotels</button>
+                            <button class="search-tab">Packages</button>
+                        </div>
+                        <input type="text" class="form-input" placeholder="Search destinations...">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Badge Components -->
+        <div class="component-section">
+            <h2 class="section-title">🏷️ Badge Components</h2>
+            <div class="component-grid">
+                <div class="component-card">
+                    <h3 class="component-title">Status Badges</h3>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                        <span class="badge badge-success">Confirmed</span>
+                        <span class="badge badge-warning">Pending</span>
+                        <span class="badge badge-error">Cancelled</span>
+                        <span class="badge badge-info">Processing</span>
+                    </div>
+                </div>
+                
+                <div class="component-card">
+                    <h3 class="component-title">Feature Badges</h3>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                        <span class="badge badge-success">Free WiFi</span>
+                        <span class="badge badge-info">Direct Flight</span>
+                        <span class="badge badge-warning">Popular</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Loading Components -->
+        <div class="component-section">
+            <h2 class="section-title">⏳ Loading Components</h2>
+            <div class="component-grid">
+                <div class="component-card">
+                    <h3 class="component-title">Loading Spinner</h3>
+                    <div style="display: flex; justify-content: center; padding: 2rem;">
+                        <div class="loading-spinner"></div>
+                    </div>
+                </div>
+                
+                <div class="component-card">
+                    <h3 class="component-title">Progress Bar</h3>
+                    <div>
+                        <div style="margin-bottom: 0.5rem; display: flex; justify-content: space-between;">
+                            <span>Loading...</span>
+                            <span>75%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 75%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Modal Components -->
+        <div class="component-section">
+            <h2 class="section-title">🪟 Modal Components</h2>
+            <div class="component-grid">
+                <div class="component-card">
+                    <h3 class="component-title">Basic Modal</h3>
+                    <div class="modal-demo">
+                        <div class="modal-header">
+                            <h4>Modal Title</h4>
+                            <button class="modal-close">&times;</button>
+                        </div>
+                        <p style="color: var(--primary-600);">This is modal content with some information.</p>
+                        <div style="margin-top: 1rem; display: flex; gap: 0.5rem; justify-content: end;">
+                            <button class="btn-secondary">Cancel</button>
+                            <button class="btn-primary">Confirm</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Price Components -->
+        <div class="component-section">
+            <h2 class="section-title">💰 Price Components</h2>
+            <div class="component-grid">
+                <div class="component-card">
+                    <h3 class="component-title">Price Display</h3>
+                    <div style="text-align: center;">
+                        <div class="price-display">$1,299</div>
+                        <div style="color: var(--primary-600);">per person</div>
+                    </div>
+                </div>
+                
+                <div class="component-card">
+                    <h3 class="component-title">Price Comparison</h3>
+                    <div class="price-comparison">
+                        <div class="price-card">
+                            <div style="font-weight: 600;">TravelAI</div>
+                            <div style="font-size: 1.2rem; font-weight: 700; color: var(--governor-bay);">$1,299</div>
+                        </div>
+                        <div class="price-card best">
+                            <div style="font-weight: 600;">Best Deal</div>
+                            <div style="font-size: 1.2rem; font-weight: 700; color: var(--emerald);">$1,199</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Timeline Components -->
+        <div class="component-section">
+            <h2 class="section-title">📅 Timeline Components</h2>
+            <div class="component-grid">
+                <div class="component-card">
+                    <h3 class="component-title">Itinerary Timeline</h3>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker">1</div>
+                            <div>
+                                <h4 style="margin-bottom: 0.25rem;">Day 1: Arrival</h4>
+                                <p style="color: var(--primary-600); font-size: 0.9rem;">Airport pickup and hotel check-in</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker">2</div>
+                            <div>
+                                <h4 style="margin-bottom: 0.25rem;">Day 2: City Tour</h4>
+                                <p style="color: var(--primary-600); font-size: 0.9rem;">Explore major attractions</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Filter Components -->
+        <div class="component-section">
+            <h2 class="section-title">🔍 Filter Components</h2>
+            <div class="component-grid">
+                <div class="component-card">
+                    <h3 class="component-title">Filter Group</h3>
+                    <div class="filter-group">
+                        <div class="filter-title">Price Range</div>
+                        <input type="range" style="width: 100%; accent-color: var(--governor-bay);" min="0" max="1000" value="500">
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-title">Airlines</div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="airline1">
+                            <label for="airline1">American Airlines</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="airline2">
+                            <label for="airline2">United Airlines</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Rating Components -->
+        <div class="component-section">
+            <h2 class="section-title">⭐ Rating Components</h2>
+            <div class="component-grid">
+                <div class="component-card">
+                    <h3 class="component-title">Star Ratings</h3>
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span class="rating-stars">★★★★★</span>
+                            <span class="rating-score">4.8</span>
+                            <span style="color: var(--primary-600);">(1,247 reviews)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span class="rating-stars">★★★★☆</span>
+                            <span class="rating-score">4.2</span>
+                            <span style="color: var(--primary-600);">(892 reviews)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Alert Components -->
+        <div class="component-section">
+            <h2 class="section-title">🚨 Alert Components</h2>
+            <div class="component-grid">
+                <div class="component-card">
+                    <h3 class="component-title">Alert Messages</h3>
+                    <div class="alert alert-success">
+                        <strong>Success!</strong> Your booking has been confirmed.
+                    </div>
+                    <div class="alert alert-warning">
+                        <strong>Warning!</strong> Price may change soon.
+                    </div>
+                    <div class="alert alert-error">
+                        <strong>Error!</strong> Something went wrong.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tooltip Components -->
+        <div class="component-section">
+            <h2 class="section-title">💬 Tooltip Components</h2>
+            <div class="component-grid">
+                <div class="component-card">
+                    <h3 class="component-title">Hover Tooltips</h3>
+                    <div style="display: flex; gap: 2rem; justify-content: center; padding: 2rem;">
+                        <div class="tooltip">
+                            <span style="color: var(--governor-bay); cursor: pointer;">Hover me</span>
+                            <div class="tooltip-text">This is a tooltip!</div>
+                        </div>
+                        <div class="tooltip">
+                            <i class="fas fa-info-circle" style="color: var(--governor-bay); cursor: pointer;"></i>
+                            <div class="tooltip-text">More information</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

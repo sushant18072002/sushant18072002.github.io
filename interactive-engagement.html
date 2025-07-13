@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Engagement Elements - TravelAI</title>
+    <style>
+        /* INTERACTIVE ENGAGEMENT SYSTEM */
+        
+        /* Micro-Interactions */
+        .interactive-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .interactive-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(37, 83, 235, 0.1), transparent);
+            transition: left 0.6s ease;
+        }
+        .interactive-card:hover::before { left: 100%; }
+        .interactive-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 60px rgba(37, 83, 235, 0.2);
+        }
+        
+        /* Progress Indicators */
+        .progress-ring {
+            width: 120px;
+            height: 120px;
+            position: relative;
+            margin: 0 auto 1rem;
+        }
+        .progress-ring svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+        .progress-ring circle {
+            fill: none;
+            stroke-width: 8;
+            stroke-linecap: round;
+        }
+        .progress-ring .bg { stroke: #E5E7EB; }
+        .progress-ring .progress {
+            stroke: #2563EB;
+            stroke-dasharray: 283;
+            stroke-dashoffset: 283;
+            transition: stroke-dashoffset 2s ease-in-out;
+        }
+        .progress-ring.animate .progress { stroke-dashoffset: 113; } /* 60% progress */
+        
+        /* Gamification Elements */
+        .achievement-badge {
+            background: linear-gradient(135deg, #F59E0B, #F97316);
+            color: white;
+            padding: 1rem;
+            border-radius: 1rem;
+            text-align: center;
+            position: relative;
+            animation: achievement-glow 3s infinite;
+        }
+        @keyframes achievement-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(245, 158, 11, 0.3); }
+            50% { box-shadow: 0 0 30px rgba(245, 158, 11, 0.6); }
+        }
+        
+        /* Interactive Sliders */
+        .budget-slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: #E5E7EB;
+            outline: none;
+            position: relative;
+            appearance: none;
+        }
+        .budget-slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2563EB, #3B82F6);
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+            transition: all 0.3s ease;
+        }
+        .budget-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.6);
+        }
+        
+        /* Real-time Feedback */
+        .feedback-container {
+            background: linear-gradient(135deg, #F0F9FF, #E0F2FE);
+            border: 2px solid #0EA5E9;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            position: relative;
+        }
+        .feedback-pulse {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            width: 20px;
+            height: 20px;
+            background: #10B981;
+            border-radius: 50%;
+            animation: pulse-dot 2s infinite;
+        }
+        @keyframes pulse-dot {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+        
+        /* Hover Reveals */
+        .hover-reveal {
+            position: relative;
+            overflow: hidden;
+            border-radius: 1rem;
+        }
+        .hover-reveal-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            color: white;
+            padding: 2rem;
+            transform: translateY(100%);
+            transition: transform 0.4s ease;
+        }
+        .hover-reveal:hover .hover-reveal-content {
+            transform: translateY(0);
+        }
+        
+        /* Interactive Tooltips */
+        .tooltip-trigger {
+            position: relative;
+            cursor: help;
+            border-bottom: 2px dotted #6B7280;
+        }
+        .tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1F2937;
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: #1F2937;
+        }
+        .tooltip-trigger:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(-8px);
+        }
+        
+        /* Animated Counters */
+        .counter {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #2563EB;
+            text-align: center;
+        }
+        
+        /* Interactive Tabs */
+        .tab-container {
+            background: white;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .tab-nav {
+            display: flex;
+            background: #F9FAFB;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 1rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            color: #6B7280;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .tab-btn.active {
+            color: #2563EB;
+            background: white;
+        }
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #2563EB;
+        }
+        .tab-content {
+            padding: 2rem;
+            display: none;
+        }
+        .tab-content.active { display: block; }
+        
+        /* Floating Action Elements */
+        .floating-cta {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 50px;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            animation: float-bounce 3s infinite;
+        }
+        @keyframes float-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .floating-cta:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 35px rgba(16, 185, 129, 0.6);
+        }
+    </style>
+</head>
+<body style="background: #F8FAFC; padding: 2rem;">
+    
+    <!-- Interactive Cards with Micro-interactions -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
+        <div class="interactive-card" onclick="selectDestination('tokyo')">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🏯</div>
+            <h3 style="margin-bottom: 0.5rem;">Tokyo Adventure</h3>
+            <p style="color: #6B7280; margin-bottom: 1rem;">7 days of culture and cuisine</p>
+            <div style="font-size: 1.5rem; font-weight: 700; color: #2563EB;">$1,299</div>
+        </div>
+        
+        <div class="interactive-card" onclick="selectDestination('paris')">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🗼</div>
+            <h3 style="margin-bottom: 0.5rem;">Paris Romance</h3>
+            <p style="color: #6B7280; margin-bottom: 1rem;">5 days of art and elegance</p>
+            <div style="font-size: 1.5rem; font-weight: 700; color: #2563EB;">$899</div>
+        </div>
+        
+        <div class="interactive-card" onclick="selectDestination('bali')">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🏖️</div>
+            <h3 style="margin-bottom: 0.5rem;">Bali Paradise</h3>
+            <p style="color: #6B7280; margin-bottom: 1rem;">10 days of tropical bliss</p>
+            <div style="font-size: 1.5rem; font-weight: 700; color: #2563EB;">$1,599</div>
+        </div>
+    </div>
+    
+    <!-- Progress Ring -->
+    <div style="text-align: center; margin: 3rem 0;">
+        <h3 style="margin-bottom: 2rem;">Your Trip Planning Progress</h3>
+        <div class="progress-ring" id="progress-ring">
+            <svg>
+                <circle class="bg" cx="60" cy="60" r="45"></circle>
+                <circle class="progress" cx="60" cy="60" r="45"></circle>
+            </svg>
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.5rem; font-weight: 700; color: #2563EB;">
+                60%
+            </div>
+        </div>
+        <p style="color: #6B7280;">Almost there! Complete your booking.</p>
+    </div>
+    
+    <!-- Interactive Budget Slider -->
+    <div style="background: white; padding: 2rem; border-radius: 1rem; margin: 2rem 0; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+        <h3 style="margin-bottom: 1rem;">What's your budget?</h3>
+        <div style="margin: 2rem 0;">
+            <input type="range" min="500" max="5000" value="2000" class="budget-slider" id="budget-slider">
+            <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; color: #6B7280; font-size: 0.875rem;">
+                <span>$500</span>
+                <span id="budget-value" style="font-weight: 700; color: #2563EB;">$2,000</span>
+                <span>$5,000+</span>
+            </div>
+        </div>
+        <div class="feedback-container">
+            <div class="feedback-pulse"></div>
+            <p id="budget-feedback">Perfect! We found 12 amazing trips in your budget range.</p>
+        </div>
+    </div>
+    
+    <!-- Interactive Tabs -->
+    <div class="tab-container" style="margin: 2rem 0;">
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab(0)">✈️ Flights</button>
+            <button class="tab-btn" onclick="switchTab(1)">🏨 Hotels</button>
+            <button class="tab-btn" onclick="switchTab(2)">🗺️ Activities</button>
+        </div>
+        <div class="tab-content active">
+            <h4>Flight Options</h4>
+            <p>Choose from 500+ airlines with our best price guarantee.</p>
+        </div>
+        <div class="tab-content">
+            <h4>Hotel Selection</h4>
+            <p>From budget-friendly to luxury, find your perfect stay.</p>
+        </div>
+        <div class="tab-content">
+            <h4>Local Experiences</h4>
+            <p>Discover unique activities and hidden gems.</p>
+        </div>
+    </div>
+    
+    <!-- Hover Reveal Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin: 2rem 0;">
+        <div class="hover-reveal" style="height: 200px; background: linear-gradient(135deg, #FF6B6B, #FF8E8E);">
+            <div class="hover-reveal-content">
+                <h4>Flash Sale!</h4>
+                <p>40% off all European packages</p>
+                <button style="background: white; color: #FF6B6B; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; margin-top: 0.5rem;">Book Now</button>
+            </div>
+        </div>
+        
+        <div class="hover-reveal" style="height: 200px; background: linear-gradient(135deg, #4ECDC4, #44A08D);">
+            <div class="hover-reveal-content">
+                <h4>New Destination</h4>
+                <p>Explore the hidden gems of Iceland</p>
+                <button style="background: white; color: #4ECDC4; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; margin-top: 0.5rem;">Discover</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Achievement Badge -->
+    <div class="achievement-badge" style="margin: 2rem auto; max-width: 300px;">
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🏆</div>
+        <h4>Congratulations!</h4>
+        <p>You've unlocked VIP status with 20% off all bookings!</p>
+    </div>
+    
+    <!-- Tooltips -->
+    <div style="text-align: center; margin: 2rem 0;">
+        <p>Our <span class="tooltip-trigger">AI algorithm
+            <span class="tooltip">Uses machine learning to analyze millions of travel patterns</span>
+        </span> finds the perfect trip for you.</p>
+    </div>
+    
+    <!-- Animated Counter -->
+    <div style="text-align: center; margin: 3rem 0;">
+        <div class="counter" id="counter">0</div>
+        <p style="color: #6B7280;">Happy travelers this month</p>
+    </div>
+    
+    <!-- Floating CTA -->
+    <div class="floating-cta" onclick="startBooking()">
+        🚀 Start Planning
+    </div>
+    
+    <script>
+        // Progress Ring Animation
+        setTimeout(() => {
+            document.getElementById('progress-ring').classList.add('animate');
+        }, 1000);
+        
+        // Budget Slider Interaction
+        const budgetSlider = document.getElementById('budget-slider');
+        const budgetValue = document.getElementById('budget-value');
+        const budgetFeedback = document.getElementById('budget-feedback');
+        
+        budgetSlider.addEventListener('input', function() {
+            const value = this.value;
+            budgetValue.textContent = '$' + parseInt(value).toLocaleString();
+            
+            // Dynamic feedback based on budget
+            if (value < 1000) {
+                budgetFeedback.textContent = 'Great! We have amazing budget-friendly options for you.';
+            } else if (value < 3000) {
+                budgetFeedback.textContent = 'Perfect! We found 12 amazing trips in your budget range.';
+            } else {
+                budgetFeedback.textContent = 'Excellent! Luxury experiences and premium destinations await.';
+            }
+        });
+        
+        // Tab Switching
+        function switchTab(index) {
+            document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+                btn.classList.toggle('active', i === index);
+            });
+            document.querySelectorAll('.tab-content').forEach((content, i) => {
+                content.classList.toggle('active', i === index);
+            });
+        }
+        
+        // Animated Counter
+        function animateCounter() {
+            const counter = document.getElementById('counter');
+            const target = 15247;
+            let current = 0;
+            const increment = target / 100;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(timer);
+                }
+                counter.textContent = Math.floor(current).toLocaleString();
+            }, 30);
+        }
+        
+        // Trigger counter when visible
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateCounter();
+                    observer.unobserve(entry.target);
+                }
+            });
+        });
+        observer.observe(document.getElementById('counter'));
+        
+        // Interactive Functions
+        function selectDestination(dest) {
+            console.log('Selected destination:', dest);
+            // Add selection feedback
+            event.target.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                event.target.style.transform = '';
+            }, 150);
+        }
+        
+        function startBooking() {
+            alert('Starting your booking journey! 🚀');
+        }
+    </script>
+</body>
+</html>

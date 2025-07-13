@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Dream Builder | TravelAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/itinerary-ai-compact.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav-container">
+        <div class="navbar">
+            <div class="logo">TravelAI</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="flights.html">Flights</a></li>
+                <li><a href="hotels.html">Hotels</a></li>
+                <li><a href="itinerary-master-hub.html" class="active">Itineraries</a></li>
+                <li><a href="packages.html">Packages</a></li>
+            </ul>
+            <a href="auth.html" class="nav-cta">Get Started</a>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <section class="page-header">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="itinerary-master-hub.html">← Back to Itineraries</a>
+                <span>AI Dream Builder</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI Builder -->
+    <section class="ai-builder">
+        <div class="container">
+            <div class="builder-layout">
+                <div class="builder-content">
+                    <div class="builder-header">
+                        <h1>🧠 Describe Your Dream Trip</h1>
+                        <p>Tell me what you're looking for and I'll create the perfect itinerary in minutes</p>
+                    </div>
+                    
+                    <div class="dream-input">
+                        <textarea 
+                            id="dreamInput" 
+                            placeholder="I want to go somewhere romantic with amazing food and beautiful views..."
+                            rows="4"
+                        ></textarea>
+                        <button class="create-btn" onclick="createTrip()">
+                            ✨ Create My Dream Trip
+                        </button>
+                    </div>
+                    
+                    <div class="quick-ideas">
+                        <span>Quick ideas:</span>
+                        <div class="idea-chips">
+                            <button class="idea-chip" onclick="setIdea('romantic Paris with art and wine')">
+                                💕 Romantic Paris
+                            </button>
+                            <button class="idea-chip" onclick="setIdea('adventure in Japan with temples')">
+                                🗾 Japan Adventure
+                            </button>
+                            <button class="idea-chip" onclick="setIdea('tropical beach paradise')">
+                                🏝️ Beach Paradise
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="builder-preview">
+                    <div class="preview-card">
+                        <h3>How AI Works</h3>
+                        <div class="process-steps">
+                            <div class="step">
+                                <span class="step-num">1</span>
+                                <span>You describe your dream</span>
+                            </div>
+                            <div class="step">
+                                <span class="step-num">2</span>
+                                <span>AI analyzes preferences</span>
+                            </div>
+                            <div class="step">
+                                <span class="step-num">3</span>
+                                <span>Perfect itinerary created</span>
+                            </div>
+                        </div>
+                        <div class="stats">
+                            <div class="stat">
+                                <strong>98%</strong>
+                                <span>Success rate</span>
+                            </div>
+                            <div class="stat">
+                                <strong>2.3M</strong>
+                                <span>Trips created</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results Section -->
+    <section class="results-section" id="resultsSection" style="display: none;">
+        <div class="container">
+            <div class="results-header">
+                <div class="success-icon">🎉</div>
+                <h2>Your dream trip is ready!</h2>
+                <p>Based on your description, here's your personalized itinerary</p>
+            </div>
+            
+            <div class="generated-itinerary" id="generatedItinerary">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Popular Templates -->
+    <section class="popular-templates">
+        <div class="container">
+            <div class="section-header">
+                <h2>Popular AI-created trips</h2>
+                <p>These dreams became our most-loved itineraries</p>
+            </div>
+            
+            <div class="templates-grid">
+                <div class="template-card" onclick="useTemplate('romantic-europe')">
+                    <img src="https://images.unsplash.com/photo-1502602898536-47ad22581b52?w=300&h=180&fit=crop" alt="Europe">
+                    <div class="template-content">
+                        <div class="template-badge">AI → Itinerary</div>
+                        <h4>Romantic Europe</h4>
+                        <p>"Romantic trip through Europe's most beautiful cities"</p>
+                        <div class="template-stats">
+                            <span>💕 Perfect for couples</span>
+                            <span>💰 From $3,200</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="template-card" onclick="useTemplate('asia-adventure')">
+                    <img src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=300&h=180&fit=crop" alt="Asia">
+                    <div class="template-content">
+                        <div class="template-badge">AI → Itinerary</div>
+                        <h4>Asia Adventure</h4>
+                        <p>"Adventure and culture across Southeast Asia"</p>
+                        <div class="template-stats">
+                            <span>🎭 Perfect for explorers</span>
+                            <span>💰 From $2,400</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="template-card" onclick="useTemplate('tropical-paradise')">
+                    <img src="https://images.unsplash.com/photo-1537953773345-d172ccf13cf1?w=300&h=180&fit=crop" alt="Tropical">
+                    <div class="template-content">
+                        <div class="template-badge">AI → Itinerary</div>
+                        <h4>Tropical Paradise</h4>
+                        <p>"Beach relaxation with wellness and adventure"</p>
+                        <div class="template-stats">
+                            <span>🏝️ Perfect for relaxation</span>
+                            <span>💰 From $1,800</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>TravelAI</h3>
+                    <p>Turn your travel dreams into reality with AI-powered trip planning.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="flights.html">Flights</a></li>
+                        <li><a href="hotels.html">Hotels</a></li>
+                        <li><a href="itinerary-master-hub.html">Itineraries</a></li>
+                        <li><a href="packages.html">Packages</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="contact.html">Help & Contact</a></li>
+                        <li><a href="blog.html">Travel Blog</a></li>
+                        <li><a href="legal.html">Legal</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 TravelAI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/itinerary-ai-compact.js"></script>
+</body>
+</html>

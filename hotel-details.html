@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spectacular views of Queenstown - TravelAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/hotel-details.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav-container">
+        <div class="navbar">
+            <div class="logo">TravelAI</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="flights.html">Flights</a></li>
+                <li><a href="hotels.html" class="active">Hotels</a></li>
+                <li><a href="itinerary-master-hub.html">Itineraries</a></li>
+                <li><a href="packages.html">Packages</a></li>
+            </ul>
+            <a href="auth.html" class="nav-cta">Get Started</a>
+        </div>
+    </nav>
+
+    <!-- Breadcrumbs -->
+    <section class="breadcrumb-section">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="hotels.html">← Back to Results</a>
+                <span>Hotel Details</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Hotel Header -->
+    <section class="hotel-header">
+        <div class="container">
+            <div class="hotel-title">
+                <h1>Spectacular views of Queenstown</h1>
+                <p>Superhost • Queenstown, New Zealand • ⭐ 4.8 (256 reviews)</p>
+            </div>
+            <div class="action-buttons">
+                <button class="action-btn" data-action="location">📍</button>
+                <button class="action-btn" data-action="share">📤</button>
+                <button class="action-btn" data-action="favorite">❤️</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery -->
+    <section class="hotel-gallery">
+        <div class="container">
+            <div class="gallery-grid">
+                <div class="main-gallery">
+                    <img src="https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=832&h=832&fit=crop" alt="Hotel main view">
+                    <div class="gallery-overlay" id="showAllPhotos">
+                        <span>🖼️</span>
+                        <span>Show all photos</span>
+                    </div>
+                </div>
+                <div class="side-gallery">
+                    <img src="https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=272&h=272&fit=crop" alt="Hotel lobby">
+                    <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=272&h=272&fit=crop" alt="Hotel room">
+                    <img src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=272&h=272&fit=crop" alt="Hotel restaurant">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <section class="hotel-main">
+        <div class="container">
+            <div class="hotel-layout">
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Property Info -->
+                <div class="content-section">
+                    <h2 class="section-title">Private room in house</h2>
+                    <div class="host-info">
+                        <span>Hosted by</span>
+                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=24&h=24&fit=crop&crop=face" alt="Host" class="host-avatar">
+                        <span>Zoe Towne</span>
+                    </div>
+                    
+                    <div class="property-features">
+                        <div class="feature">
+                            <span>👥</span>
+                            <span>2 guests</span>
+                        </div>
+                        <div class="feature">
+                            <span>🛏️</span>
+                            <span>1 bedroom</span>
+                        </div>
+                        <div class="feature">
+                            <span>🚿</span>
+                            <span>1 private bath</span>
+                        </div>
+                    </div>
+                    
+                    <div class="description">
+                        <p>Described by Queenstown House & Garden magazine as having 'one of the best views we've ever seen' you will love relaxing in this newly built, architectural house sitting proudly on Queenstown Hill.</p>
+                        
+                        <p>Enjoy breathtaking 180' views of Lake Wakatipu from your well appointed & privately accessed bedroom with modern en suite and floor-to-ceiling windows.</p>
+                        
+                        <p>Your private patio takes in the afternoon sun, letting you soak up unparalleled lake and mountain views by day and the stars & city lights by night.</p>
+                    </div>
+                </div>
+
+                <!-- AI Itineraries Section -->
+                <div class="content-section">
+                    <h3 class="section-subtitle">🤖 AI-Generated Itineraries</h3>
+                    <p class="section-desc">Discover perfect day plans created by our AI for your Queenstown stay</p>
+                    <div class="itinerary-cards">
+                        <div class="itinerary-card">
+                            <div class="itinerary-header">
+                                <h4>Adventure Seeker</h4>
+                                <span class="duration">3 Days</span>
+                            </div>
+                            <p>Bungee jumping, skydiving, jet boating</p>
+                            <button class="itinerary-btn">View Itinerary</button>
+                        </div>
+                        <div class="itinerary-card">
+                            <div class="itinerary-header">
+                                <h4>Scenic Explorer</h4>
+                                <span class="duration">2 Days</span>
+                            </div>
+                            <p>Milford Sound, gondola rides, wine tours</p>
+                            <button class="itinerary-btn">View Itinerary</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Amenities -->
+                <div class="content-section">
+                    <h3 class="section-subtitle">Amenities</h3>
+                    <div class="amenities-grid">
+                        <div class="amenity-item">
+                            <span class="amenity-icon">📶</span>
+                            <span class="amenity-text">Free wifi 24/7</span>
+                        </div>
+                        <div class="amenity-item">
+                            <span class="amenity-icon">🧻</span>
+                            <span class="amenity-text">Free clean bathroom</span>
+                        </div>
+                        <div class="amenity-item">
+                            <span class="amenity-icon">💻</span>
+                            <span class="amenity-text">Free computer</span>
+                        </div>
+                        <div class="amenity-item">
+                            <span class="amenity-icon">🍔</span>
+                            <span class="amenity-text">Breakfast included</span>
+                        </div>
+                        <div class="amenity-item">
+                            <span class="amenity-icon">🏥</span>
+                            <span class="amenity-text">Medical assistance</span>
+                        </div>
+                        <div class="amenity-item">
+                            <span class="amenity-icon">🏧</span>
+                            <span class="amenity-text">ATM nearby</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location -->
+                <div class="content-section">
+                    <h3 class="section-subtitle">Location</h3>
+                    <div class="location-map">
+                        <div class="map-placeholder">
+                            <span>🗺️</span>
+                            <p>Interactive Map</p>
+                            <small>Queenstown Hill, New Zealand</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reviews -->
+                <div class="content-section">
+                    <div class="reviews-header">
+                        <h3 class="section-subtitle">★ 4.8 · 256 reviews</h3>
+                        <div class="review-stats">
+                            <div class="stat-bar">
+                                <span>5★</span>
+                                <div class="bar"><div class="fill" style="width: 85%"></div></div>
+                                <span>85%</span>
+                            </div>
+                            <div class="stat-bar">
+                                <span>4★</span>
+                                <div class="bar"><div class="fill" style="width: 12%"></div></div>
+                                <span>12%</span>
+                            </div>
+                            <div class="stat-bar">
+                                <span>3★</span>
+                                <div class="bar"><div class="fill" style="width: 3%"></div></div>
+                                <span>3%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="reviews-list">
+                        <div class="review-item">
+                            <div class="review-header">
+                                <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=48&h=48&fit=crop&crop=face" alt="Reviewer" class="reviewer-avatar">
+                                <div class="reviewer-info">
+                                    <h4>Sarah Johnson</h4>
+                                    <div class="review-rating">★★★★★</div>
+                                </div>
+                                <span class="review-date">2 weeks ago</span>
+                            </div>
+                            <p class="review-text">Absolutely stunning views! The sunrise from the private patio was breathtaking. Zoe was an excellent host and the location is perfect for exploring Queenstown.</p>
+                        </div>
+                        
+                        <div class="review-item">
+                            <div class="review-header">
+                                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=48&h=48&fit=crop&crop=face" alt="Reviewer" class="reviewer-avatar">
+                                <div class="reviewer-info">
+                                    <h4>Mike Chen</h4>
+                                    <div class="review-rating">★★★★★</div>
+                                </div>
+                                <span class="review-date">1 month ago</span>
+                            </div>
+                            <p class="review-text">Perfect location for adventure activities. Clean, comfortable, and the view is exactly as advertised. Would definitely stay again!</p>
+                        </div>
+                    </div>
+                    
+                    <button class="show-more-reviews">Show all 256 reviews</button>
+                </div>
+
+                <!-- Host Profile -->
+                <div class="content-section">
+                    <div class="host-profile">
+                        <div class="host-main">
+                            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=64&h=64&fit=crop&crop=face" alt="Host" class="host-large-avatar">
+                            <div class="host-details">
+                                <h3>Zoe Towne</h3>
+                                <div class="host-badges">
+                                    <span class="superhost-badge">⭐ Superhost</span>
+                                    <span class="host-stats">256 reviews</span>
+                                </div>
+                                <p>Hosting since March 2021</p>
+                            </div>
+                        </div>
+                        <div class="host-description">
+                            <p>I'm passionate about sharing Queenstown's beauty with travelers. As a local guide and photographer, I know all the best spots for adventures and relaxation.</p>
+                        </div>
+                        <button class="contact-host-btn">Contact Host</button>
+                    </div>
+                </div>
+
+                <!-- Policies -->
+                <div class="content-section">
+                    <h3 class="section-subtitle">House Rules & Policies</h3>
+                    <div class="policies-grid">
+                        <div class="policy-item">
+                            <h4>Check-in</h4>
+                            <p>After 3:00 PM</p>
+                        </div>
+                        <div class="policy-item">
+                            <h4>Check-out</h4>
+                            <p>Before 11:00 AM</p>
+                        </div>
+                        <div class="policy-item">
+                            <h4>Cancellation</h4>
+                            <p>Free cancellation before 48 hours</p>
+                        </div>
+                        <div class="policy-item">
+                            <h4>House Rules</h4>
+                            <p>No smoking • No pets • No parties</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Similar Hotels -->
+                <div class="content-section">
+                    <h3 class="section-subtitle">Similar places to stay</h3>
+                    <div class="similar-hotels">
+                        <div class="hotel-card">
+                            <img src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=200&h=150&fit=crop" alt="Similar hotel">
+                            <div class="hotel-info">
+                                <h4>Lake View Apartment</h4>
+                                <div class="hotel-rating">★ 4.7 (89)</div>
+                                <div class="hotel-price">$95/night</div>
+                            </div>
+                        </div>
+                        <div class="hotel-card">
+                            <img src="https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=200&h=150&fit=crop" alt="Similar hotel">
+                            <div class="hotel-info">
+                                <h4>Mountain Retreat</h4>
+                                <div class="hotel-rating">★ 4.9 (156)</div>
+                                <div class="hotel-price">$125/night</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Booking Panel -->
+            <div class="booking-panel">
+                <div class="price-header">
+                    <span class="price-original">$119</span>
+                    <span class="price-current">$109</span>
+                    <span class="price-period">/night</span>
+                </div>
+                
+                <div class="rating-summary">
+                    <span class="rating-stars">★</span>
+                    <span class="rating-score">4.8</span>
+                    <span class="rating-count">(256 reviews)</span>
+                </div>
+
+                <div class="booking-dates">
+                    <div class="date-row">
+                        <div class="date-input" id="checkinDate">
+                            <span class="date-icon">📅</span>
+                            <div class="date-info">
+                                <div class="date-label">Check-in</div>
+                                <div class="date-value">Add date</div>
+                            </div>
+                        </div>
+                        <div class="date-input" id="checkoutDate">
+                            <span class="date-icon">📅</span>
+                            <div class="date-info">
+                                <div class="date-label">Check-out</div>
+                                <div class="date-value">Add date</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="guest-input" id="guestSelector">
+                        <span class="guest-icon">👤</span>
+                        <div class="date-info">
+                            <div class="date-label">Guests</div>
+                            <div class="date-value">1 guest</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="booking-actions">
+                    <button class="save-btn" id="saveBtn">
+                        <span>Save</span>
+                        <span>+</span>
+                    </button>
+                    <button class="reserve-btn" id="reserveBtn">Reserve</button>
+                </div>
+
+                <div class="price-breakdown" id="priceBreakdown" style="display: none;">
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">$109 x 7 nights</span>
+                        <span class="breakdown-value">$763</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">Service fee</span>
+                        <span class="breakdown-value">$103</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">Total</span>
+                        <span class="breakdown-value">$866</span>
+                    </div>
+                </div>
+
+                <a href="#" class="report-link">
+                    <span>🏴</span>
+                    <span>Report this property</span>
+                </a>
+            </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>TravelAI</h3>
+                    <p>Turn your travel dreams into reality with AI-powered trip planning.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="flights.html">Flights</a></li>
+                        <li><a href="hotels.html">Hotels</a></li>
+                        <li><a href="itinerary-master-hub.html">Itineraries</a></li>
+                        <li><a href="packages.html">Packages</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="contact.html">Help & Contact</a></li>
+                        <li><a href="blog.html">Travel Blog</a></li>
+                        <li><a href="legal.html">Legal</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 TravelAI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/hotel-details.js"></script>
+</body>
+</html>

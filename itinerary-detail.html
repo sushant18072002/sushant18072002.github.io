@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Japan Cultural Explorer - 7 Days | TravelAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="itinerary-detail-styles.css">
+</head>
+<body>
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header__center">
+            <a class="header__logo" href="index.html">TravelAI</a>
+            <div class="header__wrapper">
+                <div class="header__item">
+                    <a href="itinerary-master-hub.html">← Back to Results</a>
+                </div>
+                <div class="header__actions">
+                    <button class="button-circle-stroke header__favorite">
+                        <svg class="icon icon-heart"><use xlink:href="#icon-heart"></use></svg>
+                    </button>
+                    <button class="button-circle-stroke header__share">
+                        <svg class="icon icon-share"><use xlink:href="#icon-share"></use></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <div class="outer__inner">
+        <div class="product">
+            <div class="product__center">
+                <!-- PRODUCT HEAD -->
+                <div class="product__head">
+                    <div class="product__box">
+                        <h2 class="product__title">The Cultural Explorer</h2>
+                        <div class="product__line">
+                            <div class="product__avatar">
+                                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&h=60&fit=crop&crop=face" alt="Guide">
+                            </div>
+                            <div class="product__rating">
+                                <svg class="icon icon-star"><use xlink:href="#icon-star"></use></svg>
+                                <div class="product__number">4.9</div>
+                                <div class="product__reviews">(247 reviews)</div>
+                            </div>
+                            <div class="product__options">
+                                <div class="product__option">
+                                    <svg class="icon icon-flag"><use xlink:href="#icon-flag"></use></svg>
+                                    Expert Guide
+                                </div>
+                                <div class="product__option">
+                                    <svg class="icon icon-location"><use xlink:href="#icon-location"></use></svg>
+                                    Tokyo & Kyoto, Japan
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GALLERY -->
+                <div class="gallery">
+                    <div class="gallery__list">
+                        <div class="gallery__preview">
+                            <img src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&h=600&fit=crop" alt="Japan Cultural Experience">
+                            <button class="button-white gallery__button">
+                                <svg class="icon icon-image"><use xlink:href="#icon-image"></use></svg>
+                                <span>Show all photos</span>
+                            </button>
+                        </div>
+                        <div class="gallery__preview">
+                            <img src="https://images.unsplash.com/photo-1513407030348-c983a97b98d8?w=400&h=300&fit=crop" alt="Tokyo Temple">
+                        </div>
+                        <div class="gallery__preview">
+                            <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop" alt="Mount Fuji">
+                        </div>
+                        <div class="gallery__preview">
+                            <img src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=400&h=300&fit=crop" alt="Kyoto Golden Temple">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DESCRIPTION SECTION -->
+        <div class="description">
+            <div class="description__center">
+                <div class="description__wrapper">
+                    <h4 class="description__title">7-Day Cultural Journey</h4>
+                    <div class="description__profile">
+                        <span>Curated by</span>
+                        <div class="description__avatar">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&h=60&fit=crop&crop=face" alt="Expert Guide">
+                        </div>
+                        <div class="description__name">Kenji Tanaka</div>
+                        <div class="description__badge">Expert Guide</div>
+                    </div>
+
+                    <div class="description__parameters">
+                        <div class="description__parameter">
+                            <svg class="icon icon-calendar"><use xlink:href="#icon-calendar"></use></svg>
+                            7 days
+                        </div>
+                        <div class="description__parameter">
+                            <svg class="icon icon-users"><use xlink:href="#icon-users"></use></svg>
+                            Max 8 people
+                        </div>
+                        <div class="description__parameter">
+                            <svg class="icon icon-star"><use xlink:href="#icon-star"></use></svg>
+                            Premium experience
+                        </div>
+                    </div>
+
+                    <div class="description__content">
+                        <p>Immerse yourself in Japan's rich cultural heritage with this expertly crafted 7-day journey. From ancient temples in Tokyo to the golden pavilions of Kyoto, experience authentic traditions, master local crafts, and create memories that will last a lifetime.</p>
+                        <p>This isn't just a trip—it's a transformation. Walk in the footsteps of samurai, learn from tea masters, and witness sunrise ceremonies that have remained unchanged for centuries.</p>
+                    </div>
+
+                    <!-- COMPACT TIMELINE -->
+                    <div class="description__info">Your Journey</div>
+                    <div class="timeline-compact">
+                        <div class="timeline-day" onclick="openDayModal(1)">
+                            <div class="timeline-day__image">
+                                <img src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=120&h=80&fit=crop" alt="Day 1">
+                            </div>
+                            <div class="timeline-day__content">
+                                <div class="timeline-day__number">Day 1</div>
+                                <div class="timeline-day__title">Tokyo Arrival</div>
+                                <div class="timeline-day__preview">Ryokan check-in, welcome dinner</div>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-day" onclick="openDayModal(2)">
+                            <div class="timeline-day__image">
+                                <img src="https://images.unsplash.com/photo-1513407030348-c983a97b98d8?w=120&h=80&fit=crop" alt="Day 2">
+                            </div>
+                            <div class="timeline-day__content">
+                                <div class="timeline-day__number">Day 2</div>
+                                <div class="timeline-day__title">Cultural Immersion</div>
+                                <div class="timeline-day__preview">Temples, tea ceremony</div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-day" onclick="openDayModal(3)">
+                            <div class="timeline-day__image">
+                                <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=120&h=80&fit=crop" alt="Day 3">
+                            </div>
+                            <div class="timeline-day__content">
+                                <div class="timeline-day__number">Day 3</div>
+                                <div class="timeline-day__title">Mount Fuji</div>
+                                <div class="timeline-day__preview">Sacred mountain, hot springs</div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-day" onclick="openDayModal(4)">
+                            <div class="timeline-day__image">
+                                <img src="https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=120&h=80&fit=crop" alt="Day 4">
+                            </div>
+                            <div class="timeline-day__content">
+                                <div class="timeline-day__number">Day 4</div>
+                                <div class="timeline-day__title">To Kyoto</div>
+                                <div class="timeline-day__preview">Bullet train journey</div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-day" onclick="openDayModal(5)">
+                            <div class="timeline-day__image">
+                                <img src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=120&h=80&fit=crop" alt="Day 5">
+                            </div>
+                            <div class="timeline-day__content">
+                                <div class="timeline-day__number">Day 5</div>
+                                <div class="timeline-day__title">Golden Temple</div>
+                                <div class="timeline-day__preview">Sunrise ceremony</div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-day" onclick="openDayModal(6)">
+                            <div class="timeline-day__image">
+                                <img src="https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=120&h=80&fit=crop" alt="Day 6">
+                            </div>
+                            <div class="timeline-day__content">
+                                <div class="timeline-day__number">Day 6</div>
+                                <div class="timeline-day__title">Culinary Arts</div>
+                                <div class="timeline-day__preview">Sushi making, sake tasting</div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-day" onclick="openDayModal(7)">
+                            <div class="timeline-day__image">
+                                <img src="https://images.unsplash.com/photo-1542640244-7e672d6cef4e?w=120&h=80&fit=crop" alt="Day 7">
+                            </div>
+                            <div class="timeline-day__content">
+                                <div class="timeline-day__number">Day 7</div>
+                                <div class="timeline-day__title">Farewell</div>
+                                <div class="timeline-day__preview">Final temple, departure</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- INCLUSIONS -->
+                    <div class="description__info">What's Included</div>
+                    <div class="description__options">
+                        <div class="description__option">
+                            <svg class="icon icon-home"><use xlink:href="#icon-home"></use></svg>
+                            6 nights boutique ryokans
+                        </div>
+                        <div class="description__option">
+                            <svg class="icon icon-train"><use xlink:href="#icon-train"></use></svg>
+                            JR Pass & bullet train
+                        </div>
+                        <div class="description__option">
+                            <svg class="icon icon-user"><use xlink:href="#icon-user"></use></svg>
+                            Private cultural guide
+                        </div>
+                        <div class="description__option">
+                            <svg class="icon icon-utensils"><use xlink:href="#icon-utensils"></use></svg>
+                            Traditional meals included
+                        </div>
+                        <div class="description__option">
+                            <svg class="icon icon-temple"><use xlink:href="#icon-temple"></use></svg>
+                            All temple entries
+                        </div>
+                        <div class="description__option">
+                            <svg class="icon icon-phone"><use xlink:href="#icon-phone"></use></svg>
+                            24/7 support
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BOOKING RECEIPT -->
+                <div class="receipt">
+                    <div class="receipt__head">
+                        <div class="receipt__details">
+                            <div class="receipt__cost">
+                                <div class="receipt__old">$2,999</div>
+                                <div class="receipt__actual">$2,199</div>
+                                <div class="receipt__note">/person</div>
+                            </div>
+                            <div class="receipt__rating">
+                                <svg class="icon icon-star"><use xlink:href="#icon-star"></use></svg>
+                                <div class="receipt__number">4.9</div>
+                                <div class="receipt__reviews">(247 reviews)</div>
+                            </div>
+                        </div>
+                        <div class="receipt__avatar">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&h=60&fit=crop&crop=face" alt="Guide">
+                            <div class="receipt__check">
+                                <svg class="icon icon-check"><use xlink:href="#icon-check"></use></svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="receipt__description">
+                        <div class="receipt__item">
+                            <div class="receipt__icon">
+                                <svg class="icon icon-calendar"><use xlink:href="#icon-calendar"></use></svg>
+                            </div>
+                            <div class="receipt__box">
+                                <div class="receipt__category">Duration</div>
+                                <div class="receipt__subtitle">7 days, 6 nights</div>
+                            </div>
+                        </div>
+                        <div class="receipt__item">
+                            <div class="receipt__icon">
+                                <svg class="icon icon-users"><use xlink:href="#icon-users"></use></svg>
+                            </div>
+                            <div class="receipt__box">
+                                <div class="receipt__category">Group Size</div>
+                                <div class="receipt__subtitle">Max 8 people</div>
+                            </div>
+                        </div>
+                        <div class="receipt__item">
+                            <div class="receipt__icon">
+                                <svg class="icon icon-location"><use xlink:href="#icon-location"></use></svg>
+                            </div>
+                            <div class="receipt__box">
+                                <div class="receipt__category">Destinations</div>
+                                <div class="receipt__subtitle">Tokyo & Kyoto</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="receipt__btns">
+                        <button class="button-stroke receipt__button">
+                            <span>Save</span>
+                            <svg class="icon icon-heart"><use xlink:href="#icon-heart"></use></svg>
+                        </button>
+                        <button class="button receipt__button" onclick="proceedToBooking()">
+                            <span>Book Now</span>
+                            <svg class="icon icon-arrow-right"><use xlink:href="#icon-arrow-right"></use></svg>
+                        </button>
+                    </div>
+
+                    <div class="receipt__table">
+                        <div class="receipt__line">
+                            <div class="receipt__cell">Base price (7 days)</div>
+                            <div class="receipt__cell">$2,999</div>
+                        </div>
+                        <div class="receipt__line">
+                            <div class="receipt__cell">Early bird discount</div>
+                            <div class="receipt__cell">-$800</div>
+                        </div>
+                        <div class="receipt__line">
+                            <div class="receipt__cell">Service fee</div>
+                            <div class="receipt__cell">$0</div>
+                        </div>
+                        <div class="receipt__line receipt__line_total">
+                            <div class="receipt__cell">Total</div>
+                            <div class="receipt__cell">$2,199</div>
+                        </div>
+                    </div>
+
+                    <div class="receipt__foot">
+                        <div class="receipt__guarantee">
+                            <svg class="icon icon-shield"><use xlink:href="#icon-shield"></use></svg>
+                            Free cancellation up to 30 days
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- REVIEWS SECTION -->
+        <div class="comments">
+            <div class="comments__center">
+                <div class="comment__head">
+                    <div class="comment__title">Traveler Reviews</div>
+                    <div class="rating-summary">
+                        <div class="rating-stars">★★★★★</div>
+                        <span class="rating-text">4.9 out of 5 (247 reviews)</span>
+                    </div>
+                </div>
+
+                <div class="comment__list">
+                    <div class="comment__item">
+                        <div class="comment__avatar">
+                            <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=60&h=60&fit=crop&crop=face" alt="Sarah">
+                        </div>
+                        <div class="comment__details">
+                            <div class="comment__top">
+                                <div class="comment__author">Sarah Chen</div>
+                                <div class="comment__rating">★★★★★</div>
+                            </div>
+                            <div class="comment__content">"The sunrise ceremony at Kinkaku-ji was absolutely magical. Kenji's knowledge of Japanese culture made every moment meaningful. This trip exceeded all expectations!"</div>
+                            <div class="comment__foot">
+                                <div class="comment__time">2 days ago</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="comment__item">
+                        <div class="comment__avatar">
+                            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=60&h=60&fit=crop&crop=face" alt="David">
+                        </div>
+                        <div class="comment__details">
+                            <div class="comment__top">
+                                <div class="comment__author">David Wilson</div>
+                                <div class="comment__rating">★★★★★</div>
+                            </div>
+                            <div class="comment__content">"Perfect blend of culture and comfort. The ryokans were incredible and the tea ceremony was a highlight. Worth every penny!"</div>
+                            <div class="comment__foot">
+                                <div class="comment__time">1 week ago</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SVG ICONS -->
+    <svg style="display: none;">
+        <symbol id="icon-heart" viewBox="0 0 24 24">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </symbol>
+        <symbol id="icon-share" viewBox="0 0 24 24">
+            <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/>
+        </symbol>
+        <symbol id="icon-star" viewBox="0 0 24 24">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </symbol>
+        <symbol id="icon-check" viewBox="0 0 24 24">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+        </symbol>
+        <symbol id="icon-calendar" viewBox="0 0 24 24">
+            <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+        </symbol>
+        <symbol id="icon-users" viewBox="0 0 24 24">
+            <path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A1.5 1.5 0 0 0 18.54 8H17c-.8 0-1.54.37-2.01.99l-2.54 3.38c-.36.48-.85.63-1.45.63s-1.09-.15-1.45-.63L7.01 8.99C6.54 8.37 5.8 8 5 8H3.46c-.81 0-1.42.68-1.42 1.37L4.5 16H7v6h4v-6h2v6h4z"/>
+        </symbol>
+        <symbol id="icon-location" viewBox="0 0 24 24">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+        </symbol>
+        <symbol id="icon-flag" viewBox="0 0 24 24">
+            <path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"/>
+        </symbol>
+        <symbol id="icon-image" viewBox="0 0 24 24">
+            <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+        </symbol>
+        <symbol id="icon-arrow-right" viewBox="0 0 24 24">
+            <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+        </symbol>
+        <symbol id="icon-shield" viewBox="0 0 24 24">
+            <path d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M12,7C13.4,7 14.8,8.6 14.8,10V11C15.4,11 16,11.4 16,12V16C16,16.6 15.6,17 15,17H9C8.4,17 8,16.6 8,16V12C8,11.4 8.4,11 9,11V10C9,8.6 10.6,7 12,7M12,8.2C11.2,8.2 10.2,9.2 10.2,10V11H13.8V10C13.8,9.2 12.8,8.2 12,8.2Z"/>
+        </symbol>
+    </svg>
+
+    <script src="itinerary-detail-script.js"></script>
+</body>
+</html>

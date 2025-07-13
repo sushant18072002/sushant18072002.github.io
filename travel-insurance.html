@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Insurance - TravelAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary-900: #0F172A; --primary-800: #1E293B; --primary-700: #334155; --primary-600: #475569; --primary-400: #94A3B8; --primary-100: #F1F5F9;
+            --ocean-blue: #1E40AF; --mirage-blue: #4b90e6; --governor-bay: #2553eb; --emerald: #10B981; --premium-amber: #F59E0B; --soft-coral: #FF6B6B;
+        }
+
+        body { font-family: 'Inter', sans-serif; line-height: 1.6; background: var(--primary-50); }
+
+        /* Navigation */
+        .nav-container {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background: rgba(248, 250, 252, 0.95); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2); height: 70px;
+        }
+        .navbar {
+            max-width: 1400px; margin: 0 auto; padding: 0 1.5rem; height: 100%;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo {
+            font-size: 1.4rem; font-weight: 800; color: var(--primary-900);
+            background: linear-gradient(135deg, var(--governor-bay), var(--mirage-blue));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        /* Breadcrumb */
+        .breadcrumb {
+            background: white; padding: 1rem 1.5rem; margin-top: 70px;
+            border-bottom: 1px solid var(--primary-200);
+        }
+        .breadcrumb-nav {
+            max-width: 1400px; margin: 0 auto; display: flex; align-items: center; gap: 0.5rem;
+            font-size: 0.9rem; color: var(--primary-600);
+        }
+        .breadcrumb-nav a { color: var(--governor-bay); text-decoration: none; }
+
+        /* Hero Section */
+        .insurance-hero {
+            background: linear-gradient(135deg, var(--governor-bay), var(--mirage-blue));
+            color: white; padding: 4rem 1.5rem; text-align: center;
+        }
+        .hero-title { font-size: clamp(2.5rem, 5vw, 3.5rem); font-weight: 800; margin-bottom: 1rem; }
+
+        /* Insurance Plans */
+        .plans-section { padding: 4rem 1.5rem; }
+        .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; }
+        .plan-card {
+            background: white; border-radius: 1.5rem; padding: 2rem; text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); transition: all 0.3s ease;
+            position: relative;
+        }
+        .plan-card.recommended {
+            border: 3px solid var(--governor-bay); transform: scale(1.05);
+        }
+        .plan-card.recommended::before {
+            content: 'Most Popular'; position: absolute; top: 1rem; right: -2rem;
+            background: var(--governor-bay); color: white; padding: 0.5rem 3rem;
+            transform: rotate(45deg); font-size: 0.8rem; font-weight: 600;
+        }
+        .plan-price { font-size: 2rem; font-weight: 800; color: var(--governor-bay); margin-bottom: 1rem; }
+        .plan-btn {
+            background: linear-gradient(135deg, var(--governor-bay), var(--ocean-blue));
+            color: white; border: none; padding: 1rem 2rem; border-radius: 0.75rem;
+            font-weight: 600; cursor: pointer; width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-container">
+        <div class="navbar">
+            <div class="logo">TravelAI</div>
+        </div>
+    </nav>
+
+    <div class="breadcrumb">
+        <nav class="breadcrumb-nav">
+            <a href="index.html">Home</a>
+            <span>›</span>
+            <span>Travel Insurance</span>
+        </nav>
+    </div>
+
+    <main>
+        <section class="insurance-hero">
+            <h1 class="hero-title">🛡️ Travel with Confidence</h1>
+            <p>Comprehensive travel insurance to protect your adventures</p>
+        </section>
+
+        <section class="plans-section">
+            <div style="max-width: 1200px; margin: 0 auto;">
+                <div class="plans-grid">
+                    <div class="plan-card">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🏥</div>
+                        <h3>Basic Coverage</h3>
+                        <div class="plan-price">$29</div>
+                        <button class="plan-btn">Select Basic</button>
+                    </div>
+
+                    <div class="plan-card recommended">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">⭐</div>
+                        <h3>Comprehensive</h3>
+                        <div class="plan-price">$79</div>
+                        <button class="plan-btn">Select Comprehensive</button>
+                    </div>
+
+                    <div class="plan-card">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">💎</div>
+                        <h3>Premium</h3>
+                        <div class="plan-price">$149</div>
+                        <button class="plan-btn">Select Premium</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

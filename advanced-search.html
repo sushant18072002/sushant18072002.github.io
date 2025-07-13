@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Search - TravelAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary-900: #0F172A; --primary-800: #1E293B; --primary-700: #334155; --primary-600: #475569; --primary-400: #94A3B8; --primary-100: #F1F5F9;
+            --ocean-blue: #1E40AF; --mirage-blue: #4b90e6; --governor-bay: #2553eb; --emerald: #10B981; --premium-amber: #F59E0B;
+        }
+
+        body { font-family: 'Inter', sans-serif; line-height: 1.5; background: var(--primary-50); }
+
+        /* Advanced Search Container */
+        .search-container {
+            max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem;
+        }
+
+        .search-widget {
+            background: white; border-radius: 1.5rem; padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-header {
+            text-align: center; margin-bottom: 2rem;
+        }
+
+        .search-title {
+            font-size: 2rem; font-weight: 700; color: var(--primary-900); margin-bottom: 0.5rem;
+        }
+
+        /* Multi-Step Search */
+        .search-steps {
+            display: flex; justify-content: center; margin-bottom: 2rem;
+        }
+
+        .search-step {
+            display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem;
+            background: var(--primary-100); border-radius: 50px; margin: 0 0.5rem;
+            cursor: pointer; transition: all 0.3s ease;
+        }
+
+        .search-step.active {
+            background: var(--governor-bay); color: white;
+        }
+
+        .step-number {
+            width: 24px; height: 24px; background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 0.8rem; font-weight: 600;
+        }
+
+        /* Advanced Filters */
+        .filters-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .filter-group {
+            background: var(--primary-50); border-radius: 1rem; padding: 1.5rem;
+        }
+
+        .filter-title {
+            font-weight: 600; color: var(--primary-900); margin-bottom: 1rem;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+
+        .filter-options {
+            display: flex; flex-direction: column; gap: 0.75rem;
+        }
+
+        .filter-option {
+            display: flex; align-items: center; gap: 0.75rem;
+        }
+
+        .filter-checkbox {
+            width: 18px; height: 18px; accent-color: var(--governor-bay);
+        }
+
+        .filter-label {
+            color: var(--primary-700); font-size: 0.9rem;
+        }
+
+        /* Price Range Slider */
+        .price-range {
+            margin: 1rem 0;
+        }
+
+        .price-slider {
+            width: 100%; height: 6px; background: var(--primary-200);
+            border-radius: 3px; outline: none; accent-color: var(--governor-bay);
+        }
+
+        .price-values {
+            display: flex; justify-content: space-between; margin-top: 0.5rem;
+            font-size: 0.9rem; color: var(--primary-600);
+        }
+
+        /* Smart Suggestions */
+        .suggestions-section {
+            background: linear-gradient(135deg, var(--governor-bay), var(--mirage-blue));
+            color: white; border-radius: 1rem; padding: 2rem; margin-bottom: 2rem;
+        }
+
+        .suggestions-title {
+            font-size: 1.3rem; font-weight: 600; margin-bottom: 1rem;
+        }
+
+        .suggestions-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;
+        }
+
+        .suggestion-card {
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);
+            border-radius: 0.75rem; padding: 1rem; cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .suggestion-card:hover {
+            background: rgba(255, 255, 255, 0.2); transform: translateY(-2px);
+        }
+
+        .suggestion-icon {
+            font-size: 1.5rem; margin-bottom: 0.5rem;
+        }
+
+        .suggestion-text {
+            font-size: 0.9rem; opacity: 0.9;
+        }
+
+        /* Search Results Preview */
+        .results-preview {
+            background: white; border-radius: 1rem; padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .results-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;
+        }
+
+        .results-count {
+            color: var(--primary-600); font-size: 0.9rem;
+        }
+
+        .sort-options {
+            display: flex; gap: 0.5rem;
+        }
+
+        .sort-btn {
+            padding: 0.5rem 1rem; background: var(--primary-100); border: none;
+            border-radius: 0.5rem; cursor: pointer; transition: all 0.3s ease;
+            font-size: 0.8rem;
+        }
+
+        .sort-btn.active {
+            background: var(--governor-bay); color: white;
+        }
+
+        /* Action Buttons */
+        .search-actions {
+            display: flex; gap: 1rem; justify-content: center; margin-top: 2rem;
+        }
+
+        .search-btn {
+            background: linear-gradient(135deg, var(--governor-bay), var(--ocean-blue));
+            color: white; border: none; padding: 1rem 2rem; border-radius: 0.75rem;
+            font-weight: 600; cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(37, 83, 235, 0.4);
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37, 83, 235, 0.5);
+        }
+
+        .reset-btn {
+            background: var(--primary-100); color: var(--primary-700); border: none;
+            padding: 1rem 2rem; border-radius: 0.75rem; font-weight: 600; cursor: pointer;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .filters-grid { grid-template-columns: 1fr; }
+            .suggestions-grid { grid-template-columns: 1fr; }
+            .search-actions { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="search-container">
+        <div class="search-widget">
+            <div class="search-header">
+                <h1 class="search-title">🔍 Advanced Search</h1>
+                <p>Find exactly what you're looking for with our intelligent search</p>
+            </div>
+
+            <!-- Multi-Step Search -->
+            <div class="search-steps">
+                <div class="search-step active" onclick="setStep(1)">
+                    <div class="step-number">1</div>
+                    <span>Destination</span>
+                </div>
+                <div class="search-step" onclick="setStep(2)">
+                    <div class="step-number">2</div>
+                    <span>Dates & Budget</span>
+                </div>
+                <div class="search-step" onclick="setStep(3)">
+                    <div class="step-number">3</div>
+                    <span>Preferences</span>
+                </div>
+            </div>
+
+            <!-- Advanced Filters -->
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <div class="filter-title">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Destination Type
+                    </div>
+                    <div class="filter-options">
+                        <div class="filter-option">
+                            <input type="checkbox" id="beach" class="filter-checkbox">
+                            <label for="beach" class="filter-label">Beach Destinations</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="city" class="filter-checkbox">
+                            <label for="city" class="filter-label">City Breaks</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="mountain" class="filter-checkbox">
+                            <label for="mountain" class="filter-label">Mountain Retreats</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="cultural" class="filter-checkbox">
+                            <label for="cultural" class="filter-label">Cultural Sites</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <div class="filter-title">
+                        <i class="fas fa-dollar-sign"></i>
+                        Budget Range
+                    </div>
+                    <div class="price-range">
+                        <input type="range" class="price-slider" min="500" max="5000" value="2500" id="budget-slider">
+                        <div class="price-values">
+                            <span>$500</span>
+                            <span id="budget-value">$2,500</span>
+                            <span>$5,000+</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <div class="filter-title">
+                        <i class="fas fa-calendar-alt"></i>
+                        Travel Duration
+                    </div>
+                    <div class="filter-options">
+                        <div class="filter-option">
+                            <input type="checkbox" id="weekend" class="filter-checkbox">
+                            <label for="weekend" class="filter-label">Weekend (2-3 days)</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="week" class="filter-checkbox">
+                            <label for="week" class="filter-label">Week (4-7 days)</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="extended" class="filter-checkbox">
+                            <label for="extended" class="filter-label">Extended (8+ days)</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <div class="filter-title">
+                        <i class="fas fa-heart"></i>
+                        Travel Style
+                    </div>
+                    <div class="filter-options">
+                        <div class="filter-option">
+                            <input type="checkbox" id="luxury" class="filter-checkbox">
+                            <label for="luxury" class="filter-label">Luxury</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="adventure" class="filter-checkbox">
+                            <label for="adventure" class="filter-label">Adventure</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="family" class="filter-checkbox">
+                            <label for="family" class="filter-label">Family-Friendly</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="romantic" class="filter-checkbox">
+                            <label for="romantic" class="filter-label">Romantic</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Smart Suggestions -->
+        <div class="suggestions-section">
+            <h3 class="suggestions-title">💡 Smart Suggestions Based on Your Preferences</h3>
+            <div class="suggestions-grid">
+                <div class="suggestion-card" onclick="applySuggestion('japan')">
+                    <div class="suggestion-icon">🏯</div>
+                    <div class="suggestion-text">Japan Cultural Experience</div>
+                </div>
+                <div class="suggestion-card" onclick="applySuggestion('europe')">
+                    <div class="suggestion-icon">🏰</div>
+                    <div class="suggestion-text">European City Hopping</div>
+                </div>
+                <div class="suggestion-card" onclick="applySuggestion('tropical')">
+                    <div class="suggestion-icon">🏖️</div>
+                    <div class="suggestion-text">Tropical Paradise</div>
+                </div>
+                <div class="suggestion-card" onclick="applySuggestion('adventure')">
+                    <div class="suggestion-icon">🏔️</div>
+                    <div class="suggestion-text">Mountain Adventure</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Preview -->
+        <div class="results-preview">
+            <div class="results-header">
+                <h3>Search Results</h3>
+                <div class="results-count">Found 247 matching trips</div>
+                <div class="sort-options">
+                    <button class="sort-btn active">Best Match</button>
+                    <button class="sort-btn">Price Low</button>
+                    <button class="sort-btn">Price High</button>
+                    <button class="sort-btn">Duration</button>
+                </div>
+            </div>
+            
+            <div id="search-results">
+                <p style="text-align: center; color: var(--primary-600); padding: 2rem;">
+                    Adjust your filters above to see personalized results
+                </p>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="search-actions">
+            <button class="reset-btn" onclick="resetFilters()">Reset Filters</button>
+            <button class="search-btn" onclick="performSearch()">🔍 Search Now</button>
+        </div>
+    </div>
+
+    <script>
+        // Budget slider update
+        const budgetSlider = document.getElementById('budget-slider');
+        const budgetValue = document.getElementById('budget-value');
+
+        budgetSlider.addEventListener('input', function() {
+            budgetValue.textContent = '$' + parseInt(this.value).toLocaleString();
+        });
+
+        // Step navigation
+        function setStep(step) {
+            document.querySelectorAll('.search-step').forEach((s, i) => {
+                s.classList.toggle('active', i + 1 === step);
+            });
+        }
+
+        // Apply suggestions
+        function applySuggestion(type) {
+            const suggestions = {
+                japan: { destination: 'cultural', budget: 2500, duration: 'week', style: 'cultural' },
+                europe: { destination: 'city', budget: 2000, duration: 'extended', style: 'cultural' },
+                tropical: { destination: 'beach', budget: 1800, duration: 'week', style: 'romantic' },
+                adventure: { destination: 'mountain', budget: 2200, duration: 'week', style: 'adventure' }
+            };
+
+            const config = suggestions[type];
+            if (config) {
+                // Apply filters based on suggestion
+                document.getElementById(config.destination).checked = true;
+                document.getElementById(config.duration).checked = true;
+                document.getElementById(config.style).checked = true;
+                budgetSlider.value = config.budget;
+                budgetValue.textContent = '$' + config.budget.toLocaleString();
+            }
+        }
+
+        // Reset filters
+        function resetFilters() {
+            document.querySelectorAll('.filter-checkbox').forEach(cb => cb.checked = false);
+            budgetSlider.value = 2500;
+            budgetValue.textContent = '$2,500';
+        }
+
+        // Perform search
+        function performSearch() {
+            const filters = {
+                destinations: [],
+                budget: budgetSlider.value,
+                duration: [],
+                style: []
+            };
+
+            // Collect selected filters
+            document.querySelectorAll('.filter-checkbox:checked').forEach(cb => {
+                const category = cb.closest('.filter-group').querySelector('.filter-title').textContent.trim();
+                filters[category.toLowerCase()] = filters[category.toLowerCase()] || [];
+                filters[category.toLowerCase()].push(cb.id);
+            });
+
+            // Simulate search results
+            document.getElementById('search-results').innerHTML = `
+                <div style="text-align: center; padding: 2rem;">
+                    <div style="font-size: 1.2rem; font-weight: 600; color: var(--governor-bay); margin-bottom: 1rem;">
+                        🎉 Found ${Math.floor(Math.random() * 200) + 50} perfect matches!
+                    </div>
+                    <p style="color: var(--primary-600);">
+                        Redirecting to detailed results...
+                    </p>
+                </div>
+            `;
+
+            setTimeout(() => {
+                location.href = 'packages.html';
+            }, 2000);
+        }
+
+        // Sort functionality
+        document.querySelectorAll('.sort-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

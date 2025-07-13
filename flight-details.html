@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Details - NYC to Paris | TravelAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="flight-details-styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav-container">
+        <div class="navbar">
+            <div class="logo">TravelAI</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="flights.html" class="active">Flights</a></li>
+                <li><a href="hotels.html">Hotels</a></li>
+                <li><a href="itinerary-master-hub.html">Itineraries</a></li>
+                <li><a href="packages.html">Packages</a></li>
+            </ul>
+            <a href="auth.html" class="nav-cta">Get Started</a>
+        </div>
+    </nav>
+
+    <!-- Flight Details Header -->
+    <section class="flight-header">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="flights.html">← Back to Results</a>
+                <span>Flight Details</span>
+            </div>
+            
+            <div class="flight-title">
+                <h1>New York → Paris</h1>
+                <p>Delta Airlines • DL 1234 • Dec 15, 2024</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Flight Details Main -->
+    <section class="flight-main">
+        <div class="container">
+            <div class="flight-layout">
+                <!-- Flight Info -->
+                <div class="flight-info">
+                    <div class="flight-route">
+                        <div class="route-point">
+                            <div class="airport-code">NYC</div>
+                            <div class="airport-name">John F. Kennedy</div>
+                            <div class="time">8:30 AM</div>
+                        </div>
+                        
+                        <div class="flight-path">
+                            <div class="duration">7h 15m</div>
+                            <div class="flight-line">
+                                <div class="line"></div>
+                                <div class="plane">✈️</div>
+                            </div>
+                            <div class="stops">Nonstop</div>
+                        </div>
+                        
+                        <div class="route-point">
+                            <div class="airport-code">CDG</div>
+                            <div class="airport-name">Charles de Gaulle</div>
+                            <div class="time">2:45 PM</div>
+                        </div>
+                    </div>
+                    
+                    <div class="flight-tabs">
+                        <button class="tab-btn active" onclick="showFlightTab('outbound')">Outbound Flight</button>
+                        <button class="tab-btn" onclick="showFlightTab('return')">Return Flight</button>
+                    </div>
+                    
+                    <div class="flight-details" id="outboundFlight">
+                        <div class="airline-info">
+                            <img src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=50&h=50&fit=crop" alt="Delta Airlines">
+                            <div>
+                                <h3>Delta Airlines</h3>
+                                <p>DL 1234 • Boeing 777</p>
+                            </div>
+                        </div>
+                        
+                        <div class="amenities">
+                            <div class="amenity">📶 Free WiFi</div>
+                            <div class="amenity">🍽️ Meal Included</div>
+                            <div class="amenity">🧳 1 Checked Bag</div>
+                            <div class="amenity clickable" onclick="showSeatMap()">💺 Choose Your Seat</div>
+                        </div>
+                        
+                        <div class="policies">
+                            <div class="policy">✅ Free cancellation within 24h</div>
+                            <div class="policy">🔄 Date changes: $150 + fare difference</div>
+                        </div>
+                        
+                        <div class="baggage-info">
+                            <h4>Baggage & Fees</h4>
+                            <div class="baggage-grid">
+                                <div class="baggage-item">
+                                    <span class="baggage-type">Carry-on (22")</span>
+                                    <span class="baggage-price">Included</span>
+                                </div>
+                                <div class="baggage-item">
+                                    <span class="baggage-type">Checked bag (50lbs)</span>
+                                    <span class="baggage-price">Included</span>
+                                </div>
+                                <div class="baggage-item">
+                                    <span class="baggage-type">Extra bag</span>
+                                    <span class="baggage-price">$75</span>
+                                </div>
+                                <div class="baggage-item">
+                                    <span class="baggage-type">Overweight (51-70lbs)</span>
+                                    <span class="baggage-price">$100</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flight-details" id="returnFlight" style="display: none;">
+                        <div class="airline-info">
+                            <img src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=50&h=50&fit=crop" alt="Delta Airlines">
+                            <div>
+                                <h3>Delta Airlines</h3>
+                                <p>DL 1235 • Boeing 777</p>
+                            </div>
+                        </div>
+                        
+                        <div class="return-route">
+                            <div class="route-point">
+                                <div class="airport-code">CDG</div>
+                                <div class="airport-name">Charles de Gaulle</div>
+                                <div class="time">3:15 PM</div>
+                            </div>
+                            
+                            <div class="flight-path">
+                                <div class="duration">8h 45m</div>
+                                <div class="flight-line">
+                                    <div class="line"></div>
+                                    <div class="plane">✈️</div>
+                                </div>
+                                <div class="stops">Nonstop</div>
+                            </div>
+                            
+                            <div class="route-point">
+                                <div class="airport-code">NYC</div>
+                                <div class="airport-name">John F. Kennedy</div>
+                                <div class="time">7:00 PM</div>
+                            </div>
+                        </div>
+                        
+                        <div class="amenities">
+                            <div class="amenity">📶 Free WiFi</div>
+                            <div class="amenity">🍽️ Meal Included</div>
+                            <div class="amenity">🧳 1 Checked Bag</div>
+                            <div class="amenity clickable" onclick="showSeatMap('return')">💺 Choose Return Seat</div>
+                        </div>
+                        
+                        <div class="policies">
+                            <div class="policy">✅ Free cancellation within 24h</div>
+                            <div class="policy">🔄 Date changes: $150 + fare difference</div>
+                        </div>
+                        
+                        <div class="baggage-info">
+                            <h4>Baggage & Fees</h4>
+                            <div class="baggage-grid">
+                                <div class="baggage-item">
+                                    <span class="baggage-type">Carry-on (22")</span>
+                                    <span class="baggage-price">Included</span>
+                                </div>
+                                <div class="baggage-item">
+                                    <span class="baggage-type">Checked bag (50lbs)</span>
+                                    <span class="baggage-price">Included</span>
+                                </div>
+                                <div class="baggage-item">
+                                    <span class="baggage-type">Extra bag</span>
+                                    <span class="baggage-price">$75</span>
+                                </div>
+                                <div class="baggage-item">
+                                    <span class="baggage-type">Overweight (51-70lbs)</span>
+                                    <span class="baggage-price">$100</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Booking Panel -->
+                <div class="booking-panel">
+                    <div class="price-display">
+                        <div class="original-price">$699</div>
+                        <div class="current-price">$599</div>
+                        <div class="savings">Save $100</div>
+                    </div>
+                    
+                    <div class="booking-options">
+                        <div class="option" onclick="selectBookingOption('flight')">
+                            <input type="radio" name="booking" id="flight-only" checked>
+                            <label for="flight-only">
+                                <strong>Flight Only - $599</strong>
+                                <span>Round-trip flight with standard amenities</span>
+                            </label>
+                        </div>
+                        
+                        <div class="option popular" onclick="selectBookingOption('package')">
+                            <div class="popular-badge">Popular</div>
+                            <input type="radio" name="booking" id="flight-hotel">
+                            <label for="flight-hotel">
+                                <strong>Flight + Hotel - $899</strong>
+                                <span>Save $127 • 4-star hotel, 5 nights</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="total-price" id="totalPrice">
+                        <div class="price-breakdown">
+                            <span>Flight: $599</span>
+                            <span id="addonsTotal"></span>
+                        </div>
+                        <div class="final-total">Total: $599</div>
+                    </div>
+                    
+                    <button class="book-btn" onclick="proceedToBooking()">
+                        <span>Book Flight - $599</span>
+                        <span class="book-subtext">Secure checkout in 2 minutes</span>
+                    </button>
+                    
+                    <div class="mobile-summary" id="mobileSummary">
+                        <div class="summary-content">
+                            <div class="trip-summary">
+                                <strong>NYC → Paris</strong>
+                                <span>Dec 15-22 • 1 Adult</span>
+                            </div>
+                            <div class="price-summary">
+                                <span class="total-price">$599</span>
+                                <button class="mobile-book-btn" onclick="proceedToBooking()">
+                                    Book Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="add-ons">
+                        <h4>Add to your trip</h4>
+                        <div class="addon-item">
+                            <input type="checkbox" id="seat-upgrade">
+                            <label for="seat-upgrade">
+                                <span>Premium seat (+$49)</span>
+                                <small>Extra legroom & priority boarding</small>
+                            </label>
+                        </div>
+                        <div class="addon-item">
+                            <input type="checkbox" id="travel-insurance">
+                            <label for="travel-insurance">
+                                <span>Travel insurance (+$29)</span>
+                                <small>Trip cancellation & medical coverage</small>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="trust-info">
+                        <div class="trust-item">🛡️ Secure booking</div>
+                        <div class="trust-item">⭐ 4.8/5 rating</div>
+                        <div class="trust-item">📞 24/7 support</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Paris Itineraries -->
+    <section class="paris-itineraries">
+        <div class="container">
+            <div class="section-header">
+                <h2>Complete your Paris experience</h2>
+                <p>Pre-planned itineraries to make the most of your trip</p>
+            </div>
+            
+            <div class="itineraries-grid">
+                <div class="itinerary-card" onclick="viewItinerary('paris-classic')">
+                    <img src="https://images.unsplash.com/photo-1502602898536-47ad22581b52?w=300&h=180&fit=crop" alt="Classic Paris">
+                    <div class="itinerary-content">
+                        <div class="itinerary-badge">5 Days</div>
+                        <h3>Classic Paris</h3>
+                        <p>Eiffel Tower, Louvre, Notre-Dame, Seine cruise</p>
+                        <div class="itinerary-price">From $299</div>
+                        <div class="itinerary-rating">⭐ 4.8 (1,247 reviews)</div>
+                    </div>
+                </div>
+                
+                <div class="itinerary-card popular" onclick="viewItinerary('paris-foodie')">
+                    <div class="popular-tag">Most Popular</div>
+                    <img src="https://images.unsplash.com/photo-1551218808-94e220e084d2?w=300&h=180&fit=crop" alt="Paris Foodie">
+                    <div class="itinerary-content">
+                        <div class="itinerary-badge">4 Days</div>
+                        <h3>Paris Foodie Experience</h3>
+                        <p>Cooking class, wine tasting, market tours, bistros</p>
+                        <div class="itinerary-price">From $399</div>
+                        <div class="itinerary-rating">⭐ 4.9 (892 reviews)</div>
+                    </div>
+                </div>
+                
+                <div class="itinerary-card" onclick="viewItinerary('paris-romantic')">
+                    <img src="https://images.unsplash.com/photo-1549144511-f099e773c147?w=300&h=180&fit=crop" alt="Romantic Paris">
+                    <div class="itinerary-content">
+                        <div class="itinerary-badge">3 Days</div>
+                        <h3>Romantic Paris</h3>
+                        <p>Sunset at Sacré-Cœur, Seine dinner cruise, Versailles</p>
+                        <div class="itinerary-price">From $449</div>
+                        <div class="itinerary-rating">⭐ 4.7 (634 reviews)</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="itinerary-cta">
+                <p>💡 <strong>Pro tip:</strong> Book your itinerary with your flight and save up to 15%</p>
+                <button class="view-all-btn" onclick="viewAllItineraries()">View All Paris Itineraries</button>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Similar Flights -->
+    <section class="similar-flights">
+        <div class="container">
+            <h2>Compare with other flights</h2>
+            
+            <div class="flights-grid">
+                <div class="flight-option">
+                    <div class="flight-summary">
+                        <div class="airline">American Airlines</div>
+                        <div class="route">8:45 AM → 3:20 PM</div>
+                        <div class="duration">7h 35m • 1 Stop</div>
+                    </div>
+                    <div class="flight-price">
+                        <div class="price">$649</div>
+                        <button class="compare-btn">View Details</button>
+                    </div>
+                </div>
+                
+                <div class="flight-option">
+                    <div class="flight-summary">
+                        <div class="airline">United Airlines</div>
+                        <div class="route">6:15 PM → 12:30 PM+1</div>
+                        <div class="duration">7h 15m • Nonstop</div>
+                    </div>
+                    <div class="flight-price">
+                        <div class="price">$679</div>
+                        <button class="compare-btn">View Details</button>
+                    </div>
+                </div>
+                
+                <div class="flight-option best-deal">
+                    <div class="deal-badge">You're viewing the best deal!</div>
+                    <div class="flight-summary">
+                        <div class="airline">Delta Airlines (Current)</div>
+                        <div class="route">8:30 AM → 2:45 PM</div>
+                        <div class="duration">7h 15m • Nonstop</div>
+                    </div>
+                    <div class="flight-price">
+                        <div class="price">$599</div>
+                        <div class="savings">Save $50+</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+
+
+
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>TravelAI</h3>
+                    <p>Turn your travel dreams into reality with AI-powered trip planning.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="flights.html">Flights</a></li>
+                        <li><a href="hotels.html">Hotels</a></li>
+                        <li><a href="itinerary-master-hub.html">Itineraries</a></li>
+                        <li><a href="packages.html">Packages</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="contact.html">Help & Contact</a></li>
+                        <li><a href="blog.html">Travel Blog</a></li>
+                        <li><a href="legal.html">Legal</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 TravelAI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Seat Selection Modal -->
+    <div class="seat-modal" id="seatModal" style="display: none;">
+        <div class="modal-overlay" onclick="closeSeatModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Choose Your Seat</h3>
+                <button class="close-btn" onclick="closeSeatModal()">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="seat-info">
+                    <div class="flight-info-mini">
+                        <span>NYC → Paris</span>
+                        <span>DL 1234 • Boeing 777</span>
+                        <span>Dec 15 • 8:30 AM</span>
+                    </div>
+                    
+                    <div class="seat-legend">
+                        <div class="legend-item">
+                            <div class="seat-icon available"></div>
+                            <span>Available</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="seat-icon occupied"></div>
+                            <span>Occupied</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="seat-icon premium"></div>
+                            <span>Premium (+$49)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="seat-icon selected"></div>
+                            <span>Selected</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="seat-map">
+                    <div class="aircraft-section">
+                        <div class="section-title">Business Class</div>
+                        <div class="seat-rows">
+                            <!-- Row 1-3 Business -->
+                            <div class="seat-row">
+                                <span class="row-number">1</span>
+                                <div class="seat-group">
+                                    <div class="seat premium" data-seat="1A" onclick="selectSeat('1A')">A</div>
+                                    <div class="seat premium" data-seat="1B" onclick="selectSeat('1B')">B</div>
+                                </div>
+                                <div class="aisle"></div>
+                                <div class="seat-group">
+                                    <div class="seat premium" data-seat="1C" onclick="selectSeat('1C')">C</div>
+                                    <div class="seat premium" data-seat="1D" onclick="selectSeat('1D')">D</div>
+                                </div>
+                            </div>
+                            
+                            <div class="seat-row">
+                                <span class="row-number">2</span>
+                                <div class="seat-group">
+                                    <div class="seat premium" data-seat="2A" onclick="selectSeat('2A')">A</div>
+                                    <div class="seat occupied" data-seat="2B">B</div>
+                                </div>
+                                <div class="aisle"></div>
+                                <div class="seat-group">
+                                    <div class="seat premium" data-seat="2C" onclick="selectSeat('2C')">C</div>
+                                    <div class="seat premium" data-seat="2D" onclick="selectSeat('2D')">D</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="aircraft-section">
+                        <div class="section-title">Economy Class</div>
+                        <div class="seat-rows">
+                            <!-- Rows 10-15 Economy -->
+                            <div class="seat-row">
+                                <span class="row-number">10</span>
+                                <div class="seat-group">
+                                    <div class="seat available" data-seat="10A" onclick="selectSeat('10A')">A</div>
+                                    <div class="seat available" data-seat="10B" onclick="selectSeat('10B')">B</div>
+                                    <div class="seat available" data-seat="10C" onclick="selectSeat('10C')">C</div>
+                                </div>
+                                <div class="aisle"></div>
+                                <div class="seat-group">
+                                    <div class="seat available" data-seat="10D" onclick="selectSeat('10D')">D</div>
+                                    <div class="seat occupied" data-seat="10E">E</div>
+                                    <div class="seat available" data-seat="10F" onclick="selectSeat('10F')">F</div>
+                                </div>
+                            </div>
+                            
+                            <div class="seat-row">
+                                <span class="row-number">11</span>
+                                <div class="seat-group">
+                                    <div class="seat available" data-seat="11A" onclick="selectSeat('11A')">A</div>
+                                    <div class="seat occupied" data-seat="11B">B</div>
+                                    <div class="seat available" data-seat="11C" onclick="selectSeat('11C')">C</div>
+                                </div>
+                                <div class="aisle"></div>
+                                <div class="seat-group">
+                                    <div class="seat available" data-seat="11D" onclick="selectSeat('11D')">D</div>
+                                    <div class="seat available" data-seat="11E" onclick="selectSeat('11E')">E</div>
+                                    <div class="seat occupied" data-seat="11F">F</div>
+                                </div>
+                            </div>
+                            
+                            <div class="seat-row">
+                                <span class="row-number">12</span>
+                                <div class="seat-group">
+                                    <div class="seat available" data-seat="12A" onclick="selectSeat('12A')">A</div>
+                                    <div class="seat available" data-seat="12B" onclick="selectSeat('12B')">B</div>
+                                    <div class="seat available" data-seat="12C" onclick="selectSeat('12C')">C</div>
+                                </div>
+                                <div class="aisle"></div>
+                                <div class="seat-group">
+                                    <div class="seat available" data-seat="12D" onclick="selectSeat('12D')">D</div>
+                                    <div class="seat available" data-seat="12E" onclick="selectSeat('12E')">E</div>
+                                    <div class="seat available" data-seat="12F" onclick="selectSeat('12F')">F</div>
+                                </div>
+                            </div>
+                            
+                            <div class="seat-row">
+                                <span class="row-number">13</span>
+                                <div class="seat-group">
+                                    <div class="seat occupied" data-seat="13A">A</div>
+                                    <div class="seat available" data-seat="13B" onclick="selectSeat('13B')">B</div>
+                                    <div class="seat available" data-seat="13C" onclick="selectSeat('13C')">C</div>
+                                </div>
+                                <div class="aisle"></div>
+                                <div class="seat-group">
+                                    <div class="seat available" data-seat="13D" onclick="selectSeat('13D')">D</div>
+                                    <div class="seat occupied" data-seat="13E">E</div>
+                                    <div class="seat available" data-seat="13F" onclick="selectSeat('13F')">F</div>
+                                </div>
+                            </div>
+                            
+                            <div class="seat-row">
+                                <span class="row-number">14</span>
+                                <div class="seat-group">
+                                    <div class="seat available" data-seat="14A" onclick="selectSeat('14A')">A</div>
+                                    <div class="seat available" data-seat="14B" onclick="selectSeat('14B')">B</div>
+                                    <div class="seat occupied" data-seat="14C">C</div>
+                                </div>
+                                <div class="aisle"></div>
+                                <div class="seat-group">
+                                    <div class="seat available" data-seat="14D" onclick="selectSeat('14D')">D</div>
+                                    <div class="seat available" data-seat="14E" onclick="selectSeat('14E')">E</div>
+                                    <div class="seat available" data-seat="14F" onclick="selectSeat('14F')">F</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="selected-seat-info" id="selectedSeatInfo" style="display: none;">
+                    <div class="seat-details">
+                        <h4>Selected Seat</h4>
+                        <div class="seat-summary">
+                            <span class="seat-number" id="selectedSeatNumber">-</span>
+                            <span class="seat-type" id="selectedSeatType">-</span>
+                            <span class="seat-price" id="selectedSeatPrice">Included</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeSeatModal()">Cancel</button>
+                <button class="btn-primary" onclick="confirmSeatSelection()" id="confirmSeatBtn" disabled>
+                    Confirm Seat Selection
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="flight-details-script.js"></script>
+</body>
+</html>

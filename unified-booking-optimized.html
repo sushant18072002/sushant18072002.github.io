@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Your Booking - TravelAI | Secure & Fast</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary-900: #0F172A; --primary-800: #1E293B; --primary-700: #334155; --primary-600: #475569; --primary-400: #94A3B8; --primary-100: #F1F5F9;
+            --ocean-blue: #1E40AF; --mirage-blue: #4b90e6; --governor-bay: #2553eb; --emerald: #10B981; --premium-amber: #F59E0B; --soft-coral: #FF6B6B;
+            --gradient-primary: linear-gradient(135deg, var(--governor-bay), var(--ocean-blue));
+            --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        body { font-family: 'Inter', sans-serif; line-height: 1.5; background: var(--primary-50); }
+
+        /* ENHANCED NAVIGATION */
+        .nav-container {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background: rgba(248, 250, 252, 0.95); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2); height: 70px;
+        }
+        .navbar {
+            max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; height: 100%;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo {
+            font-size: 1.4rem; font-weight: 800; color: var(--primary-900);
+            background: var(--gradient-primary);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        /* BREADCRUMBS */
+        .breadcrumbs {
+            background: white; padding: 1rem 1.5rem; margin-top: 70px; border-bottom: 1px solid var(--primary-200);
+        }
+        .breadcrumb-nav {
+            max-width: 1280px; margin: 0 auto; display: flex; align-items: center; gap: 0.5rem; 
+            font-size: 0.9rem; color: var(--primary-600);
+        }
+        .breadcrumb-nav a { color: var(--governor-bay); text-decoration: none; }
+
+        /* MAIN CONTENT */
+        .main-content { padding-top: 20px; min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+
+        /* BOOKING LAYOUT */
+        .booking-layout { display: grid; grid-template-columns: 1fr 400px; gap: 2rem; }
+
+        /* ENHANCED BOOKING STEPS */
+        .booking-steps {
+            background: white; border-radius: 1rem; padding: 2rem;
+            box-shadow: var(--shadow-soft); position: relative;
+        }
+        .booking-steps::before {
+            content: '🔒 256-bit SSL encryption • 💳 PCI compliant • 🛡️ 100% secure';
+            position: absolute; top: -1rem; left: 50%; transform: translateX(-50%);
+            background: rgba(16, 185, 129, 0.1); color: var(--emerald);
+            padding: 0.5rem 1rem; border-radius: 50px; font-size: 0.75rem;
+            font-weight: 600; white-space: nowrap;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        /* BOOKING TYPE HEADER */
+        .booking-header {
+            background: var(--gradient-primary); color: white; padding: 1.5rem; border-radius: 0.75rem;
+            margin-bottom: 2rem; text-align: center; position: relative;
+        }
+        .booking-type-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+        .booking-type-title { font-size: 1.3rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .booking-type-subtitle { opacity: 0.9; font-size: 0.9rem; }
+
+        /* STEP INDICATOR */
+        .step-indicator {
+            display: flex; justify-content: space-between; margin-bottom: 2rem;
+        }
+        .step {
+            display: flex; align-items: center; gap: 0.5rem; flex: 1;
+        }
+        .step-number {
+            width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: 600; font-size: 0.9rem;
+        }
+        .step.active .step-number { 
+            background: var(--governor-bay); color: white;
+            animation: step-pulse 2s infinite;
+        }
+        .step.completed .step-number { 
+            background: var(--emerald); color: white;
+        }
+        .step.completed .step-number::after {
+            content: '✓'; position: absolute; font-weight: bold;
+        }
+        @keyframes step-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(37, 83, 235, 0.4); }
+            50% { box-shadow: 0 0 0 10px rgba(37, 83, 235, 0); }
+        }
+        .step:not(.active):not(.completed) .step-number { background: var(--primary-200); color: var(--primary-600); }
+        .step-title { font-weight: 500; color: var(--primary-700); }
+        .step.active .step-title { color: var(--governor-bay); font-weight: 600; }
+
+        /* PROGRESS PSYCHOLOGY */
+        .progress-motivation {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(37, 83, 235, 0.1)); 
+            padding: 1rem; border-radius: 0.75rem; margin-bottom: 2rem; text-align: center;
+        }
+        .motivation-text { font-weight: 600; color: var(--primary-900); margin-bottom: 0.5rem; }
+        .progress-bar {
+            background: var(--primary-200); height: 8px; border-radius: 4px; overflow: hidden;
+        }
+        .progress-fill {
+            background: var(--gradient-primary); height: 100%; border-radius: 4px; 
+            transition: width 0.5s ease; width: 25%;
+        }
+
+        /* FORM SECTIONS */
+        .form-section { display: none; }
+        .form-section.active { display: block; }
+        .section-title { font-size: 1.5rem; font-weight: 600; color: var(--primary-900); margin-bottom: 1.5rem; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+        .form-group { margin-bottom: 1rem; }
+        .form-label { display: block; font-weight: 500; color: var(--primary-700); margin-bottom: 0.5rem; }
+        .form-input {
+            width: 100%; padding: 0.75rem; border: 2px solid #e2e8f0; border-radius: 0.5rem;
+            font-size: 0.9rem; transition: all 0.3s ease;
+        }
+        .form-input:focus { outline: none; border-color: var(--governor-bay); box-shadow: 0 0 0 3px rgba(37, 83, 235, 0.1); }
+
+        /* ENHANCED ORDER SUMMARY */
+        .order-summary {
+            background: white; border-radius: 1rem; padding: 2rem; height: fit-content;
+            box-shadow: var(--shadow-soft); position: sticky; top: 100px;
+        }
+        .summary-title { font-size: 1.3rem; font-weight: 600; color: var(--primary-900); margin-bottom: 1.5rem; }
+
+        /* URGENCY INDICATORS */
+        .urgency-banner {
+            background: linear-gradient(135deg, var(--soft-coral), #FF8E8E);
+            color: white; padding: 1rem; border-radius: 0.75rem; margin-bottom: 1rem;
+            text-align: center; animation: urgency-pulse 2s infinite;
+        }
+        @keyframes urgency-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        /* TRUST INDICATORS */
+        .trust-badges {
+            display: flex; justify-content: center; gap: 1rem; margin-bottom: 1.5rem; 
+            padding-bottom: 1rem; border-bottom: 1px solid var(--primary-200);
+        }
+        .trust-badge {
+            text-align: center; font-size: 0.7rem; color: var(--emerald); font-weight: 600;
+        }
+        .trust-badge i { font-size: 1.2rem; margin-bottom: 0.25rem; display: block; }
+
+        /* SOCIAL PROOF */
+        .social-proof {
+            background: rgba(37, 83, 235, 0.05); padding: 1rem; border-radius: 0.5rem;
+            border-left: 4px solid var(--governor-bay); margin: 1rem 0;
+        }
+        .live-booking {
+            font-size: 0.9rem; color: var(--primary-700);
+            animation: slideIn 0.5s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* ENHANCED NAVIGATION BUTTONS */
+        .form-navigation {
+            display: flex; justify-content: space-between; align-items: center; margin-top: 2rem;
+            padding-top: 2rem; border-top: 1px solid var(--primary-200);
+        }
+        .nav-btn {
+            padding: 0.75rem 2rem; border-radius: 0.5rem; font-weight: 600; cursor: pointer;
+            transition: all 0.3s ease; border: none; font-size: 0.9rem; position: relative; overflow: hidden;
+        }
+        .nav-btn::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        .nav-btn:hover::before { left: 100%; }
+        .btn-primary {
+            background: var(--gradient-primary); color: white; 
+            box-shadow: 0 4px 15px rgba(37, 83, 235, 0.4);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37, 83, 235, 0.5); }
+        .btn-secondary { background: var(--primary-100); color: var(--primary-700); }
+
+        /* CONFIRMATION SCREEN */
+        .confirmation-screen {
+            text-align: center; padding: 3rem; display: none;
+        }
+        .confirmation-screen.active { display: block; }
+        .success-icon {
+            width: 80px; height: 80px; background: var(--emerald); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem;
+            font-size: 2rem; color: white; animation: successPulse 1s ease-out;
+        }
+        @keyframes successPulse {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .confirmation-title { font-size: 2rem; font-weight: 700; color: var(--primary-900); margin-bottom: 1rem; }
+        .booking-reference {
+            background: var(--primary-50); padding: 1rem; border-radius: 0.5rem; margin: 2rem 0;
+            font-family: monospace; font-size: 1.2rem; font-weight: 600; color: var(--governor-bay);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .booking-layout { grid-template-columns: 1fr; }
+            .order-summary { position: static; order: -1; }
+            .form-grid { grid-template-columns: 1fr; }
+            .step-indicator { flex-direction: column; gap: 1rem; }
+            .trust-badges { flex-direction: column; gap: 0.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-container">
+        <div class="navbar">
+            <div class="logo">TravelAI</div>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <button onclick="history.back()" style="background: var(--primary-100); color: var(--primary-700); border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer;">← Back</button>
+                <a href="auth.html" style="background: var(--gradient-primary); color: white; padding: 0.5rem 1.5rem; border-radius: 0.5rem; text-decoration: none; font-weight: 600;">Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="breadcrumbs">
+        <nav class="breadcrumb-nav">
+            <a href="index.html">Home</a>
+            <span>›</span>
+            <a href="#" id="breadcrumb-source">Flights</a>
+            <span>›</span>
+            <span>Booking</span>
+        </nav>
+    </div>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="booking-layout">
+                <div class="booking-steps">
+                    <!-- DYNAMIC BOOKING HEADER -->
+                    <div class="booking-header" id="booking-header">
+                        <div class="booking-type-icon" id="booking-icon">✈️</div>
+                        <div class="booking-type-title" id="booking-title">Complete Your Flight Booking</div>
+                        <div class="booking-type-subtitle" id="booking-subtitle">Secure checkout in 3 easy steps</div>
+                    </div>
+
+                    <!-- STEP INDICATOR -->
+                    <div class="step-indicator">
+                        <div class="step active" data-step="1">
+                            <div class="step-number">1</div>
+                            <div class="step-title">Details</div>
+                        </div>
+                        <div class="step" data-step="2">
+                            <div class="step-number">2</div>
+                            <div class="step-title" id="step-2-title">Options</div>
+                        </div>
+                        <div class="step" data-step="3">
+                            <div class="step-number">3</div>
+                            <div class="step-title">Payment</div>
+                        </div>
+                    </div>
+
+                    <!-- PROGRESS PSYCHOLOGY -->
+                    <div class="progress-motivation">
+                        <div class="motivation-text" id="motivation-text">🎆 You're 67% closer to your dream trip!</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- STEP 1: TRAVELER DETAILS -->
+                    <div class="form-section active" id="step-1">
+                        <h2 class="section-title" id="details-title">Traveler Details</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">First Name</label>
+                                <input type="text" class="form-input" placeholder="John" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Last Name</label>
+                                <input type="text" class="form-input" placeholder="Smith" required>
+                            </div>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-input" placeholder="john@example.com" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Phone</label>
+                                <input type="tel" class="form-input" placeholder="+1 555 123 4567" required>
+                            </div>
+                        </div>
+                        <div class="form-group" id="special-requests">
+                            <label class="form-label">Special Requests</label>
+                            <textarea class="form-input" rows="3" placeholder="Any special requirements..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- STEP 2: DYNAMIC OPTIONS -->
+                    <div class="form-section" id="step-2">
+                        <h2 class="section-title" id="options-title">Select Your Options</h2>
+                        <div id="dynamic-options">
+                            <!-- Content will be populated by JavaScript based on booking type -->
+                        </div>
+                    </div>
+
+                    <!-- STEP 3: PAYMENT -->
+                    <div class="form-section" id="step-3">
+                        <h2 class="section-title">Payment Information</h2>
+                        
+                        <!-- TRAVEL INSURANCE -->
+                        <div style="background: var(--primary-50); padding: 1.5rem; border-radius: 0.75rem; margin-bottom: 2rem;">
+                            <h4 style="color: var(--primary-900); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-shield-alt" style="color: var(--emerald);"></i>
+                                Travel Protection (Recommended)
+                            </h4>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <div>
+                                    <div style="font-weight: 500; color: var(--primary-900);">Comprehensive Coverage</div>
+                                    <div style="font-size: 0.8rem; color: var(--primary-600);">Trip cancellation, medical, baggage protection</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-weight: 600; color: var(--governor-bay);" id="insurance-price">$89</div>
+                                    <div style="font-size: 0.8rem; color: var(--primary-600);">per person</div>
+                                </div>
+                            </div>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" id="insurance" style="accent-color: var(--governor-bay);">
+                                <span style="font-size: 0.9rem; color: var(--primary-700);">Yes, protect my trip</span>
+                            </label>
+                        </div>
+
+                        <!-- PAYMENT METHODS -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                            <div class="payment-method selected" onclick="selectPayment(this)" style="border: 2px solid var(--governor-bay); background: rgba(37, 83, 235, 0.05); border-radius: 0.5rem; padding: 1rem; text-align: center; cursor: pointer;">
+                                <i class="fas fa-credit-card" style="font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--governor-bay);"></i>
+                                <div>Credit Card</div>
+                            </div>
+                            <div class="payment-method" onclick="selectPayment(this)" style="border: 2px solid var(--primary-200); border-radius: 0.5rem; padding: 1rem; text-align: center; cursor: pointer;">
+                                <i class="fab fa-paypal" style="font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--governor-bay);"></i>
+                                <div>PayPal</div>
+                            </div>
+                        </div>
+
+                        <!-- CARD DETAILS -->
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Card Number</label>
+                                <input type="text" class="form-input" placeholder="1234 5678 9012 3456" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Expiry Date</label>
+                                <input type="text" class="form-input" placeholder="MM/YY" required>
+                            </div>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">CVV</label>
+                                <input type="text" class="form-input" placeholder="123" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Cardholder Name</label>
+                                <input type="text" class="form-input" placeholder="John Smith" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NAVIGATION -->
+                    <div class="form-navigation">
+                        <button class="nav-btn btn-secondary" id="prev-btn" onclick="previousStep()" style="display: none;">← Previous</button>
+                        <button class="nav-btn btn-primary" id="next-btn" onclick="nextStep()">Next →</button>
+                    </div>
+                </div>
+
+                <!-- ENHANCED ORDER SUMMARY -->
+                <div class="order-summary">
+                    <h3 class="summary-title">Booking Summary</h3>
+                    
+                    <!-- URGENCY BANNER -->
+                    <div class="urgency-banner" id="urgency-banner">
+                        🔥 Only 2 seats left at this price!
+                    </div>
+                    
+                    <!-- TRUST BADGES -->
+                    <div class="trust-badges">
+                        <div class="trust-badge">
+                            <i class="fas fa-lock"></i>
+                            SSL Secure
+                        </div>
+                        <div class="trust-badge">
+                            <i class="fas fa-shield-alt"></i>
+                            PCI Compliant
+                        </div>
+                        <div class="trust-badge">
+                            <i class="fas fa-award"></i>
+                            Verified
+                        </div>
+                    </div>
+
+                    <!-- BOOKING DETAILS -->
+                    <div id="booking-details">
+                        <!-- Content will be populated by JavaScript -->
+                    </div>
+                    
+                    <!-- SOCIAL PROOF -->
+                    <div class="social-proof">
+                        <div class="live-booking" id="live-booking">
+                            <strong>Emma from London</strong> just completed a similar booking
+                        </div>
+                    </div>
+
+                    <!-- SUPPORT OPTIONS -->
+                    <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--primary-200);">
+                        <button onclick="saveProgress()" style="background: var(--primary-100); color: var(--primary-700); border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; width: 100%; margin-bottom: 0.5rem;">
+                            💾 Save & Continue Later
+                        </button>
+                        <button onclick="contactSupport()" style="background: var(--emerald); color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; width: 100%;">
+                            💬 Need Help?
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONFIRMATION SCREEN -->
+            <div class="confirmation-screen" id="confirmation">
+                <div class="success-icon">✓</div>
+                <h1 class="confirmation-title" id="confirmation-title">Booking Confirmed!</h1>
+                <p id="confirmation-message">Your booking has been successfully confirmed. You'll receive a confirmation email shortly.</p>
+                <div class="booking-reference">
+                    Booking Reference: <strong id="booking-ref">TRV-ABC123</strong>
+                </div>
+                <button class="nav-btn btn-primary" onclick="location.href='dashboard.html'">Go to Dashboard</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentStep = 1;
+        let bookingType = 'flight'; // Default
+        let bookingData = {};
+
+        // DETECT BOOKING TYPE FROM URL
+        function detectBookingType() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            if (urlParams.has('flight')) {
+                bookingType = 'flight';
+            } else if (urlParams.has('hotel')) {
+                bookingType = 'hotel';
+            } else if (urlParams.has('package')) {
+                bookingType = 'package';
+            } else if (urlParams.has('itinerary')) {
+                bookingType = 'itinerary';
+            } else if (urlParams.has('custom')) {
+                bookingType = 'custom';
+            }
+            
+            initializeBookingType();
+        }
+
+        // INITIALIZE BOOKING TYPE
+        function initializeBookingType() {
+            const configs = {
+                flight: {
+                    icon: '✈️',
+                    title: 'Complete Your Flight Booking',
+                    subtitle: 'Secure checkout in 3 easy steps',
+                    breadcrumb: 'Flights',
+                    step2Title: 'Seats',
+                    urgency: '🔥 Only 2 seats left at this price!',
+                    details: [
+                        { label: 'Flight: JFK → NRT', price: '$1,299' },
+                        { label: 'Seat Selection', price: '$25' },
+                        { label: 'Taxes & Fees', price: '$89' }
+                    ]
+                },
+                hotel: {
+                    icon: '🏨',
+                    title: 'Complete Your Hotel Booking',
+                    subtitle: 'Secure your perfect stay',
+                    breadcrumb: 'Hotels',
+                    step2Title: 'Rooms',
+                    urgency: '🔥 Only 2 rooms left at this rate!',
+                    details: [
+                        { label: 'Hotel: 3 nights', price: '$735' },
+                        { label: 'Room Upgrade', price: '$50' },
+                        { label: 'Taxes & Fees', price: '$89' }
+                    ]
+                },
+                package: {
+                    icon: '📦',
+                    title: 'Complete Your Package Booking',
+                    subtitle: 'All-inclusive adventure awaits',
+                    breadcrumb: 'Packages',
+                    step2Title: 'Add-ons',
+                    urgency: '🔥 Limited availability - Book now!',
+                    details: [
+                        { label: 'Japan Cultural Package', price: '$2,399' },
+                        { label: 'Travel Insurance', price: '$150' },
+                        { label: 'Processing Fee', price: '$25' }
+                    ]
+                },
+                itinerary: {
+                    icon: '🗺️',
+                    title: 'Complete Your Itinerary Booking',
+                    subtitle: 'Your AI-crafted adventure',
+                    breadcrumb: 'Itineraries',
+                    step2Title: 'Customize',
+                    urgency: '🎯 Your personalized trip expires in 24h!',
+                    details: [
+                        { label: 'AI Itinerary: 7 days', price: '$2,400' },
+                        { label: 'Customizations', price: '$200' },
+                        { label: 'Service Fee', price: '$50' }
+                    ]
+                },
+                custom: {
+                    icon: '🛠️',
+                    title: 'Complete Your Custom Trip',
+                    subtitle: 'Your handcrafted adventure',
+                    breadcrumb: 'Custom Builder',
+                    step2Title: 'Review',
+                    urgency: '🎨 Your custom trip is ready to book!',
+                    details: [
+                        { label: 'Custom Trip Build', price: '$1,850' },
+                        { label: 'Premium Support', price: '$100' },
+                        { label: 'Booking Fee', price: '$25' }
+                    ]
+                }
+            };
+
+            const config = configs[bookingType];
+            
+            // Update UI elements
+            document.getElementById('booking-icon').textContent = config.icon;
+            document.getElementById('booking-title').textContent = config.title;
+            document.getElementById('booking-subtitle').textContent = config.subtitle;
+            document.getElementById('breadcrumb-source').textContent = config.breadcrumb;
+            document.getElementById('step-2-title').textContent = config.step2Title;
+            document.getElementById('urgency-banner').innerHTML = config.urgency;
+            
+            // Update booking details
+            let detailsHTML = '';
+            let total = 0;
+            config.details.forEach(item => {
+                const price = parseInt(item.price.replace('$', '').replace(',', ''));
+                total += price;
+                detailsHTML += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--primary-200);">
+                        <span>${item.label}</span>
+                        <span>${item.price}</span>
+                    </div>
+                `;
+            });
+            detailsHTML += `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; font-weight: 600; font-size: 1.1rem;">
+                    <span>Total</span>
+                    <span style="color: var(--governor-bay); font-size: 1.5rem; font-weight: 700;">$${total.toLocaleString()}</span>
+                </div>
+            `;
+            document.getElementById('booking-details').innerHTML = detailsHTML;
+            
+            // Initialize step 2 content
+            initializeStep2Content();
+        }
+
+        // INITIALIZE STEP 2 CONTENT
+        function initializeStep2Content() {
+            const step2Contents = {
+                flight: `
+                    <div style="background: var(--primary-50); border-radius: 1rem; padding: 2rem; text-align: center;">
+                        <h3 style="margin-bottom: 1rem;">Select Your Seat</h3>
+                        <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.25rem; max-width: 300px; margin: 0 auto;">
+                            ${generateSeats()}
+                        </div>
+                        <div style="display: flex; justify-content: center; gap: 2rem; margin-top: 1rem; font-size: 0.8rem;">
+                            <div><span style="background: var(--primary-200); width: 20px; height: 20px; border-radius: 0.25rem; display: inline-block; margin-right: 0.5rem;"></span>Available</div>
+                            <div><span style="background: var(--soft-coral); width: 20px; height: 20px; border-radius: 0.25rem; display: inline-block; margin-right: 0.5rem;"></span>Occupied</div>
+                            <div><span style="background: var(--governor-bay); width: 20px; height: 20px; border-radius: 0.25rem; display: inline-block; margin-right: 0.5rem;"></span>Selected</div>
+                        </div>
+                    </div>
+                `,
+                hotel: `
+                    <div style="background: var(--primary-50); border-radius: 1rem; padding: 2rem;">
+                        <h3 style="margin-bottom: 1rem;">Room Options</h3>
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div onclick="selectRoom(this)" style="border: 2px solid var(--primary-200); border-radius: 0.5rem; padding: 1rem; cursor: pointer; transition: all 0.3s ease;">
+                                <div style="font-weight: 600;">Standard Room</div>
+                                <div style="font-size: 0.8rem; color: var(--primary-600);">Queen bed, city view</div>
+                            </div>
+                            <div onclick="selectRoom(this)" style="border: 2px solid var(--governor-bay); background: rgba(37, 83, 235, 0.05); border-radius: 0.5rem; padding: 1rem; cursor: pointer;">
+                                <div style="font-weight: 600;">Deluxe Room (+$50)</div>
+                                <div style="font-size: 0.8rem; color: var(--primary-600);">King bed, ocean view</div>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                package: `
+                    <div style="background: var(--primary-50); border-radius: 1rem; padding: 2rem;">
+                        <h3 style="margin-bottom: 1rem;">Package Add-ons</h3>
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" style="accent-color: var(--governor-bay);">
+                                <span>Private Guide (+$200)</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" style="accent-color: var(--governor-bay);">
+                                <span>Airport Transfers (+$75)</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" checked style="accent-color: var(--governor-bay);">
+                                <span>Travel Insurance (+$150)</span>
+                            </label>
+                        </div>
+                    </div>
+                `,
+                itinerary: `
+                    <div style="background: var(--primary-50); border-radius: 1rem; padding: 2rem;">
+                        <h3 style="margin-bottom: 1rem;">Customize Your Itinerary</h3>
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div style="border: 1px solid var(--primary-200); border-radius: 0.5rem; padding: 1rem;">
+                                <div style="font-weight: 600;">Day 1-3: Tokyo</div>
+                                <div style="font-size: 0.8rem; color: var(--primary-600);">City exploration, temples, food tours</div>
+                            </div>
+                            <div style="border: 1px solid var(--primary-200); border-radius: 0.5rem; padding: 1rem;">
+                                <div style="font-weight: 600;">Day 4-7: Kyoto</div>
+                                <div style="font-size: 0.8rem; color: var(--primary-600);">Traditional culture, gardens, tea ceremony</div>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                custom: `
+                    <div style="background: var(--primary-50); border-radius: 1rem; padding: 2rem;">
+                        <h3 style="margin-bottom: 1rem;">Review Your Custom Trip</h3>
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Duration</span>
+                                <span>7 days</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Activities</span>
+                                <span>12 planned</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Destinations</span>
+                                <span>3 cities</span>
+                            </div>
+                        </div>
+                    </div>
+                `
+            };
+            
+            document.getElementById('dynamic-options').innerHTML = step2Contents[bookingType] || step2Contents.flight;
+        }
+
+        // GENERATE SEATS FOR FLIGHT
+        function generateSeats() {
+            let seatsHTML = '';
+            for (let i = 1; i <= 30; i++) {
+                const isOccupied = Math.random() < 0.3;
+                const seatClass = isOccupied ? 'occupied' : 'available';
+                const style = isOccupied ? 
+                    'background: var(--soft-coral); color: white; cursor: not-allowed;' : 
+                    'background: var(--primary-200); color: var(--primary-700); cursor: pointer;';
+                
+                seatsHTML += `<div onclick="${!isOccupied ? 'selectSeat(this)' : ''}" style="width: 32px; height: 32px; border-radius: 0.25rem; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; transition: all 0.3s ease; ${style}">${i}</div>`;
+            }
+            return seatsHTML;
+        }
+
+        // SEAT SELECTION
+        function selectSeat(element) {
+            document.querySelectorAll('#dynamic-options .seat, #dynamic-options div[onclick*="selectSeat"]').forEach(seat => {
+                if (seat.style.background.includes('var(--governor-bay)')) {
+                    seat.style.background = 'var(--primary-200)';
+                    seat.style.color = 'var(--primary-700)';
+                }
+            });
+            element.style.background = 'var(--governor-bay)';
+            element.style.color = 'white';
+        }
+
+        // ROOM SELECTION
+        function selectRoom(element) {
+            document.querySelectorAll('#dynamic-options div[onclick*="selectRoom"]').forEach(room => {
+                room.style.border = '2px solid var(--primary-200)';
+                room.style.background = 'white';
+            });
+            element.style.border = '2px solid var(--governor-bay)';
+            element.style.background = 'rgba(37, 83, 235, 0.05)';
+        }
+
+        // STEP NAVIGATION
+        function nextStep() {
+            if (currentStep < 3) {
+                currentStep++;
+                updateStep();
+            } else {
+                completeBooking();
+            }
+        }
+
+        function previousStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateStep();
+            }
+        }
+
+        function updateStep() {
+            // Update step indicator
+            document.querySelectorAll('.step').forEach((step, index) => {
+                step.classList.remove('active', 'completed');
+                if (index + 1 < currentStep) {
+                    step.classList.add('completed');
+                } else if (index + 1 === currentStep) {
+                    step.classList.add('active');
+                }
+            });
+
+            // Update form sections
+            document.querySelectorAll('.form-section').forEach((section, index) => {
+                section.classList.remove('active');
+                if (index + 1 === currentStep) {
+                    section.classList.add('active');
+                }
+            });
+
+            // Update navigation buttons
+            document.getElementById('prev-btn').style.display = currentStep > 1 ? 'block' : 'none';
+            document.getElementById('next-btn').textContent = currentStep === 3 ? 'Complete Booking' : 'Next →';
+            
+            // Update progress
+            const progress = (currentStep / 3) * 100;
+            document.getElementById('progress-fill').style.width = progress + '%';
+            
+            const motivations = [
+                '🎆 You\'re 33% closer to your dream trip!',
+                '🚀 You\'re 67% closer to your dream trip!',
+                '🎉 Almost there - just payment left!'
+            ];
+            document.getElementById('motivation-text').textContent = motivations[currentStep - 1];
+        }
+
+        function completeBooking() {
+            document.querySelector('.booking-layout').style.display = 'none';
+            document.getElementById('confirmation').classList.add('active');
+            
+            // Update confirmation based on booking type
+            const confirmations = {
+                flight: { title: 'Flight Booked!', message: 'Your flight has been successfully booked.' },
+                hotel: { title: 'Hotel Booked!', message: 'Your hotel reservation has been confirmed.' },
+                package: { title: 'Package Booked!', message: 'Your travel package has been secured.' },
+                itinerary: { title: 'Itinerary Booked!', message: 'Your AI-crafted adventure is confirmed.' },
+                custom: { title: 'Custom Trip Booked!', message: 'Your handcrafted journey is ready.' }
+            };
+            
+            const config = confirmations[bookingType];
+            document.getElementById('confirmation-title').textContent = config.title;
+            document.getElementById('confirmation-message').textContent = config.message;
+        }
+
+        function selectPayment(element) {
+            document.querySelectorAll('.payment-method').forEach(method => {
+                method.style.border = '2px solid var(--primary-200)';
+                method.style.background = 'white';
+            });
+            element.style.border = '2px solid var(--governor-bay)';
+            element.style.background = 'rgba(37, 83, 235, 0.05)';
+        }
+
+        function saveProgress() {
+            localStorage.setItem('bookingProgress', JSON.stringify({
+                step: currentStep,
+                type: bookingType,
+                timestamp: new Date().toISOString()
+            }));
+            alert('Booking progress saved!');
+        }
+        
+        function contactSupport() {
+            alert('Support chat would open here');
+        }
+
+        // SOCIAL PROOF ROTATION
+        const bookingActivities = [
+            'Emma from London just completed a similar booking',
+            'Mike from NYC booked the same package 5 minutes ago',
+            'Sarah from Tokyo just confirmed her reservation',
+            'Carlos from Madrid completed this booking successfully'
+        ];
+        
+        let activityIndex = 0;
+        setInterval(() => {
+            document.getElementById('live-booking').innerHTML = 
+                `<strong>${bookingActivities[activityIndex].split(' ')[0]}</strong> ${bookingActivities[activityIndex].substring(bookingActivities[activityIndex].indexOf(' ') + 1)}`;
+            activityIndex = (activityIndex + 1) % bookingActivities.length;
+        }, 8000);
+
+        // INITIALIZE
+        detectBookingType();
+    </script>
+</body>
+</html>

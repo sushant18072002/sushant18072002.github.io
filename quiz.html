@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Style Quiz - TravelAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary-900: #0F172A; --primary-800: #1E293B; --primary-700: #334155; --primary-600: #475569; --primary-400: #94A3B8; --primary-100: #F1F5F9;
+            --ocean-blue: #1E40AF; --mirage-blue: #4b90e6; --governor-bay: #2553eb; --emerald: #10B981; --premium-amber: #F59E0B; --soft-coral: #FF6B6B;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; line-height: 1.5; 
+            background: linear-gradient(135deg, var(--ocean-blue) 0%, var(--mirage-blue) 100%);
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+        }
+
+        .quiz-container {
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px);
+            border-radius: 2rem; padding: 3rem; max-width: 600px; width: 90%;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3); text-align: center;
+        }
+
+        .quiz-header { margin-bottom: 2rem; }
+        .quiz-title { font-size: 2rem; font-weight: 700; color: var(--primary-900); margin-bottom: 1rem; }
+        .quiz-subtitle { color: var(--primary-600); font-size: 1.1rem; }
+
+        .question { margin-bottom: 2rem; }
+        .question-title { font-size: 1.3rem; font-weight: 600; color: var(--primary-900); margin-bottom: 1.5rem; }
+
+        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .option {
+            background: linear-gradient(135deg, rgba(37, 83, 235, 0.05), rgba(75, 144, 230, 0.05));
+            border: 2px solid rgba(37, 83, 235, 0.1); border-radius: 1rem;
+            padding: 1.5rem; cursor: pointer; transition: all 0.3s ease;
+        }
+        .option:hover { border-color: var(--governor-bay); transform: translateY(-2px); }
+        .option.selected { border-color: var(--governor-bay); background: rgba(37, 83, 235, 0.1); }
+
+        .option-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+        .option-title { font-weight: 600; color: var(--primary-800); margin-bottom: 0.5rem; }
+        .option-description { font-size: 0.9rem; color: var(--primary-600); }
+
+        .quiz-btn {
+            background: linear-gradient(135deg, var(--governor-bay), var(--ocean-blue));
+            color: white; border: none; padding: 1rem 2rem; border-radius: 0.75rem;
+            font-weight: 600; cursor: pointer; transition: all 0.3s ease; margin-top: 2rem;
+        }
+        .quiz-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37, 83, 235, 0.5); }
+
+        @media (max-width: 768px) {
+            .options { grid-template-columns: 1fr; }
+            .quiz-container { padding: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <div class="quiz-header">
+            <h1 class="quiz-title">✨ Discover Your Travel Style</h1>
+            <p class="quiz-subtitle">Quick 30-second quiz to find your perfect trip type</p>
+        </div>
+
+        <div class="question">
+            <h2 class="question-title">What's your ideal vacation vibe?</h2>
+            <div class="options">
+                <div class="option" onclick="selectOption(this, 'relaxation')">
+                    <div class="option-icon">🏖️</div>
+                    <div class="option-title">Relaxation</div>
+                    <div class="option-description">Beach, spa, chill vibes</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 'adventure')">
+                    <div class="option-icon">🏔️</div>
+                    <div class="option-title">Adventure</div>
+                    <div class="option-description">Hiking, thrills, exploration</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 'culture')">
+                    <div class="option-icon">🏛️</div>
+                    <div class="option-title">Culture</div>
+                    <div class="option-description">Museums, history, local life</div>
+                </div>
+                <div class="option" onclick="selectOption(this, 'luxury')">
+                    <div class="option-icon">🥂</div>
+                    <div class="option-title">Luxury</div>
+                    <div class="option-description">Fine dining, premium experiences</div>
+                </div>
+            </div>
+        </div>
+
+        <button class="quiz-btn" onclick="completeQuiz()">Get My Travel Style</button>
+    </div>
+
+    <script>
+        let selectedStyle = null;
+
+        function selectOption(element, style) {
+            document.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+            selectedStyle = style;
+        }
+
+        function completeQuiz() {
+            if (!selectedStyle) {
+                alert('Please select your travel style first!');
+                return;
+            }
+            
+            // Store result and redirect to itinerary builder
+            localStorage.setItem('travelStyle', selectedStyle);
+            location.href = 'itinerary.html?style=' + selectedStyle;
+        }
+    </script>
+</body>
+</html>

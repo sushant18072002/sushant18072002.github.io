@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Booking - TravelAI | Complete Your Journey</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary-900: #0F172A; --primary-800: #1E293B; --primary-700: #334155; --primary-600: #475569; --primary-400: #94A3B8; --primary-100: #F1F5F9;
+            --ocean-blue: #1E40AF; --mirage-blue: #4b90e6; --governor-bay: #2553eb; --emerald: #10B981; --premium-amber: #F59E0B; --soft-coral: #FF6B6B;
+            --gradient-primary: linear-gradient(135deg, var(--governor-bay), var(--ocean-blue));
+            --gradient-success: linear-gradient(135deg, var(--emerald), #059669);
+        }
+
+        body { font-family: 'Inter', sans-serif; line-height: 1.5; background: var(--primary-50); }
+
+        /* NAVIGATION */
+        .nav-container {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background: rgba(248, 250, 252, 0.95); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2); height: 60px;
+        }
+        .navbar {
+            max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; height: 100%;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo {
+            font-size: 1.4rem; font-weight: 800; color: var(--primary-900);
+            background: var(--gradient-primary);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        /* MAIN CONTENT */
+        .main-content { padding-top: 80px; min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+
+        /* ENHANCED BOOKING LAYOUT */
+        .booking-layout { display: grid; grid-template-columns: 1fr 400px; gap: 2rem; }
+
+        /* ENHANCED BOOKING STEPS WITH STRONG PSYCHOLOGY */
+        .booking-steps {
+            background: white; border-radius: 1rem; padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); position: relative;
+        }
+        .booking-steps::before {
+            content: '🔒 Your booking is secured with 256-bit SSL encryption';
+            position: absolute; top: -1rem; left: 50%; transform: translateX(-50%);
+            background: rgba(16, 185, 129, 0.1); color: var(--emerald);
+            padding: 0.5rem 1rem; border-radius: 50px; font-size: 0.75rem;
+            font-weight: 600; white-space: nowrap;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        
+        /* ENHANCED STEP INDICATOR */
+        .step-indicator {
+            display: flex; justify-content: space-between; margin-bottom: 2rem;
+        }
+        .step {
+            display: flex; align-items: center; gap: 0.5rem; flex: 1;
+        }
+        .step-number {
+            width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: 600; font-size: 0.9rem;
+        }
+        .step.active .step-number { 
+            background: var(--governor-bay); color: white;
+            animation: step-pulse 2s infinite;
+        }
+        .step.completed .step-number { 
+            background: var(--emerald); color: white;
+        }
+        .step.completed .step-number::after {
+            content: '✓'; position: absolute; font-weight: bold;
+        }
+        @keyframes step-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(37, 83, 235, 0.4); }
+            50% { box-shadow: 0 0 0 10px rgba(37, 83, 235, 0); }
+        }
+        .step:not(.active):not(.completed) .step-number { background: var(--primary-200); color: var(--primary-600); }
+        .step-title { font-weight: 500; color: var(--primary-700); }
+        .step.active .step-title { color: var(--governor-bay); font-weight: 600; }
+
+        /* PROGRESS PSYCHOLOGY */
+        .progress-psychology {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(37, 83, 235, 0.1)); 
+            padding: 1rem; border-radius: 0.75rem; margin-bottom: 2rem; text-align: center;
+        }
+        .progress-text {
+            font-weight: 600; color: var(--primary-900); margin-bottom: 0.5rem;
+        }
+        .progress-bar {
+            background: var(--primary-200); height: 8px; border-radius: 4px; overflow: hidden;
+        }
+        .progress-fill {
+            background: var(--gradient-primary); height: 100%; border-radius: 4px; 
+            transition: width 0.5s ease;
+        }
+
+        /* FORM SECTIONS */
+        .form-section { display: none; }
+        .form-section.active { display: block; }
+        .section-title { font-size: 1.5rem; font-weight: 600; color: var(--primary-900); margin-bottom: 1.5rem; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+        .form-group { margin-bottom: 1rem; }
+        .form-label { display: block; font-weight: 500; color: var(--primary-700); margin-bottom: 0.5rem; }
+        .form-input {
+            width: 100%; padding: 0.75rem; border: 2px solid #e2e8f0; border-radius: 0.5rem;
+            font-size: 0.9rem; transition: all 0.3s ease;
+        }
+        .form-input:focus { outline: none; border-color: var(--governor-bay); box-shadow: 0 0 0 3px rgba(37, 83, 235, 0.1); }
+
+        /* ENHANCED ORDER SUMMARY */
+        .order-summary {
+            background: white; border-radius: 1rem; padding: 2rem; height: fit-content;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); position: sticky; top: 100px;
+        }
+        .summary-title { font-size: 1.3rem; font-weight: 600; color: var(--primary-900); margin-bottom: 1.5rem; }
+        
+        /* SECURITY BADGES */
+        .security-badges {
+            display: flex; justify-content: center; gap: 1rem; margin-bottom: 1.5rem; 
+            padding-bottom: 1rem; border-bottom: 1px solid var(--primary-200);
+        }
+        .security-badge {
+            text-align: center;
+        }
+        .security-badge i {
+            color: var(--emerald); font-size: 1.2rem;
+        }
+        .security-badge div {
+            font-size: 0.7rem; color: var(--primary-600);
+        }
+        
+        .summary-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.75rem 0; border-bottom: 1px solid var(--primary-200);
+        }
+        .summary-item:last-child { border-bottom: none; font-weight: 600; font-size: 1.1rem; }
+        .total-price { color: var(--governor-bay); font-size: 1.5rem; font-weight: 700; }
+
+        /* ENHANCED NAVIGATION BUTTONS */
+        .form-navigation {
+            display: flex; justify-content: space-between; align-items: center; margin-top: 2rem;
+            padding-top: 2rem; border-top: 1px solid var(--primary-200);
+        }
+        .nav-btn {
+            padding: 0.75rem 2rem; border-radius: 0.5rem; font-weight: 600; cursor: pointer;
+            transition: all 0.3s ease; border: none; font-size: 0.9rem;
+        }
+        .btn-primary {
+            background: var(--gradient-primary); color: white; 
+            box-shadow: 0 4px 15px rgba(37, 83, 235, 0.4);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37, 83, 235, 0.5); }
+        .btn-secondary {
+            background: var(--primary-100); color: var(--primary-700);
+        }
+
+        /* CONFIRMATION SCREEN */
+        .confirmation-screen {
+            text-align: center; padding: 3rem; display: none;
+        }
+        .confirmation-screen.active { display: block; }
+        .success-icon {
+            width: 80px; height: 80px; background: var(--emerald); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem;
+            font-size: 2rem; color: white;
+            animation: success-bounce 0.6s ease-out;
+        }
+        @keyframes success-bounce {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        .confirmation-title { font-size: 2rem; font-weight: 700; color: var(--primary-900); margin-bottom: 1rem; }
+        .booking-reference {
+            background: var(--primary-50); padding: 1rem; border-radius: 0.5rem; margin: 2rem 0;
+            font-family: monospace; font-size: 1.2rem; font-weight: 600; color: var(--governor-bay);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .booking-layout { grid-template-columns: 1fr; }
+            .order-summary { position: static; order: -1; }
+            .form-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-container">
+        <div class="navbar">
+            <div class="logo">TravelAI</div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="booking-layout">
+                <div class="booking-steps">
+                    <!-- STEP INDICATOR -->
+                    <div class="step-indicator">
+                        <div class="step active" data-step="1">
+                            <div class="step-number">1</div>
+                            <div class="step-title">Details</div>
+                        </div>
+                        <div class="step" data-step="2">
+                            <div class="step-number">2</div>
+                            <div class="step-title">Payment</div>
+                        </div>
+                        <div class="step" data-step="3">
+                            <div class="step-number">3</div>
+                            <div class="step-title">Confirm</div>
+                        </div>
+                    </div>
+
+                    <!-- PROGRESS PSYCHOLOGY -->
+                    <div class="progress-psychology">
+                        <div class="progress-text" id="progress-text">
+                            🎆 You're 33% closer to your dream trip!
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill" style="width: 33%;"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- STEP 1: PASSENGER DETAILS -->
+                    <div class="form-section active" id="step-1">
+                        <h2 class="section-title">Passenger Details</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">First Name</label>
+                                <input type="text" class="form-input" placeholder="John" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Last Name</label>
+                                <input type="text" class="form-input" placeholder="Smith" required>
+                            </div>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-input" placeholder="john@example.com" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Phone</label>
+                                <input type="tel" class="form-input" placeholder="+1 555 123 4567" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STEP 2: PAYMENT -->
+                    <div class="form-section" id="step-2">
+                        <h2 class="section-title">Payment Information</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Card Number</label>
+                                <input type="text" class="form-input" placeholder="1234 5678 9012 3456" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Expiry Date</label>
+                                <input type="text" class="form-input" placeholder="MM/YY" required>
+                            </div>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">CVV</label>
+                                <input type="text" class="form-input" placeholder="123" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Cardholder Name</label>
+                                <input type="text" class="form-input" placeholder="John Smith" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NAVIGATION -->
+                    <div class="form-navigation">
+                        <button class="nav-btn btn-secondary" id="prev-btn" onclick="previousStep()" style="display: none;">← Previous</button>
+                        <button class="nav-btn btn-primary" id="next-btn" onclick="nextStep()">Next →</button>
+                    </div>
+                </div>
+
+                <!-- ORDER SUMMARY -->
+                <div class="order-summary">
+                    <h3 class="summary-title">Booking Summary</h3>
+                    
+                    <!-- SECURITY BADGES -->
+                    <div class="security-badges">
+                        <div class="security-badge">
+                            <i class="fas fa-lock"></i>
+                            <div>SSL Secure</div>
+                        </div>
+                        <div class="security-badge">
+                            <i class="fas fa-shield-alt"></i>
+                            <div>PCI Compliant</div>
+                        </div>
+                        <div class="security-badge">
+                            <i class="fas fa-award"></i>
+                            <div>Verified</div>
+                        </div>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <span>Flight: JFK → NRT</span>
+                        <span>$1,299</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Taxes & Fees</span>
+                        <span>$89</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Total</span>
+                        <span class="total-price">$1,388</span>
+                    </div>
+                    
+                    <!-- SUPPORT OPTIONS -->
+                    <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--primary-200);">
+                        <button onclick="contactSupport()" style="background: var(--emerald); color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; width: 100%;">
+                            💬 Need Help?
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONFIRMATION SCREEN -->
+            <div class="confirmation-screen" id="confirmation">
+                <div class="success-icon">✓</div>
+                <h1 class="confirmation-title">Booking Confirmed!</h1>
+                <p>Your flight has been successfully booked. You'll receive a confirmation email shortly.</p>
+                <div class="booking-reference">
+                    Booking Reference: <strong>TRV-ABC123</strong>
+                </div>
+                <button class="nav-btn btn-primary" onclick="location.href='dashboard.html'">Go to Dashboard</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentStep = 1;
+        const totalSteps = 3;
+
+        function nextStep() {
+            if (currentStep < totalSteps) {
+                if (currentStep === 2) {
+                    // Show confirmation
+                    document.querySelector('.booking-layout').style.display = 'none';
+                    document.getElementById('confirmation').classList.add('active');
+                    return;
+                }
+                
+                currentStep++;
+                updateStep();
+            }
+        }
+
+        function previousStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateStep();
+            }
+        }
+
+        function updateStep() {
+            // Update step indicator
+            document.querySelectorAll('.step').forEach((step, index) => {
+                step.classList.remove('active', 'completed');
+                if (index + 1 < currentStep) {
+                    step.classList.add('completed');
+                } else if (index + 1 === currentStep) {
+                    step.classList.add('active');
+                }
+            });
+
+            // Update form sections
+            document.querySelectorAll('.form-section').forEach((section, index) => {
+                section.classList.remove('active');
+                if (index + 1 === currentStep) {
+                    section.classList.add('active');
+                }
+            });
+
+            // Update progress
+            const progress = (currentStep / totalSteps) * 100;
+            document.getElementById('progress-fill').style.width = progress + '%';
+            document.getElementById('progress-text').textContent = 
+                `🎆 You're ${Math.round(progress)}% closer to your dream trip!`;
+
+            // Update navigation buttons
+            document.getElementById('prev-btn').style.display = currentStep > 1 ? 'block' : 'none';
+            document.getElementById('next-btn').textContent = currentStep === 2 ? 'Complete Booking' : 'Next →';
+        }
+        
+        function contactSupport() {
+            window.open('contact.html', '_blank');
+        }
+    </script>
+</body>
+</html>

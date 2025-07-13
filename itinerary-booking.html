@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Your Booking - Queenstown Adventure | TravelAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/itinerary-booking.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav-container">
+        <div class="navbar">
+            <div class="logo">TravelAI</div>
+            <div class="booking-progress">
+                <div class="progress-step completed">
+                    <span class="step-number">1</span>
+                    <span class="step-label">Select</span>
+                </div>
+                <div class="progress-line completed"></div>
+                <div class="progress-step active">
+                    <span class="step-number">2</span>
+                    <span class="step-label">Book</span>
+                </div>
+                <div class="progress-line"></div>
+                <div class="progress-step">
+                    <span class="step-number">3</span>
+                    <span class="step-label">Confirm</span>
+                </div>
+            </div>
+            <div class="security-badge">
+                <span>🔒</span>
+                <span>Secure Checkout</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <section class="breadcrumb">
+        <div class="container">
+            <div class="breadcrumb-nav">
+                <a href="index.html">🏠 Home</a>
+                <span>›</span>
+                <a href="itinerary-master-hub.html">Itineraries</a>
+                <span>›</span>
+                <a href="itinerary-details.html">Queenstown Adventure</a>
+                <span>›</span>
+                <span class="current">Booking</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Booking Hero -->
+    <section class="booking-hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="destination-preview">
+                    <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=200&fit=crop" alt="Queenstown">
+                    <div class="destination-overlay">
+                        <h1>Your Queenstown Adventure Awaits!</h1>
+                        <p>Just a few more steps to confirm your dream adventure</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Booking Content -->
+    <section class="booking-content">
+        <div class="container">
+            <div class="booking-layout">
+                <!-- Main Booking Form -->
+                <div class="booking-form">
+                    <div class="form-section">
+                        <div class="section-header">
+                            <h2>Traveler Information</h2>
+                            <p>Enter details for all travelers</p>
+                        </div>
+                        
+                        <div class="traveler-card">
+                            <div class="traveler-header">
+                                <h3>Primary Traveler (Contact Person)</h3>
+                                <div class="required-badge">Required</div>
+                            </div>
+                            
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="firstName">First Name *</label>
+                                    <input type="text" id="firstName" name="firstName" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="lastName">Last Name *</label>
+                                    <input type="text" id="lastName" name="lastName" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="email">Email Address *</label>
+                                    <input type="email" id="email" name="email" required>
+                                    <small>Confirmation will be sent here</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="phone">Phone Number *</label>
+                                    <input type="tel" id="phone" name="phone" required>
+                                    <small>For important travel updates</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="dateOfBirth">Date of Birth *</label>
+                                    <input type="date" id="dateOfBirth" name="dateOfBirth" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="emergencyContact">Emergency Contact</label>
+                                    <input type="text" id="emergencyContact" name="emergencyContact" placeholder="Name and phone number">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <div class="section-header">
+                            <h2>Travel Preferences</h2>
+                            <p>Customize your adventure experience</p>
+                        </div>
+                        
+                        <div class="preferences-grid">
+                            <div class="preference-group">
+                                <h4>🏨 Accommodation Preference</h4>
+                                <div class="radio-options">
+                                    <label class="radio-option">
+                                        <input type="radio" name="accommodation" value="luxury" checked>
+                                        <span class="radio-checkmark"></span>
+                                        <div class="option-content">
+                                            <strong>Luxury Hotels</strong>
+                                            <span>5-star properties with premium amenities</span>
+                                        </div>
+                                    </label>
+                                    <label class="radio-option">
+                                        <input type="radio" name="accommodation" value="boutique">
+                                        <span class="radio-checkmark"></span>
+                                        <div class="option-content">
+                                            <strong>Boutique Hotels</strong>
+                                            <span>Unique, locally-inspired properties</span>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="preference-group">
+                                <h4>🍽️ Dining Preferences</h4>
+                                <div class="checkbox-options">
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="dining" value="vegetarian">
+                                        <span class="checkbox-checkmark"></span>
+                                        <span>Vegetarian options</span>
+                                    </label>
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="dining" value="local">
+                                        <span class="checkbox-checkmark"></span>
+                                        <span>Local cuisine experiences</span>
+                                    </label>
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="dining" value="fine">
+                                        <span class="checkbox-checkmark"></span>
+                                        <span>Fine dining restaurants</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="specialRequests">Special Requests</label>
+                            <textarea id="specialRequests" name="specialRequests" rows="3" placeholder="Any special requests, accessibility needs, or dietary requirements..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <div class="section-header">
+                            <h2>Add-ons (Optional)</h2>
+                            <p>Enhance your adventure with these popular options</p>
+                        </div>
+                        
+                        <div class="simple-addons">
+                            <label class="addon-option">
+                                <input type="checkbox" name="insurance" value="89" onchange="updateTotal()">
+                                <span class="addon-checkmark"></span>
+                                <div class="addon-content">
+                                    <div class="addon-header">
+                                        <span class="addon-title">🛡️ Travel Protection</span>
+                                        <span class="addon-price">+$89</span>
+                                    </div>
+                                    <div class="addon-description">Trip cancellation, medical coverage, adventure sports protection</div>
+                                </div>
+                            </label>
+                            
+                            <label class="addon-option">
+                                <input type="checkbox" name="photography" value="299" onchange="updateTotal()">
+                                <span class="addon-checkmark"></span>
+                                <div class="addon-content">
+                                    <div class="addon-header">
+                                        <span class="addon-title">📸 Professional Photography</span>
+                                        <span class="addon-price">+$299</span>
+                                    </div>
+                                    <div class="addon-description">Personal photographer for key activities and scenic locations</div>
+                                </div>
+                            </label>
+                            
+                            <label class="addon-option">
+                                <input type="checkbox" name="helicopter" value="450" onchange="updateTotal()">
+                                <span class="addon-checkmark"></span>
+                                <div class="addon-content">
+                                    <div class="addon-header">
+                                        <span class="addon-title">🚁 Helicopter Tour Upgrade</span>
+                                        <span class="addon-price">+$450</span>
+                                    </div>
+                                    <div class="addon-description">Extended helicopter tour with glacier landing experience</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <div class="section-header">
+                            <h2>Payment Information</h2>
+                            <p>Your payment is secure and encrypted</p>
+                        </div>
+                        
+                        <div class="payment-tabs">
+                            <button class="payment-tab active" onclick="selectPaymentMethod('card')">💳 Card</button>
+                            <button class="payment-tab" onclick="selectPaymentMethod('paypal')">🅿️ PayPal</button>
+                        </div>
+                        
+                        <div class="payment-form" id="cardPaymentForm">
+                            <div class="form-grid">
+                                <div class="form-group full-width">
+                                    <label for="cardNumber">Card Number *</label>
+                                    <input type="text" id="cardNumber" name="cardNumber" placeholder="1234 5678 9012 3456" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="expiryDate">Expiry Date *</label>
+                                    <input type="text" id="expiryDate" name="expiryDate" placeholder="MM/YY" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="cvv">CVV *</label>
+                                    <input type="text" id="cvv" name="cvv" placeholder="123" required>
+                                </div>
+                                
+                                <div class="form-group full-width">
+                                    <label for="cardName">Name on Card *</label>
+                                    <input type="text" id="cardName" name="cardName" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <div class="terms-section">
+                            <label class="checkbox-option">
+                                <input type="checkbox" id="agreeTerms" required>
+                                <span class="checkmark"></span>
+                                <span>I agree to the <a href="legal.html">Terms & Conditions</a> and <a href="legal.html">Privacy Policy</a></span>
+                            </label>
+                            
+                            <label class="checkbox-option">
+                                <input type="checkbox" id="marketingEmails">
+                                <span class="checkmark"></span>
+                                <span>Send me travel deals and updates (optional)</span>
+                            </label>
+                            
+                            <div class="booking-actions">
+                                <button type="button" class="back-btn" onclick="goBack()">
+                                    <span>← Back to Itinerary Details</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Booking Summary -->
+                <div class="booking-summary">
+                    <div class="summary-card">
+                        <div class="summary-header">
+                            <h3>Booking Summary</h3>
+                            <button class="edit-btn" onclick="editBooking()">Edit</button>
+                        </div>
+                        
+                        <div class="itinerary-summary-compact">
+                            <div class="itinerary-preview">
+                                <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=80&h=60&fit=crop" alt="Queenstown">
+                                <div class="itinerary-info">
+                                    <h4>7-Day Queenstown Adventure</h4>
+                                    <div class="itinerary-details">
+                                        <span>📅 May 15-22, 2024</span>
+                                        <span>👥 2 Adults</span>
+                                        <span>🏆 Premium Package</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="price-breakdown" id="priceBreakdown">
+                            <div class="price-item">
+                                <span>Package (2 Adults)</span>
+                                <span>$1,998</span>
+                            </div>
+                            <div class="price-item">
+                                <span>Service Fee</span>
+                                <span>$99</span>
+                            </div>
+                            <div class="price-item discount">
+                                <span>Early Bird Discount</span>
+                                <span>-$300</span>
+                            </div>
+                            <div class="price-item" id="addonsItem" style="display: none;">
+                                <span>Add-ons</span>
+                                <span id="addonsPrice">$0</span>
+                            </div>
+                            <div class="price-total">
+                                <span>Total</span>
+                                <span id="totalPrice">$1,797</span>
+                            </div>
+                        </div>
+                        
+                        <div class="price-protection-compact">
+                            <div class="protection-info">
+                                <span class="protection-icon">🔒</span>
+                                <span class="protection-text">Price locked: <span id="priceTimer">14:59</span></span>
+                            </div>
+                        </div>
+                        
+                        <div class="urgency-compact">
+                            <span class="urgency-icon">⏰</span>
+                            <span class="urgency-text">Only 3 packages left for these dates</span>
+                        </div>
+                        
+                        <button class="complete-booking-btn" onclick="completeBooking()" id="completeBookingBtn">
+                            <span class="btn-icon">🔒</span>
+                            <span class="btn-text">Complete Secure Booking</span>
+                            <span class="btn-subtext" id="bookingBtnTotal">$1,797 Total</span>
+                        </button>
+                        
+                        <div class="security-badges">
+                            <div class="badge">🛡️ SSL Encrypted</div>
+                            <div class="badge">💳 Secure Payment</div>
+                            <div class="badge">📞 24/7 Support</div>
+                        </div>
+                    </div>
+                    
+                    <div class="trust-signals">
+                        <div class="trust-item">
+                            <div class="trust-icon">⭐</div>
+                            <div class="trust-content">
+                                <strong>4.9/5 Rating</strong>
+                                <p>Based on 2,847 adventures</p>
+                            </div>
+                        </div>
+                        
+                        <div class="trust-item">
+                            <div class="trust-icon">✅</div>
+                            <div class="trust-content">
+                                <strong>Free Cancellation</strong>
+                                <p>Cancel up to 48 hours before</p>
+                            </div>
+                        </div>
+                        
+                        <div class="trust-item">
+                            <div class="trust-icon">🏆</div>
+                            <div class="trust-content">
+                                <strong>Best Adventure Guarantee</strong>
+                                <p>Unforgettable experience or money back</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recent Bookings Social Proof -->
+    <section class="social-proof">
+        <div class="container">
+            <div class="social-proof-header">
+                <h3>Join thousands of adventurers</h3>
+                <p>Recent bookings from travelers like you</p>
+            </div>
+            
+            <div class="recent-bookings">
+                <div class="booking-notification">
+                    <div class="notification-avatar">
+                        <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=40&h=40&fit=crop&crop=face" alt="Sarah">
+                    </div>
+                    <div class="notification-content">
+                        <strong>Sarah M.</strong> just booked Queenstown Adventure
+                        <span class="time-ago">3 minutes ago</span>
+                    </div>
+                </div>
+                
+                <div class="booking-notification">
+                    <div class="notification-avatar">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face" alt="Mike">
+                    </div>
+                    <div class="notification-content">
+                        <strong>Mike R.</strong> just booked Swiss Alps Adventure
+                        <span class="time-ago">7 minutes ago</span>
+                    </div>
+                </div>
+                
+                <div class="booking-notification">
+                    <div class="notification-avatar">
+                        <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face" alt="Emma">
+                    </div>
+                    <div class="notification-content">
+                        <strong>Emma L.</strong> just booked Iceland Explorer
+                        <span class="time-ago">12 minutes ago</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="booking-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <a href="contact.html">Need Help?</a>
+                    <a href="legal.html">Terms & Conditions</a>
+                    <a href="legal.html">Privacy Policy</a>
+                </div>
+                <div class="footer-security">
+                    <span>🔒 Your information is secure and encrypted</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/itinerary-booking.js"></script>
+</body>
+</html>

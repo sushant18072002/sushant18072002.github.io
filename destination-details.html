@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tokyo, Japan - TravelAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary-900: #0F172A; --primary-800: #1E293B; --primary-700: #334155; --primary-600: #475569; --primary-400: #94A3B8; --primary-100: #F1F5F9;
+            --ocean-blue: #1E40AF; --mirage-blue: #4b90e6; --governor-bay: #2553eb; --emerald: #10B981; --premium-amber: #F59E0B;
+        }
+
+        body { font-family: 'Inter', sans-serif; line-height: 1.5; background: var(--primary-50); }
+
+        .nav-container {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background: rgba(248, 250, 252, 0.95); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2); height: 60px;
+        }
+        .navbar {
+            max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; height: 100%;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo {
+            font-size: 1.4rem; font-weight: 800; color: var(--primary-900);
+            background: linear-gradient(135deg, var(--governor-bay), var(--mirage-blue));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        .main-content { padding-top: 80px; min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+
+        .destination-hero {
+            height: 400px; background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), linear-gradient(45deg, var(--primary-100), var(--primary-200));
+            border-radius: 1rem; display: flex; align-items: center; justify-content: center;
+            color: white; text-align: center; margin-bottom: 2rem; position: relative;
+        }
+        .hero-content h1 { font-size: 3rem; font-weight: 800; margin-bottom: 1rem; }
+        .hero-content p { font-size: 1.2rem; opacity: 0.9; }
+        .hero-stats {
+            position: absolute; bottom: 2rem; left: 2rem; right: 2rem;
+            display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+        }
+        .stat-item {
+            background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px);
+            padding: 1rem; border-radius: 0.75rem; text-align: center; min-width: 120px;
+        }
+        .stat-number { font-size: 1.5rem; font-weight: 700; }
+        .stat-label { font-size: 0.9rem; opacity: 0.9; }
+
+        .destination-content {
+            display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;
+        }
+        .main-sections {
+            display: flex; flex-direction: column; gap: 2rem;
+        }
+        .section {
+            background: white; border-radius: 1rem; padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        .section-title { font-size: 1.3rem; font-weight: 600; color: var(--primary-900); margin-bottom: 1.5rem; }
+
+        .attractions-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;
+        }
+        .attraction-card {
+            border: 1px solid var(--primary-200); border-radius: 0.75rem; overflow: hidden;
+            transition: all 0.3s ease; cursor: pointer;
+        }
+        .attraction-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); }
+        .attraction-image {
+            height: 120px; background: linear-gradient(45deg, var(--primary-100), var(--primary-200));
+            display: flex; align-items: center; justify-content: center; font-size: 2rem;
+        }
+        .attraction-content { padding: 1rem; }
+        .attraction-name { font-weight: 600; color: var(--primary-900); margin-bottom: 0.5rem; }
+        .attraction-description { color: var(--primary-600); font-size: 0.9rem; margin-bottom: 0.5rem; }
+        .attraction-rating { color: var(--premium-amber); font-size: 0.8rem; }
+
+        .weather-widget {
+            background: linear-gradient(135deg, var(--mirage-blue), var(--ocean-blue));
+            color: white; border-radius: 1rem; padding: 2rem; margin-bottom: 2rem;
+        }
+        .weather-current {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;
+        }
+        .weather-temp { font-size: 2.5rem; font-weight: 700; }
+        .weather-icon { font-size: 3rem; }
+        .weather-forecast {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;
+        }
+        .forecast-day {
+            text-align: center; background: rgba(255, 255, 255, 0.1);
+            padding: 1rem; border-radius: 0.5rem;
+        }
+        .forecast-day-name { font-size: 0.8rem; opacity: 0.8; margin-bottom: 0.5rem; }
+        .forecast-temp { font-weight: 600; }
+
+        .travel-tips {
+            background: var(--primary-50); border-radius: 1rem; padding: 2rem;
+        }
+        .tips-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;
+        }
+        .tip-item {
+            background: white; padding: 1rem; border-radius: 0.5rem;
+            display: flex; align-items: flex-start; gap: 0.75rem;
+        }
+        .tip-icon { color: var(--governor-bay); font-size: 1.2rem; margin-top: 0.25rem; }
+        .tip-content h4 { color: var(--primary-900); margin-bottom: 0.25rem; }
+        .tip-content p { color: var(--primary-600); font-size: 0.9rem; }
+
+        .sidebar {
+            display: flex; flex-direction: column; gap: 2rem;
+        }
+        .quick-book {
+            background: white; border-radius: 1rem; padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        .book-options {
+            display: flex; flex-direction: column; gap: 1rem;
+        }
+        .book-option {
+            border: 2px solid var(--primary-200); border-radius: 0.75rem; padding: 1rem;
+            cursor: pointer; transition: all 0.3s ease;
+        }
+        .book-option:hover { border-color: var(--governor-bay); background: rgba(37, 83, 235, 0.05); }
+        .option-title { font-weight: 600; color: var(--primary-900); margin-bottom: 0.5rem; }
+        .option-price { font-size: 1.2rem; font-weight: 700; color: var(--governor-bay); }
+
+        @media (max-width: 768px) {
+            .destination-content { grid-template-columns: 1fr; }
+            .sidebar { order: -1; }
+            .hero-stats { position: static; background: rgba(0,0,0,0.3); margin-top: 2rem; padding: 1rem; border-radius: 0.75rem; }
+            .attractions-grid { grid-template-columns: 1fr; }
+            .weather-forecast { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-container">
+        <div class="navbar">
+            <div class="logo">TravelAI</div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="destination-hero">
+                <div class="hero-content">
+                    <h1>🏯 Tokyo, Japan</h1>
+                    <p>Where ancient traditions meet cutting-edge innovation</p>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">37M</div>
+                        <div class="stat-label">Population</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">23°C</div>
+                        <div class="stat-label">Current Temp</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">¥110</div>
+                        <div class="stat-label">USD Exchange</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">GMT+9</div>
+                        <div class="stat-label">Time Zone</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="destination-content">
+                <div class="main-sections">
+                    <div class="section">
+                        <h2 class="section-title">🌟 Top Attractions</h2>
+                        <div class="attractions-grid">
+                            <div class="attraction-card" onclick="viewAttraction('senso-ji')">
+                                <div class="attraction-image">⛩️</div>
+                                <div class="attraction-content">
+                                    <div class="attraction-name">Senso-ji Temple</div>
+                                    <div class="attraction-description">Tokyo's oldest temple with traditional architecture</div>
+                                    <div class="attraction-rating">★★★★★ 4.8 (12,450 reviews)</div>
+                                </div>
+                            </div>
+
+                            <div class="attraction-card" onclick="viewAttraction('shibuya')">
+                                <div class="attraction-image">🚶</div>
+                                <div class="attraction-content">
+                                    <div class="attraction-name">Shibuya Crossing</div>
+                                    <div class="attraction-description">World's busiest pedestrian crossing</div>
+                                    <div class="attraction-rating">★★★★☆ 4.6 (8,920 reviews)</div>
+                                </div>
+                            </div>
+
+                            <div class="attraction-card" onclick="viewAttraction('tsukiji')">
+                                <div class="attraction-image">🐟</div>
+                                <div class="attraction-content">
+                                    <div class="attraction-name">Tsukiji Fish Market</div>
+                                    <div class="attraction-description">Fresh sushi and seafood experience</div>
+                                    <div class="attraction-rating">★★★★★ 4.7 (6,780 reviews)</div>
+                                </div>
+                            </div>
+
+                            <div class="attraction-card" onclick="viewAttraction('imperial')">
+                                <div class="attraction-image">🏰</div>
+                                <div class="attraction-content">
+                                    <div class="attraction-name">Imperial Palace</div>
+                                    <div class="attraction-description">Historic palace with beautiful gardens</div>
+                                    <div class="attraction-rating">★★★★☆ 4.5 (5,430 reviews)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h2 class="section-title">🍜 Local Cuisine</h2>
+                        <p style="color: var(--primary-700); line-height: 1.7; margin-bottom: 1.5rem;">
+                            Tokyo is a food lover's paradise with everything from street food to Michelin-starred restaurants. 
+                            Don't miss trying authentic ramen, fresh sushi, tempura, and traditional kaiseki dining.
+                        </p>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+                            <div style="text-align: center; padding: 1rem; background: var(--primary-50); border-radius: 0.5rem;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🍣</div>
+                                <div style="font-weight: 600;">Sushi</div>
+                            </div>
+                            <div style="text-align: center; padding: 1rem; background: var(--primary-50); border-radius: 0.5rem;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🍜</div>
+                                <div style="font-weight: 600;">Ramen</div>
+                            </div>
+                            <div style="text-align: center; padding: 1rem; background: var(--primary-50); border-radius: 0.5rem;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🍱</div>
+                                <div style="font-weight: 600;">Bento</div>
+                            </div>
+                            <div style="text-align: center; padding: 1rem; background: var(--primary-50); border-radius: 0.5rem;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🍡</div>
+                                <div style="font-weight: 600;">Wagashi</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="travel-tips">
+                        <h2 class="section-title">💡 Essential Travel Tips</h2>
+                        <div class="tips-grid">
+                            <div class="tip-item">
+                                <i class="fas fa-yen-sign tip-icon"></i>
+                                <div class="tip-content">
+                                    <h4>Currency</h4>
+                                    <p>Japanese Yen (¥). Cash is preferred, carry small bills.</p>
+                                </div>
+                            </div>
+                            <div class="tip-item">
+                                <i class="fas fa-language tip-icon"></i>
+                                <div class="tip-content">
+                                    <h4>Language</h4>
+                                    <p>Japanese. English signs in major areas. Download translation app.</p>
+                                </div>
+                            </div>
+                            <div class="tip-item">
+                                <i class="fas fa-subway tip-icon"></i>
+                                <div class="tip-content">
+                                    <h4>Transportation</h4>
+                                    <p>Excellent public transport. Get a JR Pass for unlimited travel.</p>
+                                </div>
+                            </div>
+                            <div class="tip-item">
+                                <i class="fas fa-bow tip-icon"></i>
+                                <div class="tip-content">
+                                    <h4>Etiquette</h4>
+                                    <p>Bow when greeting, remove shoes indoors, no tipping.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar">
+                    <div class="weather-widget">
+                        <h3 style="margin-bottom: 1rem;">🌤️ Current Weather</h3>
+                        <div class="weather-current">
+                            <div>
+                                <div class="weather-temp">23°C</div>
+                                <div style="opacity: 0.8;">Partly Cloudy</div>
+                            </div>
+                            <div class="weather-icon">⛅</div>
+                        </div>
+                        <div class="weather-forecast">
+                            <div class="forecast-day">
+                                <div class="forecast-day-name">Today</div>
+                                <div>☀️</div>
+                                <div class="forecast-temp">25°/18°</div>
+                            </div>
+                            <div class="forecast-day">
+                                <div class="forecast-day-name">Tomorrow</div>
+                                <div>🌧️</div>
+                                <div class="forecast-temp">22°/16°</div>
+                            </div>
+                            <div class="forecast-day">
+                                <div class="forecast-day-name">Wed</div>
+                                <div>⛅</div>
+                                <div class="forecast-temp">24°/17°</div>
+                            </div>
+                            <div class="forecast-day">
+                                <div class="forecast-day-name">Thu</div>
+                                <div>☀️</div>
+                                <div class="forecast-temp">26°/19°</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="quick-book">
+                        <h3 style="margin-bottom: 1.5rem;">🚀 Quick Book Tokyo</h3>
+                        <div class="book-options">
+                            <div class="book-option" onclick="bookOption('flight')">
+                                <div class="option-title">✈️ Flights to Tokyo</div>
+                                <div style="color: var(--primary-600); font-size: 0.9rem; margin-bottom: 0.5rem;">Round-trip from major cities</div>
+                                <div class="option-price">From $899</div>
+                            </div>
+
+                            <div class="book-option" onclick="bookOption('hotel')">
+                                <div class="option-title">🏨 Tokyo Hotels</div>
+                                <div style="color: var(--primary-600); font-size: 0.9rem; margin-bottom: 0.5rem;">4-5 star accommodations</div>
+                                <div class="option-price">From $180/night</div>
+                            </div>
+
+                            <div class="book-option" onclick="bookOption('package')">
+                                <div class="option-title">📦 Complete Package</div>
+                                <div style="color: var(--primary-600); font-size: 0.9rem; margin-bottom: 0.5rem;">7 days with flights & hotels</div>
+                                <div class="option-price">From $2,399</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function viewAttraction(attraction) {
+            const attractions = {
+                'senso-ji': 'Senso-ji Temple details page',
+                'shibuya': 'Shibuya Crossing details page',
+                'tsukiji': 'Tsukiji Fish Market details page',
+                'imperial': 'Imperial Palace details page'
+            };
+            alert(`Opening ${attractions[attraction]}`);
+        }
+
+        function bookOption(type) {
+            const pages = {
+                'flight': 'flights.html?destination=tokyo',
+                'hotel': 'hotels.html?destination=tokyo',
+                'package': 'packages.html?destination=tokyo'
+            };
+            location.href = pages[type];
+        }
+    </script>
+</body>
+</html>

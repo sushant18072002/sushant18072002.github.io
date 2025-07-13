@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Trip Builder | TravelAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="custom-builder-styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav-container">
+        <div class="navbar">
+            <div class="logo">TravelAI</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="flights.html">Flights</a></li>
+                <li><a href="hotels.html">Hotels</a></li>
+                <li><a href="itinerary-master-hub.html" class="active">Itineraries</a></li>
+                <li><a href="packages.html">Packages</a></li>
+            </ul>
+            <a href="auth.html" class="nav-cta">Get Started</a>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <section class="page-header">
+        <div class="container">
+            <div class="header-content">
+                <div class="breadcrumb">
+                    <a href="itinerary-master-hub.html">← Back to Itineraries</a>
+                </div>
+                <div class="planning-tabs">
+                    <button class="tab-btn" onclick="location.href='itinerary-ai.html'">🤖 AI Builder</button>
+                    <button class="tab-btn" onclick="location.href='packages.html'">📦 Packages</button>
+                    <button class="tab-btn active">🛠️ Custom</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Custom Builder -->
+    <section class="custom-builder">
+        <div class="container">
+            <div class="builder-layout">
+                <!-- Main Content -->
+                <div class="builder-main">
+                    <!-- Builder Header -->
+                    <div class="builder-header" id="builderHeader">
+                        <h1>🛠️ Custom Trip Builder</h1>
+                        <p>Take full control - choose every detail of your perfect trip</p>
+                        
+                        <!-- Progress Bar -->
+                        <div class="progress-container">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill" style="width: 20%"></div>
+                            </div>
+                            <div class="progress-text">
+                                <span id="currentStep">1</span> of <span id="totalSteps">5</span> steps
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quiz Container -->
+                    <div class="quiz-container" id="quizContainer">
+                        
+                        <!-- Sticky How It Works -->
+                        <div class="sticky-how-it-works">
+                            <h3>🔧 How This Works</h3>
+                            <div class="mini-steps">
+                                <div class="mini-step active" id="miniStep1">
+                                    <span class="mini-num">1</span>
+                                    <span class="mini-text">Choose Region</span>
+                                </div>
+                                <div class="mini-step" id="miniStep2">
+                                    <span class="mini-num">2</span>
+                                    <span class="mini-text">Set Duration</span>
+                                </div>
+                                <div class="mini-step" id="miniStep3">
+                                    <span class="mini-num">3</span>
+                                    <span class="mini-text">Pick Budget</span>
+                                </div>
+                                <div class="mini-step" id="miniStep4">
+                                    <span class="mini-num">4</span>
+                                    <span class="mini-text">Choose Style</span>
+                                </div>
+                                <div class="mini-step" id="miniStep5">
+                                    <span class="mini-num">5</span>
+                                    <span class="mini-text">Select Activities</span>
+                                </div>
+                            </div>
+                        </div>
+                    
+                    <!-- Step 1: Destination -->
+                    <div class="wizard-step active" id="step1">
+                        <div class="step-header">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h2>Where do you want to go?</h2>
+                                <div class="step-help">
+                                    <div class="help-icon">💡</div>
+                                    <div class="help-text">Choose the region that excites you most - we'll suggest specific countries and cities</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="options-grid">
+                            <div class="option-card" onclick="selectOption('destination', 'europe')">
+                                <div class="option-icon">🇪🇺</div>
+                                <div class="option-content">
+                                    <h3>Europe</h3>
+                                    <p>Rich history, diverse cultures, easy travel</p>
+                                    <div class="option-examples">Paris, Rome, Barcelona, Amsterdam</div>
+                                </div>
+                            </div>
+                            
+                            <div class="option-card" onclick="selectOption('destination', 'asia')">
+                                <div class="option-icon">🌏</div>
+                                <div class="option-content">
+                                    <h3>Asia</h3>
+                                    <p>Ancient traditions, modern cities, amazing food</p>
+                                    <div class="option-examples">Tokyo, Bangkok, Singapore, Seoul</div>
+                                </div>
+                            </div>
+                            
+                            <div class="option-card" onclick="selectOption('destination', 'americas')">
+                                <div class="option-icon">🌎</div>
+                                <div class="option-content">
+                                    <h3>Americas</h3>
+                                    <p>Natural wonders, vibrant cultures, adventures</p>
+                                    <div class="option-examples">New York, Rio, Vancouver, Mexico City</div>
+                                </div>
+                            </div>
+                            
+                            <div class="option-card" onclick="selectOption('destination', 'oceania')">
+                                <div class="option-icon">🏝️</div>
+                                <div class="option-content">
+                                    <h3>Oceania</h3>
+                                    <p>Stunning landscapes, unique wildlife, beaches</p>
+                                    <div class="option-examples">Sydney, Auckland, Fiji, Tahiti</div>
+                                </div>
+                            </div>
+                            
+                            <div class="option-card" onclick="selectOption('destination', 'africa')">
+                                <div class="option-icon">🌍</div>
+                                <div class="option-content">
+                                    <h3>Africa</h3>
+                                    <p>Safari adventures, ancient history, diverse cultures</p>
+                                    <div class="option-examples">Cape Town, Cairo, Marrakech, Nairobi</div>
+                                </div>
+                            </div>
+                            
+                            <div class="option-card" onclick="selectOption('destination', 'multiple')">
+                                <div class="option-icon">🌐</div>
+                                <div class="option-content">
+                                    <h3>Multiple Regions</h3>
+                                    <p>Multi-continent adventure, world tour style</p>
+                                    <div class="option-examples">Europe + Asia, Americas tour</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 2: Duration -->
+                    <div class="wizard-step" id="step2">
+                        <div class="step-header">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h2>How long is your trip?</h2>
+                                <div class="step-help">
+                                    <div class="help-icon">💡</div>
+                                    <div class="help-text">Consider your available time and how much you want to see - longer trips allow deeper exploration</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="options-grid">
+                            <div class="option-card" onclick="selectOption('duration', 'weekend')">
+                                <div class="option-icon">🏃</div>
+                                <div class="option-content">
+                                    <h3>Weekend Getaway</h3>
+                                    <p>2-3 days</p>
+                                    <div class="option-examples">Perfect for city breaks, nearby destinations</div>
+                                </div>
+                            </div>
+                            
+                            <div class="option-card" onclick="selectOption('duration', 'short')">
+                                <div class="option-icon">📅</div>
+                                <div class="option-content">
+                                    <h3>Short Trip</h3>
+                                    <p>4-7 days</p>
+                                    <div class="option-examples">Ideal for single destination, focused experience</div>
+                                </div>
+                            </div>
+                            
+                            <div class="option-card" onclick="selectOption('duration', 'medium')">
+                                <div class="option-icon">🗓️</div>
+                                <div class="option-content">
+                                    <h3>Medium Trip</h3>
+                                    <p>1-2 weeks</p>
+                                    <div class="option-examples">Multiple cities, balanced pace, deeper exploration</div>
+                                </div>
+                            </div>
+                            
+                            <div class="option-card" onclick="selectOption('duration', 'long')">
+                                <div class="option-icon">📆</div>
+                                <div class="option-content">
+                                    <h3>Extended Journey</h3>
+                                    <p>3+ weeks</p>
+                                    <div class="option-examples">Multiple countries, immersive experience, slow travel</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 3: Budget -->
+                    <div class="wizard-step" id="step3">
+                        <div class="step-header">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h2>What's your budget range?</h2>
+                                <div class="step-help">
+                                    <div class="help-icon">💡</div>
+                                    <div class="help-text">Your budget affects accommodation, dining, and activity choices - we'll optimize for your range</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="options-grid">
+                            <div class="option-card" onclick="selectOption('budget', 'budget')">
+                                <div class="option-icon">💰</div>
+                                <div class="option-content">
+                                    <h3>Budget Friendly</h3>
+                                    <p>$500 - $1,500 per person</p>
+                                    <div class="option-examples">Hostels, local food, public transport, free activities</div>
+                                </div>
+                            </div>
+                            
+                            <div class="option-card" onclick="selectOption('budget', 'mid')">
+                                <div class="option-icon">💳</div>
+                                <div class="option-content">
+                                    <h3>Mid-Range</h3>
+                                    <p>$1,500 - $3,500 per person</p>
+                                    <div class="option-examples">3-star hotels, mix of dining, some tours, comfortable travel</div>
+                                </div>
+                            </div>
+                            
+                            <div class="option-card" onclick="selectOption('budget', 'luxury')">
+                                <div class="option-icon">💎</div>
+                                <div class="option-content">
+                                    <h3>Luxury</h3>
+                                    <p>$3,500 - $8,000 per person</p>
+                                    <div class="option-examples">4-5 star hotels, fine dining, private tours, premium experiences</div>
+                                </div>
+                            </div>
+                            
+                            <div class="option-card" onclick="selectOption('budget', 'ultra')">
+                                <div class="option-icon">👑</div>
+                                <div class="option-content">
+                                    <h3>Ultra Luxury</h3>
+                                    <p>$8,000+ per person</p>
+                                    <div class="option-examples">5-star resorts, Michelin dining, private jets, exclusive access</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 4: Travel Style -->
+                    <div class="wizard-step" id="step4">
+                        <div class="step-header">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <h2>What's your travel style?</h2>
+                                <div class="step-help">
+                                    <div class="help-icon">💡</div>
+                                    <div class="help-text">This helps us recommend the right pace and type of experiences for your personality</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="options-grid">
+                            <div class="option-card" onclick="selectOption('style', 'relaxed')">
+                                <div class="option-icon">🧘</div>
+                                <div class="option-content">
+                                    <h3>Relaxed Explorer</h3>
+                                    <p>Slow pace, comfort focused</p>
+                                    <div class="option-examples">Spa days, scenic views, leisurely meals, beach time</div>
+                                </div>
+                            </div>
+                            
+                            <div class="option-card" onclick="selectOption('style', 'adventure')">
+                                <div class="option-icon">🏔️</div>
+                                <div class="option-content">
+                                    <h3>Adventure Seeker</h3>
+                                    <p>Active, thrill-seeking experiences</p>
+                                    <div class="option-examples">Hiking, water sports, extreme activities, outdoor adventures</div>
+                                </div>
+                            </div>
+                            
+                            <div class="option-card" onclick="selectOption('style', 'cultural')">
+                                <div class="option-icon">🎭</div>
+                                <div class="option-content">
+                                    <h3>Cultural Immersion</h3>
+                                    <p>History, art, local traditions</p>
+                                    <div class="option-examples">Museums, historical sites, local workshops, cultural shows</div>
+                                </div>
+                            </div>
+                            
+                            <div class="option-card" onclick="selectOption('style', 'social')">
+                                <div class="option-icon">🎉</div>
+                                <div class="option-content">
+                                    <h3>Social Butterfly</h3>
+                                    <p>Nightlife, events, meeting people</p>
+                                    <div class="option-examples">Bars, clubs, festivals, group activities, social tours</div>
+                                </div>
+                            </div>
+                            
+                            <div class="option-card" onclick="selectOption('style', 'foodie')">
+                                <div class="option-icon">🍽️</div>
+                                <div class="option-content">
+                                    <h3>Foodie Journey</h3>
+                                    <p>Culinary experiences focused</p>
+                                    <div class="option-examples">Food tours, cooking classes, local markets, fine dining</div>
+                                </div>
+                            </div>
+                            
+                            <div class="option-card" onclick="selectOption('style', 'balanced')">
+                                <div class="option-icon">⚖️</div>
+                                <div class="option-content">
+                                    <h3>Balanced Mix</h3>
+                                    <p>Variety of all experiences</p>
+                                    <div class="option-examples">Mix of relaxation, culture, adventure, and food</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 5: Activities -->
+                    <div class="wizard-step" id="step5">
+                        <div class="step-header">
+                            <div class="step-number">5</div>
+                            <div class="step-content">
+                                <h2>What activities interest you most?</h2>
+                                <div class="step-help">
+                                    <div class="help-icon">💡</div>
+                                    <div class="help-text">Select multiple activities - we'll create a balanced itinerary with your preferences</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="activities-grid">
+                            <div class="activity-card" onclick="toggleActivity('food')">
+                                <div class="activity-icon">🍜</div>
+                                <div class="activity-name">Food & Dining</div>
+                            </div>
+                            
+                            <div class="activity-card" onclick="toggleActivity('nature')">
+                                <div class="activity-icon">🌿</div>
+                                <div class="activity-name">Nature & Parks</div>
+                            </div>
+                            
+                            <div class="activity-card" onclick="toggleActivity('history')">
+                                <div class="activity-icon">🏛️</div>
+                                <div class="activity-name">History & Museums</div>
+                            </div>
+                            
+                            <div class="activity-card" onclick="toggleActivity('shopping')">
+                                <div class="activity-icon">🛍️</div>
+                                <div class="activity-name">Shopping</div>
+                            </div>
+                            
+                            <div class="activity-card" onclick="toggleActivity('nightlife')">
+                                <div class="activity-icon">🌃</div>
+                                <div class="activity-name">Nightlife</div>
+                            </div>
+                            
+                            <div class="activity-card" onclick="toggleActivity('art')">
+                                <div class="activity-icon">🎨</div>
+                                <div class="activity-name">Art & Culture</div>
+                            </div>
+                            
+                            <div class="activity-card" onclick="toggleActivity('sports')">
+                                <div class="activity-icon">⚽</div>
+                                <div class="activity-name">Sports & Events</div>
+                            </div>
+                            
+                            <div class="activity-card" onclick="toggleActivity('wellness')">
+                                <div class="activity-icon">💆</div>
+                                <div class="activity-name">Wellness & Spa</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Navigation -->
+                    <div class="quiz-navigation">
+                        <button class="nav-btn prev-btn" id="prevBtn" onclick="previousStep()" style="display: none;">
+                            ← Previous
+                        </button>
+                        <button class="nav-btn next-btn" id="nextBtn" onclick="nextStep()" disabled>
+                            Next →
+                        </button>
+                        <button class="nav-btn create-btn" id="createBtn" onclick="createTrip()" style="display: none;">
+                            Create My Trip ✨
+                        </button>
+                    </div>
+                    </div>
+                    
+                    <!-- Results Section -->
+                    <div class="results-section" id="resultsSection" style="display: none;">
+                        <div class="results-header">
+                            <div class="success-icon">🎉</div>
+                            <h2>Your Custom Trip is Ready!</h2>
+                            <p>We've created 3 personalized options based on your detailed preferences</p>
+                        </div>
+                        
+                        <div class="results-grid" id="resultsGrid">
+                            <!-- Results will be populated here -->
+                        </div>
+                        
+                        <div class="results-actions">
+                            <button class="btn-secondary" onclick="modifySelections()">Modify Selections</button>
+                            <button class="btn-secondary" onclick="startOver()">Start Over</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sticky Sidebar -->
+                <div class="builder-sidebar">
+                    <!-- Progress Tracker -->
+                    <div class="sidebar-card">
+                        <h3>🎯 Your Progress</h3>
+                        <div class="progress-steps">
+                            <div class="progress-step active" id="progress1">
+                                <div class="step-dot">1</div>
+                                <div class="step-info">
+                                    <h4>Destination</h4>
+                                    <p id="selected-destination">Choose region</p>
+                                </div>
+                            </div>
+                            <div class="progress-step" id="progress2">
+                                <div class="step-dot">2</div>
+                                <div class="step-info">
+                                    <h4>Duration</h4>
+                                    <p id="selected-duration">Choose length</p>
+                                </div>
+                            </div>
+                            <div class="progress-step" id="progress3">
+                                <div class="step-dot">3</div>
+                                <div class="step-info">
+                                    <h4>Budget</h4>
+                                    <p id="selected-budget">Choose range</p>
+                                </div>
+                            </div>
+                            <div class="progress-step" id="progress4">
+                                <div class="step-dot">4</div>
+                                <div class="step-info">
+                                    <h4>Style</h4>
+                                    <p id="selected-style">Choose type</p>
+                                </div>
+                            </div>
+                            <div class="progress-step" id="progress5">
+                                <div class="step-dot">5</div>
+                                <div class="step-info">
+                                    <h4>Activities</h4>
+                                    <p id="selected-activities">Choose interests</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Cost Estimate -->
+                    <div class="sidebar-card" id="costEstimateCard" style="display: none;">
+                        <h3>💰 Cost Estimate</h3>
+                        <div class="cost-preview">
+                            <div class="cost-range" id="costRange">$0 - $0</div>
+                            <div class="cost-note">Per person, estimated total</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Tips -->
+                    <div class="sidebar-card">
+                        <h3>💡 Quick Tips</h3>
+                        <div class="tips-list">
+                            <div class="tip-item">
+                                <span class="tip-icon">✨</span>
+                                <span>You can go back and change any answer</span>
+                            </div>
+                            <div class="tip-item">
+                                <span class="tip-icon">📊</span>
+                                <span>Price estimates update as you choose</span>
+                            </div>
+                            <div class="tip-item">
+                                <span class="tip-icon">🎯</span>
+                                <span>More details = better recommendations</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>🔧 How Custom Builder Works</h2>
+                <p>Complete control over every aspect of your perfect trip</p>
+            </div>
+            
+            <div class="how-it-works-grid">
+                <div class="how-step">
+                    <div class="how-icon">🌍</div>
+                    <h3>1. Choose Your Destination</h3>
+                    <p>Select from 6 major regions worldwide. Each region offers unique experiences, cultures, and adventures tailored to different travel styles.</p>
+                </div>
+                
+                <div class="how-step">
+                    <div class="how-icon">⏰</div>
+                    <h3>2. Set Your Duration</h3>
+                    <p>Pick the perfect trip length from weekend getaways to extended journeys. Duration affects your itinerary depth and experience variety.</p>
+                </div>
+                
+                <div class="how-step">
+                    <div class="how-icon">💰</div>
+                    <h3>3. Define Your Budget</h3>
+                    <p>Choose from budget-friendly to ultra-luxury options. Your budget determines accommodation quality, dining experiences, and activity levels.</p>
+                </div>
+                
+                <div class="how-step">
+                    <div class="how-icon">🎆</div>
+                    <h3>4. Select Travel Style</h3>
+                    <p>Match your personality with relaxed, adventure, cultural, social, foodie, or balanced travel styles for the perfect experience pace.</p>
+                </div>
+                
+                <div class="how-step">
+                    <div class="how-icon">🎯</div>
+                    <h3>5. Pick Activities</h3>
+                    <p>Choose multiple interests from food, nature, history, shopping, nightlife, art, sports, and wellness to create your ideal itinerary mix.</p>
+                </div>
+                
+                <div class="how-step">
+                    <div class="how-icon">✨</div>
+                    <h3>6. Get Perfect Results</h3>
+                    <p>Receive 3 customized trip options: your perfect match, an upgraded premium version, and a budget-friendly alternative to choose from.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Planning Comparison -->
+    <section class="planning-comparison">
+        <div class="container">
+            <div class="section-header">
+                <h2>🎯 Choose Your Planning Style</h2>
+                <p>Different approaches for different travelers</p>
+            </div>
+            
+            <div class="comparison-grid">
+                <div class="comparison-card ai-card">
+                    <div class="card-header">
+                        <div class="card-icon">🤖</div>
+                        <h3>AI Builder</h3>
+                        <p class="card-subtitle">Smart & Personal</p>
+                    </div>
+                    <div class="card-features">
+                        <div class="feature">✨ Natural language input</div>
+                        <div class="feature">🧠 AI understands your style</div>
+                        <div class="feature">⚡ 2 minutes to perfect trip</div>
+                        <div class="feature">🎯 Personalized recommendations</div>
+                    </div>
+                    <div class="card-action">
+                        <button class="switch-btn" onclick="location.href='itinerary-ai.html'">Try AI Builder</button>
+                    </div>
+                </div>
+                
+                <div class="comparison-card custom-card active">
+                    <div class="card-header">
+                        <div class="card-icon">🛠️</div>
+                        <h3>Custom Builder</h3>
+                        <p class="card-subtitle">Full Control</p>
+                    </div>
+                    <div class="card-features">
+                        <div class="feature">🎛️ Choose every detail</div>
+                        <div class="feature">📋 Step-by-step process</div>
+                        <div class="feature">⏱️ 5 minutes detailed planning</div>
+                        <div class="feature">🔧 Maximum customization</div>
+                    </div>
+                    <div class="card-action">
+                        <span class="current-choice">Current Choice</span>
+                    </div>
+                </div>
+                
+                <div class="comparison-card packages-card">
+                    <div class="card-header">
+                        <div class="card-icon">📦</div>
+                        <h3>Ready Packages</h3>
+                        <p class="card-subtitle">Instant & Expert</p>
+                    </div>
+                    <div class="card-features">
+                        <div class="feature">🏆 Expert-curated trips</div>
+                        <div class="feature">🔍 Browse and filter</div>
+                        <div class="feature">⚡ Instant booking</div>
+                        <div class="feature">💯 Proven experiences</div>
+                    </div>
+                    <div class="card-action">
+                        <button class="switch-btn" onclick="location.href='packages.html'">Browse Packages</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>TravelAI</h3>
+                    <p>Create your perfect trip with complete control over every detail.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="flights.html">Flights</a></li>
+                        <li><a href="hotels.html">Hotels</a></li>
+                        <li><a href="itinerary-master-hub.html">Itineraries</a></li>
+                        <li><a href="packages.html">Packages</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="contact.html">Help & Contact</a></li>
+                        <li><a href="blog.html">Travel Blog</a></li>
+                        <li><a href="legal.html">Legal</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 TravelAI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="custom-builder-script.js"></script>
+</body>
+</html>

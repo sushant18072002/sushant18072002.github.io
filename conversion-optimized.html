@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TravelAI - Conversion Optimized</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-900: #0F172A; --primary-800: #1E293B; --primary-700: #334155; --primary-600: #475569; --primary-400: #94A3B8; --primary-100: #F1F5F9;
+            --ocean-blue: #1E40AF; --mirage-blue: #4b90e6; --governor-bay: #2553eb; --emerald: #10B981; --premium-amber: #F59E0B; --soft-coral: #FF6B6B;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; line-height: 1.5; }
+
+        /* Urgency Banner */
+        .urgency-banner {
+            background: linear-gradient(90deg, var(--soft-coral), var(--premium-amber));
+            color: white; padding: 0.75rem; text-align: center; font-weight: 600;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }
+
+        /* Social Proof Notifications */
+        .social-proof {
+            position: fixed; bottom: 2rem; left: 2rem; z-index: 1000;
+            background: white; border-radius: 0.75rem; padding: 1rem 1.5rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); max-width: 300px;
+            transform: translateX(-120%); transition: transform 0.5s ease;
+        }
+        .social-proof.show { transform: translateX(0); }
+        .social-proof-content {
+            display: flex; align-items: center; gap: 1rem;
+        }
+        .social-proof-avatar {
+            width: 40px; height: 40px; background: var(--governor-bay);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 600;
+        }
+        .social-proof-text {
+            flex: 1; font-size: 0.9rem; color: var(--primary-700);
+        }
+        .social-proof-time {
+            font-size: 0.8rem; color: var(--primary-600);
+        }
+
+        /* Exit Intent Popup */
+        .exit-intent-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7); z-index: 2000; display: none;
+            align-items: center; justify-content: center;
+        }
+        .exit-intent-popup {
+            background: white; border-radius: 1.5rem; padding: 3rem; max-width: 500px;
+            text-align: center; position: relative; animation: slideIn 0.5s ease;
+        }
+        @keyframes slideIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .exit-intent-close {
+            position: absolute; top: 1rem; right: 1rem; background: none;
+            border: none; font-size: 1.5rem; cursor: pointer; color: var(--primary-600);
+        }
+        .exit-intent-title {
+            font-size: 2rem; font-weight: 700; color: var(--primary-900); margin-bottom: 1rem;
+        }
+        .exit-intent-offer {
+            background: linear-gradient(135deg, var(--premium-amber), #F59E0B);
+            color: white; padding: 1rem; border-radius: 0.75rem; margin: 1.5rem 0;
+            font-size: 1.2rem; font-weight: 600;
+        }
+        .exit-intent-cta {
+            background: linear-gradient(135deg, var(--governor-bay), var(--ocean-blue));
+            color: white; border: none; padding: 1rem 2rem; border-radius: 0.75rem;
+            font-weight: 600; cursor: pointer; font-size: 1.1rem; width: 100%;
+        }
+
+        /* Scarcity Indicators */
+        .scarcity-indicator {
+            background: rgba(255, 107, 107, 0.1); border: 1px solid var(--soft-coral);
+            color: var(--soft-coral); padding: 0.5rem 1rem; border-radius: 0.5rem;
+            font-size: 0.9rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem;
+        }
+        .scarcity-icon { animation: blink 1s infinite; }
+        @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0.3; } }
+
+        /* Trust Signals */
+        .trust-signals {
+            display: flex; justify-content: center; gap: 2rem; padding: 2rem;
+            background: var(--primary-50); flex-wrap: wrap;
+        }
+        .trust-signal {
+            display: flex; align-items: center; gap: 0.5rem; color: var(--primary-700);
+            font-size: 0.9rem; font-weight: 500;
+        }
+        .trust-icon { color: var(--emerald); }
+
+        /* Conversion-Optimized CTA */
+        .conversion-cta {
+            background: linear-gradient(135deg, var(--governor-bay), var(--ocean-blue));
+            color: white; border: none; padding: 1.25rem 2.5rem; border-radius: 0.75rem;
+            font-weight: 700; cursor: pointer; font-size: 1.1rem; position: relative;
+            overflow: hidden; transition: all 0.3s ease; box-shadow: 0 8px 25px rgba(37, 83, 235, 0.4);
+        }
+        .conversion-cta::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        .conversion-cta:hover::before { left: 100%; }
+        .conversion-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 35px rgba(37, 83, 235, 0.5); }
+
+        /* Price Comparison Widget */
+        .price-comparison {
+            background: white; border-radius: 1rem; padding: 2rem; margin: 2rem 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        .comparison-header {
+            text-align: center; margin-bottom: 1.5rem;
+        }
+        .comparison-title {
+            font-size: 1.5rem; font-weight: 700; color: var(--primary-900); margin-bottom: 0.5rem;
+        }
+        .comparison-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;
+        }
+        .comparison-item {
+            text-align: center; padding: 1rem; border-radius: 0.75rem;
+            border: 2px solid var(--primary-200);
+        }
+        .comparison-item.winner {
+            border-color: var(--emerald); background: rgba(16, 185, 129, 0.05);
+        }
+        .comparison-logo {
+            font-weight: 700; color: var(--primary-900); margin-bottom: 0.5rem;
+        }
+        .comparison-price {
+            font-size: 1.5rem; font-weight: 800; color: var(--governor-bay); margin-bottom: 0.5rem;
+        }
+        .comparison-savings {
+            color: var(--emerald); font-weight: 600; font-size: 0.9rem;
+        }
+
+        /* Mobile Optimization */
+        @media (max-width: 768px) {
+            .social-proof { bottom: 1rem; left: 1rem; right: 1rem; max-width: none; }
+            .exit-intent-popup { margin: 1rem; padding: 2rem; }
+            .trust-signals { flex-direction: column; align-items: center; gap: 1rem; }
+            .comparison-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Urgency Banner -->
+    <div class="urgency-banner">
+        🔥 Flash Sale: Save up to 40% on all bookings - Ends in 2 hours!
+    </div>
+
+    <!-- Main Content -->
+    <main style="padding: 2rem;">
+        <div style="max-width: 1200px; margin: 0 auto;">
+            <!-- Hero Section with Conversion Elements -->
+            <section style="text-align: center; padding: 4rem 0;">
+                <h1 style="font-size: 3rem; font-weight: 800; color: var(--primary-900); margin-bottom: 1rem;">
+                    Book Your Dream Trip Today
+                </h1>
+                <p style="font-size: 1.2rem; color: var(--primary-600); margin-bottom: 2rem;">
+                    Join 50,000+ travelers who saved an average of $400 per trip
+                </p>
+                
+                <!-- Scarcity Indicator -->
+                <div class="scarcity-indicator" style="margin-bottom: 2rem;">
+                    <span class="scarcity-icon">⚡</span>
+                    Only 3 seats left at this price!
+                </div>
+
+                <button class="conversion-cta" onclick="startBooking()">
+                    🚀 Start Planning - Save 25% Today
+                </button>
+            </section>
+
+            <!-- Price Comparison -->
+            <section class="price-comparison">
+                <div class="comparison-header">
+                    <h2 class="comparison-title">💰 We Beat Competitor Prices</h2>
+                    <p style="color: var(--primary-600);">See how much you save with TravelAI</p>
+                </div>
+                <div class="comparison-grid">
+                    <div class="comparison-item">
+                        <div class="comparison-logo">Competitor A</div>
+                        <div class="comparison-price">$1,299</div>
+                    </div>
+                    <div class="comparison-item winner">
+                        <div class="comparison-logo">TravelAI</div>
+                        <div class="comparison-price">$999</div>
+                        <div class="comparison-savings">Save $300!</div>
+                    </div>
+                    <div class="comparison-item">
+                        <div class="comparison-logo">Competitor B</div>
+                        <div class="comparison-price">$1,399</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Trust Signals -->
+    <section class="trust-signals">
+        <div class="trust-signal">
+            <i class="fas fa-shield-alt trust-icon"></i>
+            <span>100% Secure Booking</span>
+        </div>
+        <div class="trust-signal">
+            <i class="fas fa-medal trust-icon"></i>
+            <span>Award-Winning Service</span>
+        </div>
+        <div class="trust-signal">
+            <i class="fas fa-clock trust-icon"></i>
+            <span>24/7 Customer Support</span>
+        </div>
+        <div class="trust-signal">
+            <i class="fas fa-undo trust-icon"></i>
+            <span>Free Cancellation</span>
+        </div>
+    </section>
+
+    <!-- Social Proof Notification -->
+    <div class="social-proof" id="social-proof">
+        <div class="social-proof-content">
+            <div class="social-proof-avatar">M</div>
+            <div>
+                <div class="social-proof-text">
+                    <strong>Mike</strong> just booked a trip to Tokyo
+                </div>
+                <div class="social-proof-time">2 minutes ago</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exit Intent Popup -->
+    <div class="exit-intent-overlay" id="exit-intent">
+        <div class="exit-intent-popup">
+            <button class="exit-intent-close" onclick="closeExitIntent()">&times;</button>
+            <h2 class="exit-intent-title">Wait! Don't Miss Out</h2>
+            <p style="color: var(--primary-600); margin-bottom: 1rem;">
+                Get an exclusive 15% discount on your first booking
+            </p>
+            <div class="exit-intent-offer">
+                Use code: SAVE15
+            </div>
+            <button class="exit-intent-cta" onclick="claimOffer()">
+                Claim My Discount Now
+            </button>
+            <p style="font-size: 0.8rem; color: var(--primary-600); margin-top: 1rem;">
+                *Valid for 24 hours only
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Social Proof Notifications
+        const socialProofData = [
+            { name: 'Sarah', destination: 'Paris', time: '3 minutes ago' },
+            { name: 'John', destination: 'Bali', time: '5 minutes ago' },
+            { name: 'Emma', destination: 'Tokyo', time: '7 minutes ago' },
+            { name: 'David', destination: 'Rome', time: '12 minutes ago' }
+        ];
+
+        let proofIndex = 0;
+        function showSocialProof() {
+            const proof = document.getElementById('social-proof');
+            const data = socialProofData[proofIndex % socialProofData.length];
+            
+            proof.querySelector('.social-proof-avatar').textContent = data.name[0];
+            proof.querySelector('.social-proof-text').innerHTML = `<strong>${data.name}</strong> just booked a trip to ${data.destination}`;
+            proof.querySelector('.social-proof-time').textContent = data.time;
+            
+            proof.classList.add('show');
+            setTimeout(() => proof.classList.remove('show'), 4000);
+            
+            proofIndex++;
+        }
+
+        // Show social proof every 8 seconds
+        setInterval(showSocialProof, 8000);
+        setTimeout(showSocialProof, 2000);
+
+        // Exit Intent Detection
+        let exitIntentShown = false;
+        document.addEventListener('mouseleave', function(e) {
+            if (e.clientY <= 0 && !exitIntentShown) {
+                document.getElementById('exit-intent').style.display = 'flex';
+                exitIntentShown = true;
+            }
+        });
+
+        function closeExitIntent() {
+            document.getElementById('exit-intent').style.display = 'none';
+        }
+
+        function claimOffer() {
+            alert('Discount code SAVE15 copied to clipboard!');
+            closeExitIntent();
+        }
+
+        function startBooking() {
+            location.href = 'itinerary.html';
+        }
+
+        // Urgency Timer
+        let timeLeft = 7200; // 2 hours in seconds
+        function updateTimer() {
+            const hours = Math.floor(timeLeft / 3600);
+            const minutes = Math.floor((timeLeft % 3600) / 60);
+            const seconds = timeLeft % 60;
+            
+            const banner = document.querySelector('.urgency-banner');
+            banner.innerHTML = `🔥 Flash Sale: Save up to 40% - Ends in ${hours}h ${minutes}m ${seconds}s!`;
+            
+            timeLeft--;
+            if (timeLeft < 0) timeLeft = 7200; // Reset timer
+        }
+
+        setInterval(updateTimer, 1000);
+    </script>
+</body>
+</html>

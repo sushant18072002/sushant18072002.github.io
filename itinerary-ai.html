@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Dream Builder | TravelAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="itinerary-ai-styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav-container">
+        <div class="navbar">
+            <div class="logo">TravelAI</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="flights.html">Flights</a></li>
+                <li><a href="hotels.html">Hotels</a></li>
+                <li><a href="itinerary-master-hub.html" class="active">Itineraries</a></li>
+                <li><a href="packages.html">Packages</a></li>
+            </ul>
+            <a href="auth.html" class="nav-cta">Get Started</a>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <section class="page-header">
+        <div class="container">
+            <div class="header-content">
+                <div class="breadcrumb">
+                    <a href="itinerary-master-hub.html">← Back to Itineraries</a>
+                </div>
+                <div class="planning-tabs">
+                    <button class="tab-btn active">🤖 AI Builder</button>
+                    <button class="tab-btn" onclick="location.href='packages.html'">📦 Packages</button>
+                    <button class="tab-btn" onclick="location.href='custom-builder.html'">🛠️ Custom</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI Dream Builder Main -->
+    <section class="ai-dream-builder">
+        <div class="container">
+            <div class="builder-layout">
+                <!-- Main Content -->
+                <div class="dream-main">
+                    <!-- Dream Input Section -->
+                    <div class="dream-input-section" id="dreamInputSection">
+                        <div class="dream-header">
+                            <h1>🧠 AI Dream Builder</h1>
+                            <p>Describe your perfect trip and watch AI create magic in real-time</p>
+                        </div>
+                        
+                        <div class="dream-input-container">
+                            <div class="input-helper">
+                                <h3>💡 How to describe your dream trip:</h3>
+                                <div class="helper-examples">
+                                    <button class="helper-btn" onclick="fillExample('romantic')">
+                                        "Romantic Europe with great food and art"
+                                    </button>
+                                    <button class="helper-btn" onclick="fillExample('adventure')">
+                                        "Adventure in Asia with temples and nature"
+                                    </button>
+                                    <button class="helper-btn" onclick="fillExample('relaxing')">
+                                        "Relaxing beach vacation with wellness"
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="dream-textarea">
+                                <textarea 
+                                    id="dreamInput" 
+                                    placeholder="Tell me about your dream trip... Where do you want to go? What experiences excite you? What's your style?"
+                                    rows="4"
+                                ></textarea>
+                                <div class="input-actions">
+                                    <button class="dream-btn" onclick="startDreamBuilding()">
+                                        ✨ Start Building My Dream
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="ai-disclaimer">
+                            <p>ℹ️ AI creates personalized suggestions based on your input. Final bookings require human verification.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Conversation Section -->
+                    <div class="conversation-section" id="conversationSection" style="display: none;">
+                        <div class="conversation-header">
+                            <div class="ai-avatar">
+                                <div class="avatar-pulse">🤖</div>
+                                <div class="avatar-info">
+                                    <h3>AI Assistant</h3>
+                                    <p class="status-text">Understanding your dream...</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="conversation-flow" id="conversationFlow">
+                            <!-- Messages will be added here -->
+                        </div>
+                        
+                        <div class="conversation-input">
+                            <div class="input-container">
+                                <input type="text" id="conversationInput" placeholder="Tell me more about your preferences..." />
+                                <button class="send-btn" onclick="sendResponse()">Send</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Results Section -->
+                    <div class="results-section" id="resultsSection" style="display: none;">
+                        <div class="results-header">
+                            <div class="success-animation">🎉</div>
+                            <h2>Your Dream Trip is Ready!</h2>
+                            <p>AI has crafted 3 perfect options based on your preferences</p>
+                        </div>
+                        
+                        <div class="results-showcase" id="resultsShowcase">
+                            <!-- Results will be populated here -->
+                        </div>
+                        
+                        <div class="results-actions">
+                            <button class="btn-primary" onclick="bookDreamTrip()">Book My Dream Trip</button>
+                            <button class="btn-secondary" onclick="refinePreferences()">Refine Preferences</button>
+                            <button class="btn-secondary" onclick="startNewDream()">Create New Dream</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sticky AI Sidebar -->
+                <div class="ai-sidebar-sticky">
+                    <div class="sidebar-content">
+                        <!-- AI Progress Flow -->
+                        <div class="progress-flow-card">
+                            <h3>🎯 AI Progress</h3>
+                            <div class="progress-dots">
+                                <div class="dot-step active" id="step1">
+                                    <div class="dot-connector"></div>
+                                    <div class="dot-content">
+                                        <div class="dot-icon">💭</div>
+                                        <div class="dot-info">
+                                            <h4>Dream Input</h4>
+                                            <p>Share your vision</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="dot-step" id="step2">
+                                    <div class="dot-connector"></div>
+                                    <div class="dot-content">
+                                        <div class="dot-icon">🤖</div>
+                                        <div class="dot-info">
+                                            <h4>AI Analysis</h4>
+                                            <p>Understanding preferences</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="dot-step" id="step3">
+                                    <div class="dot-connector"></div>
+                                    <div class="dot-content">
+                                        <div class="dot-icon">💬</div>
+                                        <div class="dot-info">
+                                            <h4>Smart Questions</h4>
+                                            <p>Clarifying details</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="dot-step" id="step4">
+                                    <div class="dot-connector"></div>
+                                    <div class="dot-content">
+                                        <div class="dot-icon">✨</div>
+                                        <div class="dot-info">
+                                            <h4>Dream Creation</h4>
+                                            <p>Crafting perfect trips</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="dot-step" id="step5">
+                                    <div class="dot-connector"></div>
+                                    <div class="dot-content">
+                                        <div class="dot-icon">🎉</div>
+                                        <div class="dot-info">
+                                            <h4>Ready to Book</h4>
+                                            <p>Your perfect journey</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- AI Confidence -->
+                        <div class="confidence-card">
+                            <h3>🧠 AI Confidence</h3>
+                            <div class="confidence-meter">
+                                <div class="confidence-circle" id="confidenceCircle">
+                                    <span id="confidencePercent">0%</span>
+                                </div>
+                                <div class="confidence-details">
+                                    <div class="detail-item">
+                                        <span>Understanding:</span>
+                                        <span id="understandingLevel">Getting started</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span>Readiness:</span>
+                                        <span id="readinessLevel">Learning</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- AI Insights -->
+                        <div class="insights-card">
+                            <h3>💡 AI Insights</h3>
+                            <div class="insight-list">
+                                <div class="insight-item">
+                                    <span class="insight-label">Preferences Found:</span>
+                                    <span class="insight-value" id="preferencesCount">0/4</span>
+                                </div>
+                                <div class="insight-item">
+                                    <span class="insight-label">Trip Style:</span>
+                                    <span class="insight-value" id="tripStyle">-</span>
+                                </div>
+                                <div class="insight-item">
+                                    <span class="insight-label">Best Match:</span>
+                                    <span class="insight-value" id="bestMatch">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI Generated Itineraries Showcase -->
+    <section class="ai-showcase">
+        <div class="container">
+            <div class="section-header">
+                <h2>🤖 AI Generated Itineraries</h2>
+                <p>Not sure what you're looking for? Check out these AI-crafted journeys</p>
+            </div>
+            
+            <div class="showcase-grid" id="showcaseGrid">
+                <div class="showcase-card" onclick="useItinerary('romantic-paris')">
+                    <div class="showcase-image">
+                        <img src="https://images.unsplash.com/photo-1502602898536-47ad22581b52?w=400&h=250&fit=crop" alt="Paris">
+                        <div class="ai-badge">AI Created</div>
+                    </div>
+                    <div class="showcase-content">
+                        <h4>Romantic Paris Escape</h4>
+                        <p class="user-dream">"Romantic trip with wine and beautiful views"</p>
+                        <div class="showcase-highlights">
+                            <span class="highlight">🍷 Wine tastings</span>
+                            <span class="highlight">🌅 Seine sunset cruise</span>
+                            <span class="highlight">🏨 Luxury hotel</span>
+                        </div>
+                        <div class="showcase-footer">
+                            <span class="duration">7 days</span>
+                            <span class="price">From $3,200</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="showcase-card" onclick="useItinerary('japan-adventure')">
+                    <div class="showcase-image">
+                        <img src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=400&h=250&fit=crop" alt="Japan">
+                        <div class="ai-badge">AI Created</div>
+                    </div>
+                    <div class="showcase-content">
+                        <h4>Japan Cultural Adventure</h4>
+                        <p class="user-dream">"Adventure with temples and authentic food"</p>
+                        <div class="showcase-highlights">
+                            <span class="highlight">⛩️ Temple visits</span>
+                            <span class="highlight">🍜 Food tours</span>
+                            <span class="highlight">🏔️ Mount Fuji</span>
+                        </div>
+                        <div class="showcase-footer">
+                            <span class="duration">10 days</span>
+                            <span class="price">From $2,800</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="showcase-card" onclick="useItinerary('maldives-luxury')">
+                    <div class="showcase-image">
+                        <img src="https://images.unsplash.com/photo-1537953773345-d172ccf13cf1?w=400&h=250&fit=crop" alt="Maldives">
+                        <div class="ai-badge">AI Created</div>
+                    </div>
+                    <div class="showcase-content">
+                        <h4>Maldives Luxury Retreat</h4>
+                        <p class="user-dream">"Ultimate relaxation with spa and ocean views"</p>
+                        <div class="showcase-highlights">
+                            <span class="highlight">🏝️ Overwater villa</span>
+                            <span class="highlight">💆 Spa treatments</span>
+                            <span class="highlight">🐠 Snorkeling</span>
+                        </div>
+                        <div class="showcase-footer">
+                            <span class="duration">14 days</span>
+                            <span class="price">From $5,400</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="showcase-card" onclick="useItinerary('iceland-nature')">
+                    <div class="showcase-image">
+                        <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=250&fit=crop" alt="Iceland">
+                        <div class="ai-badge">AI Created</div>
+                    </div>
+                    <div class="showcase-content">
+                        <h4>Iceland Nature Explorer</h4>
+                        <p class="user-dream">"Adventure with glaciers and northern lights"</p>
+                        <div class="showcase-highlights">
+                            <span class="highlight">🧊 Glacier hiking</span>
+                            <span class="highlight">🌌 Northern lights</span>
+                            <span class="highlight">♨️ Hot springs</span>
+                        </div>
+                        <div class="showcase-footer">
+                            <span class="duration">8 days</span>
+                            <span class="price">From $3,600</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="showcase-card" onclick="useItinerary('thailand-budget')">
+                    <div class="showcase-image">
+                        <img src="https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=400&h=250&fit=crop" alt="Thailand">
+                        <div class="ai-badge">AI Created</div>
+                    </div>
+                    <div class="showcase-content">
+                        <h4>Thailand Budget Explorer</h4>
+                        <p class="user-dream">"Backpacking with local culture and street food"</p>
+                        <div class="showcase-highlights">
+                            <span class="highlight">🍜 Street food</span>
+                            <span class="highlight">🏖️ Island hopping</span>
+                            <span class="highlight">🛕 Local markets</span>
+                        </div>
+                        <div class="showcase-footer">
+                            <span class="duration">21 days</span>
+                            <span class="price">From $1,800</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="showcase-card" onclick="useItinerary('italy-family')">
+                    <div class="showcase-image">
+                        <img src="https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?w=400&h=250&fit=crop" alt="Italy">
+                        <div class="ai-badge">AI Created</div>
+                    </div>
+                    <div class="showcase-content">
+                        <h4>Italy Family Adventure</h4>
+                        <p class="user-dream">"Family trip with kids, fun activities and history"</p>
+                        <div class="showcase-highlights">
+                            <span class="highlight">🏛️ Colosseum tour</span>
+                            <span class="highlight">🍕 Pizza making</span>
+                            <span class="highlight">🎨 Art workshops</span>
+                        </div>
+                        <div class="showcase-footer">
+                            <span class="duration">12 days</span>
+                            <span class="price">From $4,200</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="showcase-actions">
+                <button class="load-more-btn" onclick="loadMoreItineraries()">Load More AI Itineraries</button>
+                <p class="showcase-note">All itineraries are AI-generated based on real user dreams</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Popular Dream Examples -->
+    <section class="popular-examples">
+        <div class="container">
+            <div class="section-header">
+                <h2>💡 Need Inspiration?</h2>
+                <p>Try these popular dream examples</p>
+            </div>
+            
+            <div class="examples-grid">
+                <div class="example-card" onclick="usePopularExample('romantic')">
+                    <div class="example-icon">💕</div>
+                    <h4>Romantic Europe</h4>
+                    <p>"Wine, dining, and beautiful views in Paris and Rome"</p>
+                </div>
+                
+                <div class="example-card" onclick="usePopularExample('adventure')">
+                    <div class="example-icon">🏔️</div>
+                    <h4>Asia Adventure</h4>
+                    <p>"Hiking, temples, and authentic culture in Japan"</p>
+                </div>
+                
+                <div class="example-card" onclick="usePopularExample('beach')">
+                    <div class="example-icon">🏝️</div>
+                    <h4>Tropical Paradise</h4>
+                    <p>"Relaxing beaches and wellness in Maldives"</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Planning Comparison -->
+    <section class="planning-comparison">
+        <div class="container">
+            <div class="section-header">
+                <h2>🎯 Choose Your Planning Style</h2>
+                <p>Different approaches for different travelers</p>
+            </div>
+            
+            <div class="comparison-grid">
+                <div class="comparison-card ai-card active">
+                    <div class="card-header">
+                        <div class="card-icon">🤖</div>
+                        <h3>AI Builder</h3>
+                        <p class="card-subtitle">Smart & Personal</p>
+                    </div>
+                    <div class="card-features">
+                        <div class="feature">✨ Natural language input</div>
+                        <div class="feature">🧠 AI understands your style</div>
+                        <div class="feature">⚡ 2 minutes to perfect trip</div>
+                        <div class="feature">🎯 Personalized recommendations</div>
+                    </div>
+                    <div class="card-action">
+                        <span class="current-choice">Current Choice</span>
+                    </div>
+                </div>
+                
+                <div class="comparison-card custom-card">
+                    <div class="card-header">
+                        <div class="card-icon">🛠️</div>
+                        <h3>Custom Builder</h3>
+                        <p class="card-subtitle">Full Control</p>
+                    </div>
+                    <div class="card-features">
+                        <div class="feature">🎛️ Choose every detail</div>
+                        <div class="feature">📋 Step-by-step process</div>
+                        <div class="feature">⏱️ 5 minutes detailed planning</div>
+                        <div class="feature">🔧 Maximum customization</div>
+                    </div>
+                    <div class="card-action">
+                        <button class="switch-btn" onclick="location.href='custom-builder.html'">Try Custom</button>
+                    </div>
+                </div>
+                
+                <div class="comparison-card packages-card">
+                    <div class="card-header">
+                        <div class="card-icon">📦</div>
+                        <h3>Ready Packages</h3>
+                        <p class="card-subtitle">Instant & Expert</p>
+                    </div>
+                    <div class="card-features">
+                        <div class="feature">🏆 Expert-curated trips</div>
+                        <div class="feature">🔍 Browse and filter</div>
+                        <div class="feature">⚡ Instant booking</div>
+                        <div class="feature">💯 Proven experiences</div>
+                    </div>
+                    <div class="card-action">
+                        <button class="switch-btn" onclick="location.href='packages.html'">Browse Packages</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>TravelAI</h3>
+                    <p>Turn your travel dreams into reality with AI-powered trip planning.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="flights.html">Flights</a></li>
+                        <li><a href="hotels.html">Hotels</a></li>
+                        <li><a href="itinerary-master-hub.html">Itineraries</a></li>
+                        <li><a href="packages.html">Packages</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="contact.html">Help & Contact</a></li>
+                        <li><a href="blog.html">Travel Blog</a></li>
+                        <li><a href="legal.html">Legal</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 TravelAI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="itinerary-ai-script.js"></script>
+</body>
+</html>

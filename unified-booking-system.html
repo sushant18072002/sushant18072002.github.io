@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Your Booking - TravelAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary-900: #0F172A; --primary-800: #1E293B; --primary-700: #334155; --primary-600: #475569; --primary-400: #94A3B8; --primary-100: #F1F5F9;
+            --ocean-blue: #1E40AF; --mirage-blue: #4b90e6; --governor-bay: #2553eb; --emerald: #10B981; --premium-amber: #F59E0B; --soft-coral: #FF6B6B;
+        }
+
+        body { font-family: 'Inter', sans-serif; line-height: 1.5; background: var(--primary-50); }
+
+        .nav-container {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background: rgba(248, 250, 252, 0.95); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2); height: 60px;
+        }
+        .navbar {
+            max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; height: 100%;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo {
+            font-size: 1.4rem; font-weight: 800; color: var(--primary-900);
+            background: linear-gradient(135deg, var(--governor-bay), var(--mirage-blue));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        .main-content { padding-top: 80px; min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+
+        .booking-layout { display: grid; grid-template-columns: 1fr 400px; gap: 2rem; }
+        
+        .booking-steps {
+            background: white; border-radius: 1rem; padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .step-indicator {
+            display: flex; justify-content: space-between; margin-bottom: 2rem;
+        }
+        .step {
+            display: flex; flex-direction: column; align-items: center; flex: 1;
+            position: relative;
+        }
+        .step::after {
+            content: ''; position: absolute; top: 15px; left: 60%; width: 80%;
+            height: 2px; background: var(--primary-200);
+        }
+        .step:last-child::after { display: none; }
+        .step.active::after { background: var(--governor-bay); }
+        .step-number {
+            width: 30px; height: 30px; border-radius: 50%; background: var(--primary-200);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 600; color: var(--primary-600); margin-bottom: 0.5rem;
+        }
+        .step.active .step-number { background: var(--governor-bay); color: white; }
+        .step.completed .step-number { background: var(--emerald); color: white; }
+        .step-label { font-size: 0.8rem; color: var(--primary-600); text-align: center; }
+
+        .booking-form { margin-top: 2rem; }
+        .form-section { margin-bottom: 2rem; }
+        .section-title { font-size: 1.2rem; font-weight: 600; color: var(--primary-900); margin-bottom: 1rem; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .form-group { margin-bottom: 1rem; }
+        .form-label { display: block; font-weight: 500; color: var(--primary-700); margin-bottom: 0.5rem; }
+        .form-input {
+            width: 100%; padding: 0.75rem; border: 2px solid var(--primary-200);
+            border-radius: 0.5rem; font-size: 0.9rem; transition: all 0.3s ease;
+        }
+        .form-input:focus { outline: none; border-color: var(--governor-bay); box-shadow: 0 0 0 3px rgba(37, 83, 235, 0.1); }
+
+        .booking-summary {
+            background: white; border-radius: 1rem; padding: 2rem; height: fit-content;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); position: sticky; top: 100px;
+        }
+        .summary-title { font-size: 1.3rem; font-weight: 600; color: var(--primary-900); margin-bottom: 1.5rem; }
+        .booking-item {
+            border: 1px solid var(--primary-200); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;
+        }
+        .item-type { font-size: 0.8rem; color: var(--governor-bay); font-weight: 600; margin-bottom: 0.5rem; }
+        .item-details { font-weight: 500; color: var(--primary-900); margin-bottom: 0.25rem; }
+        .item-info { font-size: 0.9rem; color: var(--primary-600); }
+
+        .price-breakdown { margin: 1.5rem 0; }
+        .price-item {
+            display: flex; justify-content: space-between; margin-bottom: 0.5rem;
+            color: var(--primary-600);
+        }
+        .price-total {
+            display: flex; justify-content: space-between; padding-top: 1rem;
+            border-top: 2px solid var(--primary-200); font-weight: 700;
+            font-size: 1.2rem; color: var(--primary-900);
+        }
+
+        .complete-booking-btn {
+            width: 100%; background: linear-gradient(135deg, var(--governor-bay), var(--ocean-blue));
+            color: white; border: none; padding: 1rem; border-radius: 0.75rem;
+            font-weight: 600; cursor: pointer; font-size: 1.1rem; margin-top: 1rem;
+            transition: all 0.3s ease;
+        }
+        .complete-booking-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(37, 83, 235, 0.4); }
+
+        .security-badges {
+            display: flex; justify-content: center; gap: 1rem; margin-top: 1rem;
+            padding-top: 1rem; border-top: 1px solid var(--primary-200);
+        }
+        .security-badge { text-align: center; font-size: 0.8rem; color: var(--primary-600); }
+
+        @media (max-width: 768px) {
+            .booking-layout { grid-template-columns: 1fr; }
+            .booking-summary { order: -1; position: static; }
+            .form-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-container">
+        <div class="navbar">
+            <div class="logo">TravelAI</div>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <span style="color: var(--primary-600); font-size: 0.9rem;">🔒 Secure Checkout</span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="booking-layout">
+                <div class="booking-steps">
+                    <div class="step-indicator">
+                        <div class="step completed">
+                            <div class="step-number">✓</div>
+                            <div class="step-label">Select</div>
+                        </div>
+                        <div class="step active">
+                            <div class="step-number">2</div>
+                            <div class="step-label">Details</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <div class="step-label">Payment</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">4</div>
+                            <div class="step-label">Confirm</div>
+                        </div>
+                    </div>
+
+                    <div class="booking-form">
+                        <div class="form-section">
+                            <h3 class="section-title">👤 Traveler Information</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">First Name *</label>
+                                    <input type="text" class="form-input" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Last Name *</label>
+                                    <input type="text" class="form-input" required>
+                                </div>
+                            </div>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Email Address *</label>
+                                    <input type="email" class="form-input" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Phone Number *</label>
+                                    <input type="tel" class="form-input" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3 class="section-title">✈️ Special Requests</h3>
+                            <div class="form-group">
+                                <label class="form-label">Dietary Requirements</label>
+                                <select class="form-input">
+                                    <option>No special requirements</option>
+                                    <option>Vegetarian</option>
+                                    <option>Vegan</option>
+                                    <option>Gluten-free</option>
+                                    <option>Kosher</option>
+                                    <option>Halal</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Additional Notes</label>
+                                <textarea class="form-input" rows="3" placeholder="Any special requests or requirements..."></textarea>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; margin-top: 2rem;">
+                            <button onclick="history.back()" style="background: var(--primary-200); color: var(--primary-700); border: none; padding: 0.75rem 2rem; border-radius: 0.5rem; cursor: pointer;">← Back</button>
+                            <button onclick="nextStep()" style="background: var(--governor-bay); color: white; border: none; padding: 0.75rem 2rem; border-radius: 0.5rem; cursor: pointer;">Continue to Payment →</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="booking-summary">
+                    <h3 class="summary-title">📋 Booking Summary</h3>
+                    
+                    <div class="booking-item" id="booking-details">
+                        <!-- Dynamic content based on URL parameters -->
+                    </div>
+
+                    <div class="price-breakdown">
+                        <div class="price-item">
+                            <span>Base Price</span>
+                            <span id="base-price">$1,299</span>
+                        </div>
+                        <div class="price-item">
+                            <span>Taxes & Fees</span>
+                            <span>$149</span>
+                        </div>
+                        <div class="price-item">
+                            <span>Service Fee</span>
+                            <span>$25</span>
+                        </div>
+                        <div class="price-total">
+                            <span>Total</span>
+                            <span id="total-price">$1,473</span>
+                        </div>
+                    </div>
+
+                    <button class="complete-booking-btn" onclick="proceedToPayment()">
+                        Continue to Payment
+                    </button>
+
+                    <div class="security-badges">
+                        <div class="security-badge">
+                            <div>🔒</div>
+                            <div>SSL Secured</div>
+                        </div>
+                        <div class="security-badge">
+                            <div>💳</div>
+                            <div>PCI Compliant</div>
+                        </div>
+                        <div class="security-badge">
+                            <div>✅</div>
+                            <div>Verified</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Get URL parameters to determine booking type
+        const urlParams = new URLSearchParams(window.location.search);
+        const bookingType = urlParams.get('type');
+        const itemId = urlParams.get('id') || urlParams.get('package');
+
+        // Initialize booking details based on type
+        function initializeBooking() {
+            const detailsContainer = document.getElementById('booking-details');
+            
+            switch(bookingType) {
+                case 'flight':
+                    detailsContainer.innerHTML = `
+                        <div class="item-type">✈️ FLIGHT</div>
+                        <div class="item-details">New York (JFK) → Tokyo (NRT)</div>
+                        <div class="item-info">American Airlines • Direct Flight • Mar 15, 2024</div>
+                        <div class="item-info">Departure: 8:15 AM • Arrival: 2:40 PM+1</div>
+                    `;
+                    break;
+                case 'hotel':
+                    detailsContainer.innerHTML = `
+                        <div class="item-type">🏨 HOTEL</div>
+                        <div class="item-details">Hotel Le Grand Paris</div>
+                        <div class="item-info">5-star • Champs-Élysées, Paris</div>
+                        <div class="item-info">Check-in: Mar 15 • Check-out: Mar 18 • 3 nights</div>
+                    `;
+                    break;
+                case 'itinerary':
+                    detailsContainer.innerHTML = `
+                        <div class="item-type">🗺️ ITINERARY</div>
+                        <div class="item-details">Perfect Balance Japan Adventure</div>
+                        <div class="item-info">7 days • Tokyo + Kyoto</div>
+                        <div class="item-info">Flights + Hotels + Activities included</div>
+                    `;
+                    break;
+                default:
+                    detailsContainer.innerHTML = `
+                        <div class="item-type">📦 PACKAGE</div>
+                        <div class="item-details">Complete Travel Package</div>
+                        <div class="item-info">All-inclusive travel experience</div>
+                    `;
+            }
+        }
+
+        function nextStep() {
+            // Validate form
+            const requiredFields = document.querySelectorAll('input[required]');
+            let isValid = true;
+            
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.style.borderColor = 'var(--soft-coral)';
+                    isValid = false;
+                } else {
+                    field.style.borderColor = 'var(--primary-200)';
+                }
+            });
+            
+            if (isValid) {
+                // Move to payment step
+                updateStepIndicator(3);
+                showPaymentForm();
+            } else {
+                alert('Please fill in all required fields');
+            }
+        }
+
+        function updateStepIndicator(activeStep) {
+            const steps = document.querySelectorAll('.step');
+            steps.forEach((step, index) => {
+                step.classList.remove('active', 'completed');
+                if (index + 1 < activeStep) {
+                    step.classList.add('completed');
+                } else if (index + 1 === activeStep) {
+                    step.classList.add('active');
+                }
+            });
+        }
+
+        function showPaymentForm() {
+            // This would show the payment form
+            // For demo, redirect to booking confirmation
+            setTimeout(() => {
+                location.href = 'booking-confirmation.html?type=' + bookingType + '&id=' + itemId;
+            }, 1000);
+        }
+
+        function proceedToPayment() {
+            nextStep();
+        }
+
+        // Initialize on page load
+        initializeBooking();
+    </script>
+</body>
+</html>

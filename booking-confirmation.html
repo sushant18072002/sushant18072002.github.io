@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Confirmed - TravelAI</title>
+    <style>
+        :root {
+            --primary-900: #0F172A; --primary-600: #475569;
+            --governor-bay: #2553eb; --emerald: #10B981;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif; margin: 0; padding: 0;
+            background: linear-gradient(135deg, var(--emerald) 0%, #059669 100%);
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+        }
+        
+        .confirmation-container {
+            background: white; border-radius: 2rem; padding: 3rem;
+            text-align: center; max-width: 600px; width: 90%;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.3);
+        }
+        
+        .success-icon {
+            width: 100px; height: 100px; background: var(--emerald);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 3rem; color: white; margin: 0 auto 2rem;
+            animation: bounce 0.6s ease-out;
+        }
+        
+        @keyframes bounce {
+            0% { transform: scale(0.3); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .confirmation-title {
+            font-size: 2.5rem; font-weight: 800; color: var(--primary-900);
+            margin-bottom: 1rem;
+        }
+        
+        .confirmation-subtitle {
+            color: var(--primary-600); font-size: 1.2rem; margin-bottom: 2rem;
+        }
+        
+        .booking-reference {
+            background: #F8FAFC; padding: 1.5rem; border-radius: 1rem;
+            margin: 2rem 0; border: 2px dashed var(--emerald);
+        }
+        
+        .reference-code {
+            font-family: monospace; font-size: 1.5rem; font-weight: 700;
+            color: var(--governor-bay); margin-bottom: 0.5rem;
+        }
+        
+        .actions {
+            display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 1rem 2rem; border-radius: 0.75rem; font-weight: 600;
+            text-decoration: none; transition: all 0.3s ease; border: none;
+            cursor: pointer;
+        }
+        
+        .btn-primary {
+            background: var(--governor-bay); color: white;
+            box-shadow: 0 4px 15px rgba(37, 83, 235, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #F1F5F9; color: var(--primary-600);
+        }
+        
+        .btn:hover { transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+    <div class="confirmation-container">
+        <div class="success-icon">✓</div>
+        <h1 class="confirmation-title">Booking Confirmed!</h1>
+        <p class="confirmation-subtitle">Your reservation has been successfully processed</p>
+        
+        <div class="booking-reference">
+            <div class="reference-code" id="booking-ref">TRV-ABC123</div>
+            <div style="color: var(--primary-600); font-size: 0.9rem;">
+                Booking Reference Number
+            </div>
+        </div>
+        
+        <div style="background: #F8FAFC; padding: 1rem; border-radius: 0.75rem; margin: 1.5rem 0; text-align: left;">
+            <div style="font-weight: 600; color: var(--primary-900); margin-bottom: 0.5rem;">What's Next?</div>
+            <div style="font-size: 0.9rem; color: var(--primary-600); line-height: 1.6;">
+                • Confirmation email sent to your inbox<br>
+                • E-tickets will arrive within 24 hours<br>
+                • Check-in opens 24 hours before departure
+            </div>
+        </div>
+        
+        <div class="actions">
+            <a href="dashboard.html" class="btn btn-primary">View Dashboard</a>
+            <a href="index.html" class="btn btn-secondary">Plan Another Trip</a>
+        </div>
+    </div>
+    
+    <script>
+        // Generate random booking reference
+        const ref = 'TRV-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+        document.getElementById('booking-ref').textContent = ref;
+        
+        // Get booking type from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const bookingType = urlParams.get('type') || 'flight';
+        
+        // Customize message based on type
+        const messages = {
+            flight: 'Your flight has been booked successfully!',
+            hotel: 'Your hotel reservation is confirmed!',
+            itinerary: 'Your complete travel package is booked!',
+            package: 'Your travel package is confirmed!',
+            custom: 'Your custom trip is booked!'
+        };
+        
+        document.querySelector('.confirmation-subtitle').textContent = messages[bookingType] || messages.flight;
+    </script>
+</body>
+</html>

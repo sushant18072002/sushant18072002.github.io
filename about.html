@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - TravelAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary-900: #0F172A; --primary-800: #1E293B; --primary-700: #334155; --primary-600: #475569; --primary-400: #94A3B8; --primary-100: #F1F5F9;
+            --ocean-blue: #1E40AF; --mirage-blue: #4b90e6; --governor-bay: #2553eb; --emerald: #10B981; --premium-amber: #F59E0B; --soft-coral: #FF6B6B;
+        }
+
+        body { font-family: 'Inter', sans-serif; line-height: 1.6; background: var(--primary-50); }
+
+        /* Navigation */
+        .nav-container {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background: rgba(248, 250, 252, 0.95); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2); height: 70px;
+        }
+        .navbar {
+            max-width: 1400px; margin: 0 auto; padding: 0 1.5rem; height: 100%;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo {
+            font-size: 1.4rem; font-weight: 800; color: var(--primary-900);
+            background: linear-gradient(135deg, var(--governor-bay), var(--mirage-blue));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .nav-links { display: flex; gap: 1rem; list-style: none; }
+        .nav-links a {
+            text-decoration: none; color: var(--primary-700); font-weight: 500; padding: 0.5rem 1rem;
+            border-radius: 0.5rem; transition: all 0.3s ease; font-size: 0.9rem;
+        }
+        .nav-links a:hover, .nav-links a.active { background: rgba(37, 83, 235, 0.1); color: var(--governor-bay); }
+
+        /* Main Content */
+        .main-content { padding-top: 90px; min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+
+        /* Hero Section */
+        .about-hero {
+            background: linear-gradient(135deg, var(--governor-bay), var(--mirage-blue));
+            color: white; padding: 5rem 1.5rem; text-align: center; margin-bottom: 5rem;
+        }
+        .hero-title { font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 800; margin-bottom: 1.5rem; }
+        .hero-subtitle { font-size: 1.3rem; opacity: 0.9; max-width: 600px; margin: 0 auto; }
+
+        /* Mission Section */
+        .mission-section { padding: 5rem 1.5rem; text-align: center; }
+        .section-title { font-size: 2.5rem; font-weight: 700; color: var(--primary-900); margin-bottom: 2rem; }
+        .mission-content { max-width: 800px; margin: 0 auto; font-size: 1.2rem; color: var(--primary-600); }
+
+        /* Values Grid */
+        .values-section { padding: 5rem 1.5rem; background: var(--primary-50); }
+        .values-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
+        .value-card {
+            background: white; padding: 2.5rem; border-radius: 1.5rem; text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); transition: all 0.3s ease;
+        }
+        .value-card:hover { transform: translateY(-8px); box-shadow: 0 20px 64px rgba(0, 0, 0, 0.15); }
+        .value-icon { font-size: 3rem; margin-bottom: 1.5rem; }
+        .value-title { font-size: 1.5rem; font-weight: 700; color: var(--primary-900); margin-bottom: 1rem; }
+        .value-description { color: var(--primary-600); line-height: 1.7; }
+
+        /* Team Section */
+        .team-section { padding: 5rem 1.5rem; }
+        .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; }
+        .team-card {
+            background: white; border-radius: 1.5rem; overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); transition: all 0.3s ease;
+        }
+        .team-card:hover { transform: translateY(-8px); }
+        .team-image {
+            height: 250px; background: linear-gradient(45deg, var(--primary-100), var(--primary-200));
+            display: flex; align-items: center; justify-content: center; font-size: 4rem;
+        }
+        .team-info { padding: 2rem; text-align: center; }
+        .team-name { font-size: 1.3rem; font-weight: 700; color: var(--primary-900); margin-bottom: 0.5rem; }
+        .team-role { color: var(--governor-bay); font-weight: 600; margin-bottom: 1rem; }
+        .team-bio { color: var(--primary-600); font-size: 0.95rem; line-height: 1.6; }
+
+        /* Stats Section */
+        .stats-section {
+            padding: 5rem 1.5rem; background: linear-gradient(135deg, var(--primary-900), var(--primary-800));
+            color: white; text-align: center;
+        }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; }
+        .stat-item { padding: 2rem; }
+        .stat-number { font-size: 3rem; font-weight: 800; color: var(--premium-amber); margin-bottom: 0.5rem; }
+        .stat-label { font-size: 1.1rem; opacity: 0.9; }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 5rem 1.5rem; background: var(--primary-50); text-align: center;
+        }
+        .cta-title { font-size: 2.5rem; font-weight: 700; color: var(--primary-900); margin-bottom: 1rem; }
+        .cta-subtitle { font-size: 1.2rem; color: var(--primary-600); margin-bottom: 2rem; }
+        .cta-btn {
+            background: linear-gradient(135deg, var(--governor-bay), var(--ocean-blue));
+            color: white; padding: 1rem 2.5rem; border-radius: 0.75rem; text-decoration: none;
+            font-weight: 600; font-size: 1.1rem; transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(37, 83, 235, 0.4);
+        }
+        .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 35px rgba(37, 83, 235, 0.5); }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .about-hero, .mission-section, .values-section, .team-section, .stats-section, .cta-section { padding: 3rem 1rem; }
+            .nav-links { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-container">
+        <div class="navbar">
+            <div class="logo">TravelAI</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="flights.html">Flights</a></li>
+                <li><a href="hotels.html">Hotels</a></li>
+                <li><a href="itinerary-hub.html">Itineraries</a></li>
+                <li><a href="about.html" class="active">About</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <section class="about-hero">
+            <h1 class="hero-title">Revolutionizing Travel with AI</h1>
+            <p class="hero-subtitle">We're on a mission to make travel planning effortless, personalized, and unforgettable for everyone.</p>
+        </section>
+
+        <section class="mission-section">
+            <div class="container">
+                <h2 class="section-title">🎯 Our Mission</h2>
+                <div class="mission-content">
+                    <p>At TravelAI, we believe that every journey should be as unique as the traveler. Our AI-powered platform combines cutting-edge technology with human expertise to create personalized travel experiences that exceed expectations.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="values-section">
+            <div class="container">
+                <h2 class="section-title">💎 Our Values</h2>
+                <div class="values-grid">
+                    <div class="value-card">
+                        <div class="value-icon">🤖</div>
+                        <h3 class="value-title">AI-Powered Innovation</h3>
+                        <p class="value-description">We leverage artificial intelligence to understand your preferences and create perfectly tailored travel experiences.</p>
+                    </div>
+                    <div class="value-card">
+                        <div class="value-icon">🌍</div>
+                        <h3 class="value-title">Global Accessibility</h3>
+                        <p class="value-description">Making travel accessible to everyone, everywhere, with transparent pricing and inclusive experiences.</p>
+                    </div>
+                    <div class="value-card">
+                        <div class="value-icon">🛡️</div>
+                        <h3 class="value-title">Trust & Security</h3>
+                        <p class="value-description">Your safety and privacy are paramount. We maintain the highest standards of security and transparency.</p>
+                    </div>
+                    <div class="value-card">
+                        <div class="value-icon">⚡</div>
+                        <h3 class="value-title">Seamless Experience</h3>
+                        <p class="value-description">From planning to booking to traveling, we ensure every step is smooth and enjoyable.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="team-section">
+            <div class="container">
+                <h2 class="section-title">👥 Meet Our Team</h2>
+                <div class="team-grid">
+                    <div class="team-card">
+                        <div class="team-image">👨‍💼</div>
+                        <div class="team-info">
+                            <h3 class="team-name">Alex Chen</h3>
+                            <p class="team-role">CEO & Founder</p>
+                            <p class="team-bio">Former Google AI researcher with 10+ years in travel tech. Passionate about making travel accessible through technology.</p>
+                        </div>
+                    </div>
+                    <div class="team-card">
+                        <div class="team-image">👩‍💻</div>
+                        <div class="team-info">
+                            <h3 class="team-name">Sarah Johnson</h3>
+                            <p class="team-role">CTO</p>
+                            <p class="team-bio">AI and machine learning expert who previously led engineering teams at Airbnb and Expedia.</p>
+                        </div>
+                    </div>
+                    <div class="team-card">
+                        <div class="team-image">👨‍🎨</div>
+                        <div class="team-info">
+                            <h3 class="team-name">Marcus Rodriguez</h3>
+                            <p class="team-role">Head of Design</p>
+                            <p class="team-bio">Award-winning UX designer focused on creating intuitive and delightful travel experiences.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="stats-section">
+            <div class="container">
+                <h2 class="section-title">📊 Our Impact</h2>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number">500K+</div>
+                        <div class="stat-label">Happy Travelers</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">200+</div>
+                        <div class="stat-label">Countries Covered</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">1M+</div>
+                        <div class="stat-label">Trips Planned</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">4.9★</div>
+                        <div class="stat-label">Average Rating</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Awards Section -->
+        <section style="padding: 5rem 1.5rem; background: white;">
+            <div class="container">
+                <h2 class="section-title">🏆 Awards & Recognition</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; text-align: center;">
+                    <div style="padding: 2rem; border-radius: 1rem; background: var(--primary-50);">
+                        <div style="font-size: 2rem; margin-bottom: 1rem;">🥇</div>
+                        <h4 style="color: var(--primary-900); margin-bottom: 0.5rem;">Best Travel Tech 2024</h4>
+                        <p style="color: var(--primary-600); font-size: 0.9rem;">Travel Industry Awards</p>
+                    </div>
+                    <div style="padding: 2rem; border-radius: 1rem; background: var(--primary-50);">
+                        <div style="font-size: 2rem; margin-bottom: 1rem;">⭐</div>
+                        <h4 style="color: var(--primary-900); margin-bottom: 0.5rem;">Top AI Innovation</h4>
+                        <p style="color: var(--primary-600); font-size: 0.9rem;">Tech Excellence Awards</p>
+                    </div>
+                    <div style="padding: 2rem; border-radius: 1rem; background: var(--primary-50);">
+                        <div style="font-size: 2rem; margin-bottom: 1rem;">🚀</div>
+                        <h4 style="color: var(--primary-900); margin-bottom: 0.5rem;">Startup of the Year</h4>
+                        <p style="color: var(--primary-600); font-size: 0.9rem;">Innovation Summit 2024</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Careers Section -->
+        <section style="padding: 5rem 1.5rem; background: var(--primary-50);">
+            <div class="container">
+                <h2 class="section-title">💼 Join Our Team</h2>
+                <div style="text-align: center; margin-bottom: 3rem;">
+                    <p style="font-size: 1.2rem; color: var(--primary-600); max-width: 600px; margin: 0 auto;">We're always looking for passionate individuals to help us revolutionize travel technology.</p>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                    <div style="background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);">
+                        <h4 style="color: var(--primary-900); margin-bottom: 1rem;">Senior AI Engineer</h4>
+                        <p style="color: var(--primary-600); margin-bottom: 1rem; font-size: 0.9rem;">Build the next generation of AI-powered travel recommendations</p>
+                        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                            <span style="background: var(--governor-bay); color: white; padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.8rem;">Remote</span>
+                            <span style="background: var(--emerald); color: white; padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.8rem;">Full-time</span>
+                        </div>
+                        <button style="background: var(--governor-bay); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; cursor: pointer;">Apply Now</button>
+                    </div>
+                    <div style="background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);">
+                        <h4 style="color: var(--primary-900); margin-bottom: 1rem;">UX Designer</h4>
+                        <p style="color: var(--primary-600); margin-bottom: 1rem; font-size: 0.9rem;">Design intuitive experiences for millions of travelers worldwide</p>
+                        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                            <span style="background: var(--governor-bay); color: white; padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.8rem;">San Francisco</span>
+                            <span style="background: var(--emerald); color: white; padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.8rem;">Full-time</span>
+                        </div>
+                        <button style="background: var(--governor-bay); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; cursor: pointer;">Apply Now</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="cta-section">
+            <div class="container">
+                <h2 class="cta-title">Ready to Start Your Journey?</h2>
+                <p class="cta-subtitle">Join thousands of travelers who trust TravelAI for their perfect trips</p>
+                <a href="index.html" class="cta-btn">Start Planning Today</a>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

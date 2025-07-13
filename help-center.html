@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help Center - TravelAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary-900: #0F172A; --primary-800: #1E293B; --primary-700: #334155; --primary-600: #475569; --primary-400: #94A3B8; --primary-100: #F1F5F9;
+            --ocean-blue: #1E40AF; --mirage-blue: #4b90e6; --governor-bay: #2553eb; --emerald: #10B981; --premium-amber: #F59E0B;
+        }
+
+        body { font-family: 'Inter', sans-serif; line-height: 1.6; background: var(--primary-50); }
+
+        /* Navigation */
+        .nav-container {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background: rgba(248, 250, 252, 0.95); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2); height: 70px;
+        }
+        .navbar {
+            max-width: 1400px; margin: 0 auto; padding: 0 1.5rem; height: 100%;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo {
+            font-size: 1.4rem; font-weight: 800; color: var(--primary-900);
+            background: linear-gradient(135deg, var(--governor-bay), var(--mirage-blue));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        /* Hero Section */
+        .help-hero {
+            background: linear-gradient(135deg, var(--governor-bay), var(--mirage-blue));
+            color: white; padding: 4rem 1.5rem; text-align: center; margin-top: 70px;
+        }
+        .hero-title { font-size: clamp(2.5rem, 5vw, 3.5rem); font-weight: 800; margin-bottom: 1rem; }
+        .search-box {
+            max-width: 500px; margin: 2rem auto 0; position: relative;
+        }
+        .search-input {
+            width: 100%; padding: 1rem 1rem 1rem 3rem; border: none; border-radius: 0.75rem;
+            font-size: 1rem; outline: none;
+        }
+        .search-icon {
+            position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+            color: var(--primary-600); font-size: 1.2rem;
+        }
+
+        /* FAQ Section */
+        .faq-section { padding: 4rem 1.5rem; }
+        .faq-categories { display: flex; gap: 1rem; margin-bottom: 2rem; justify-content: center; flex-wrap: wrap; }
+        .faq-category {
+            padding: 0.5rem 1rem; background: var(--primary-100); border-radius: 50px;
+            cursor: pointer; transition: all 0.3s ease; font-size: 0.9rem;
+        }
+        .faq-category.active { background: var(--governor-bay); color: white; }
+        .faq-list { max-width: 800px; margin: 0 auto; }
+        .faq-item {
+            background: white; border-radius: 0.75rem; margin-bottom: 1rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .faq-question {
+            padding: 1.5rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+            font-weight: 600; color: var(--primary-900);
+        }
+        .faq-answer {
+            padding: 0 1.5rem 1.5rem; color: var(--primary-600); display: none;
+        }
+        .faq-item.active .faq-answer { display: block; }
+    </style>
+</head>
+<body>
+    <nav class="nav-container">
+        <div class="navbar">
+            <div class="logo">TravelAI</div>
+        </div>
+    </nav>
+
+    <main>
+        <section class="help-hero">
+            <h1 class="hero-title">❓ How can we help you?</h1>
+            <p>Find answers to your questions or get in touch with our support team</p>
+            <div class="search-box">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" placeholder="Search for help articles..." onkeyup="searchFAQ(this.value)">
+            </div>
+        </section>
+
+        <section class="faq-section">
+            <div style="max-width: 1200px; margin: 0 auto;">
+                <div class="faq-categories">
+                    <div class="faq-category active" onclick="showCategory('all')">All</div>
+                    <div class="faq-category" onclick="showCategory('booking')">Booking</div>
+                    <div class="faq-category" onclick="showCategory('payment')">Payment</div>
+                    <div class="faq-category" onclick="showCategory('travel')">Travel</div>
+                </div>
+                
+                <div class="faq-list">
+                    <div class="faq-item" data-category="booking">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            How do I cancel or modify my booking?
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            You can cancel or modify your booking through your dashboard or by contacting our support team. Cancellation policies vary by provider.
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item" data-category="payment">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            Is my payment information secure?
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            Yes! We use industry-standard SSL encryption and are PCI DSS compliant. Your payment information is never stored on our servers.
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item" data-category="travel">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            What happens if my flight is delayed?
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            We'll notify you immediately and help you rebook. Our 24/7 support team is available to assist with rebooking and accommodation.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        function toggleFAQ(element) {
+            const faqItem = element.parentElement;
+            const isActive = faqItem.classList.contains('active');
+            
+            document.querySelectorAll('.faq-item').forEach(item => item.classList.remove('active'));
+            
+            if (!isActive) {
+                faqItem.classList.add('active');
+            }
+        }
+
+        function showCategory(category) {
+            document.querySelectorAll('.faq-category').forEach(cat => cat.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.querySelectorAll('.faq-item').forEach(item => {
+                if (category === 'all' || item.dataset.category === category) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function searchFAQ(query) {
+            const items = document.querySelectorAll('.faq-item');
+            const lowerQuery = query.toLowerCase();
+            
+            items.forEach(item => {
+                const question = item.querySelector('.faq-question').textContent.toLowerCase();
+                const answer = item.querySelector('.faq-answer').textContent.toLowerCase();
+                
+                if (question.includes(lowerQuery) || answer.includes(lowerQuery) || query === '') {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

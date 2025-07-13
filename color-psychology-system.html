@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Psychology System - TravelAI</title>
+    <style>
+        /* ADVANCED COLOR PSYCHOLOGY SYSTEM */
+        :root {
+            /* Trust & Security (Blue Family) */
+            --trust-primary: #1E40AF;        /* Deep trust, reliability */
+            --trust-secondary: #3B82F6;      /* Confidence, stability */
+            --trust-accent: #DBEAFE;         /* Calm, reassurance */
+            
+            /* Success & Growth (Green Family) */
+            --success-primary: #059669;      /* Achievement, go-ahead */
+            --success-secondary: #10B981;    /* Positive action, growth */
+            --success-accent: #D1FAE5;       /* Safety, completion */
+            
+            /* Urgency & Energy (Orange/Red Family) */
+            --urgency-primary: #DC2626;      /* Critical action needed */
+            --urgency-secondary: #F59E0B;    /* Limited time, attention */
+            --urgency-accent: #FEF3C7;       /* Caution, awareness */
+            
+            /* Premium & Luxury (Purple Family) */
+            --premium-primary: #7C3AED;      /* Exclusivity, luxury */
+            --premium-secondary: #A855F7;    /* Premium experience */
+            --premium-accent: #F3E8FF;       /* Sophistication */
+            
+            /* Warmth & Comfort (Warm Neutrals) */
+            --warmth-primary: #92400E;       /* Comfort, reliability */
+            --warmth-secondary: #D97706;     /* Friendliness, approachability */
+            --warmth-accent: #FEF7ED;        /* Welcoming, cozy */
+        }
+
+        /* PSYCHOLOGICAL COLOR APPLICATIONS */
+        
+        /* Trust-Building Elements */
+        .trust-container {
+            background: linear-gradient(135deg, var(--trust-primary), var(--trust-secondary));
+            color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .trust-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--success-primary), var(--trust-secondary));
+        }
+        
+        /* Success States */
+        .success-indicator {
+            background: var(--success-accent);
+            border: 2px solid var(--success-secondary);
+            color: var(--success-primary);
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 600;
+        }
+        
+        /* Urgency Elements */
+        .urgency-banner {
+            background: linear-gradient(135deg, var(--urgency-primary), var(--urgency-secondary));
+            color: white;
+            padding: 1rem 2rem;
+            text-align: center;
+            font-weight: 600;
+            position: relative;
+            animation: urgency-pulse 3s infinite;
+        }
+        @keyframes urgency-pulse {
+            0%, 100% { background-size: 100% 100%; }
+            50% { background-size: 105% 105%; }
+        }
+        
+        /* Premium Experience */
+        .premium-card {
+            background: linear-gradient(135deg, var(--premium-accent), white);
+            border: 2px solid var(--premium-secondary);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            position: relative;
+        }
+        .premium-badge {
+            background: var(--premium-primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            position: absolute;
+            top: -0.5rem;
+            right: 1rem;
+        }
+        
+        /* Warmth & Comfort */
+        .comfort-zone {
+            background: var(--warmth-accent);
+            border-left: 4px solid var(--warmth-secondary);
+            padding: 1.5rem;
+            border-radius: 0 0.75rem 0.75rem 0;
+        }
+        
+        /* EMOTIONAL JOURNEY MAPPING */
+        
+        /* Discovery Phase - Curiosity (Blue-Green) */
+        .discovery-phase {
+            background: linear-gradient(135deg, #0EA5E9, #06B6D4);
+            color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+        }
+        
+        /* Consideration Phase - Trust (Deep Blue) */
+        .consideration-phase {
+            background: var(--trust-container);
+            padding: 2rem;
+            border-radius: 1rem;
+        }
+        
+        /* Decision Phase - Confidence (Green) */
+        .decision-phase {
+            background: linear-gradient(135deg, var(--success-primary), var(--success-secondary));
+            color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+        }
+        
+        /* Action Phase - Energy (Orange) */
+        .action-phase {
+            background: linear-gradient(135deg, var(--urgency-secondary), #F97316);
+            color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+        }
+        
+        /* CONTEXTUAL COLOR USAGE */
+        
+        /* Price Psychology */
+        .price-good {
+            color: var(--success-primary);
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+        .price-better {
+            color: var(--urgency-secondary);
+            font-weight: 700;
+            font-size: 1.5rem;
+            position: relative;
+        }
+        .price-better::after {
+            content: '🔥 Hot Deal';
+            position: absolute;
+            top: -1.5rem;
+            left: 0;
+            font-size: 0.75rem;
+            background: var(--urgency-primary);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+        }
+        .price-best {
+            color: var(--premium-primary);
+            font-weight: 800;
+            font-size: 1.75rem;
+            text-shadow: 0 2px 4px rgba(124, 58, 237, 0.3);
+        }
+        
+        /* Availability Psychology */
+        .availability-high {
+            color: var(--success-primary);
+            background: var(--success-accent);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+        }
+        .availability-medium {
+            color: var(--urgency-secondary);
+            background: var(--urgency-accent);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+        }
+        .availability-low {
+            color: var(--urgency-primary);
+            background: #FEE2E2;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            animation: availability-blink 2s infinite;
+        }
+        @keyframes availability-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+    </style>
+</head>
+<body>
+    <!-- COLOR PSYCHOLOGY EXAMPLES -->
+    
+    <!-- Trust Building Header -->
+    <section class="trust-container" style="margin: 2rem;">
+        <h2 style="margin-bottom: 1rem;">🔒 Secure Booking Guarantee</h2>
+        <p style="opacity: 0.9;">Your payment information is protected with bank-level security. Book with confidence.</p>
+    </section>
+    
+    <!-- Emotional Journey Phases -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin: 2rem;">
+        <div class="discovery-phase">
+            <h3>🔍 Discover</h3>
+            <p>Explore amazing destinations</p>
+        </div>
+        <div class="consideration-phase">
+            <h3>🤔 Compare</h3>
+            <p>Find the perfect match</p>
+        </div>
+        <div class="decision-phase">
+            <h3>✅ Choose</h3>
+            <p>Select your ideal trip</p>
+        </div>
+        <div class="action-phase">
+            <h3>🚀 Book</h3>
+            <p>Secure your adventure</p>
+        </div>
+    </div>
+    
+    <!-- Price Psychology Examples -->
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin: 2rem; text-align: center;">
+        <div style="padding: 2rem; border-radius: 1rem; background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+            <div class="price-good">$899</div>
+            <div>Good Deal</div>
+        </div>
+        <div style="padding: 2rem; border-radius: 1rem; background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.1); position: relative;">
+            <div class="price-better">$699</div>
+            <div>Better Deal</div>
+        </div>
+        <div class="premium-card" style="text-align: center;">
+            <div class="premium-badge">BEST VALUE</div>
+            <div class="price-best">$599</div>
+            <div>Premium Deal</div>
+        </div>
+    </div>
+    
+    <!-- Availability Psychology -->
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 2rem;">
+        <div class="availability-high">
+            ✅ 15+ rooms available
+        </div>
+        <div class="availability-medium">
+            ⚠️ Only 3 rooms left
+        </div>
+        <div class="availability-low">
+            🔥 Last room available!
+        </div>
+    </div>
+    
+    <!-- Success Indicators -->
+    <div class="success-indicator" style="margin: 2rem;">
+        <span>✅</span>
+        <span>Booking confirmed! Check your email for details.</span>
+    </div>
+    
+    <!-- Urgency Banner -->
+    <div class="urgency-banner">
+        ⏰ Flash Sale: 40% Off All Japan Packages - Ends in 2 Hours!
+    </div>
+    
+    <!-- Comfort Zone -->
+    <div class="comfort-zone" style="margin: 2rem;">
+        <h4 style="color: var(--warmth-primary); margin-bottom: 0.5rem;">🏠 Feel at Home</h4>
+        <p style="color: var(--warmth-primary);">Our 24/7 support team is here to help you every step of the way.</p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,452 @@
+<!-- MASTER COMPONENT INTEGRATION -->
+<style>
+/* PSYCHOLOGY-DRIVEN DESIGN SYSTEM */
+:root {
+    --primary-900: #0F172A; --primary-800: #1E293B; --primary-700: #334155; --primary-600: #475569; --primary-400: #94A3B8; --primary-100: #F1F5F9; --primary-50: #F8FAFC;
+    --ocean-blue: #1E40AF; --mirage-blue: #4b90e6; --governor-bay: #2553eb; --emerald: #10B981; --premium-amber: #F59E0B; --soft-coral: #FF6B6B;
+    --gradient-primary: linear-gradient(135deg, var(--governor-bay), var(--ocean-blue));
+    --gradient-success: linear-gradient(135deg, var(--emerald), #059669);
+    --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.1);
+    --shadow-strong: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* TRUST INDICATORS - Build Confidence */
+.trust-bar {
+    background: rgba(16, 185, 129, 0.1); padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;
+    display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;
+}
+.trust-item {
+    display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; 
+    color: var(--emerald); font-weight: 600;
+}
+
+/* URGENCY TRIGGERS - Drive Action */
+.urgency-indicator {
+    background: var(--gradient-warning); color: white; padding: 0.5rem 1rem; 
+    border-radius: 50px; font-size: 0.8rem; font-weight: 600;
+    animation: urgency-pulse 2s infinite;
+}
+@keyframes urgency-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* SOCIAL PROOF - Reduce Anxiety */
+.social-proof {
+    background: rgba(37, 83, 235, 0.05); padding: 1rem; border-radius: 0.5rem;
+    border-left: 4px solid var(--governor-bay); margin: 1rem 0;
+}
+.live-activity {
+    font-size: 0.9rem; color: var(--primary-700);
+    animation: slideIn 0.5s ease-out;
+}
+
+/* PROGRESS PSYCHOLOGY - Reduce Abandonment */
+.progress-psychology {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(37, 83, 235, 0.1)); 
+    padding: 1rem; border-radius: 0.75rem; text-align: center; margin: 1rem 0;
+}
+.progress-text {
+    font-weight: 600; color: var(--primary-900); margin-bottom: 0.5rem;
+}
+.progress-bar {
+    background: var(--primary-200); height: 8px; border-radius: 4px; overflow: hidden;
+}
+.progress-fill {
+    background: var(--gradient-primary); height: 100%; border-radius: 4px; 
+    transition: width 0.5s ease;
+}
+
+/* ENHANCED BUTTONS - Clear Hierarchy */
+.btn-primary {
+    background: var(--gradient-primary); color: white; border: none; 
+    padding: 1rem 2rem; border-radius: 0.75rem; font-weight: 600; 
+    cursor: pointer; transition: all 0.3s ease; position: relative; overflow: hidden;
+    box-shadow: 0 4px 15px rgba(37, 83, 235, 0.4);
+}
+.btn-primary::before {
+    content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+.btn-primary:hover::before { left: 100%; }
+.btn-primary:hover { 
+    transform: translateY(-2px); 
+    box-shadow: 0 8px 25px rgba(37, 83, 235, 0.6); 
+}
+
+.btn-secondary {
+    background: var(--primary-100); color: var(--primary-700); border: none;
+    padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 500;
+    cursor: pointer; transition: all 0.3s ease;
+}
+.btn-secondary:hover { 
+    background: var(--primary-200); transform: translateY(-1px); 
+}
+
+/* ENHANCED CARDS - Visual Hierarchy */
+.card-enhanced {
+    background: white; border-radius: 1rem; padding: 1.5rem;
+    box-shadow: var(--shadow-soft); transition: all 0.3s ease;
+    border: 2px solid transparent; position: relative; overflow: hidden;
+}
+.card-enhanced::before {
+    content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.6s ease;
+}
+.card-enhanced:hover::before { left: 100%; }
+.card-enhanced:hover {
+    transform: translateY(-4px); box-shadow: var(--shadow-strong);
+}
+.card-enhanced.featured {
+    border-color: var(--emerald);
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(16, 185, 129, 0.02));
+}
+.card-enhanced.featured::after {
+    content: '🏆 BEST DEAL';
+    position: absolute; top: -0.5rem; left: 1rem;
+    background: var(--emerald); color: white;
+    padding: 0.25rem 0.75rem; border-radius: 50px;
+    font-size: 0.75rem; font-weight: 600;
+}
+
+/* FORM ENHANCEMENTS - Better UX */
+.form-input-enhanced {
+    padding: 1rem; border: 2px solid #e2e8f0; border-radius: 0.75rem;
+    font-size: 0.9rem; transition: all 0.3s ease; width: 100%;
+    background: rgba(255, 255, 255, 0.8);
+}
+.form-input-enhanced:focus { 
+    outline: none; border-color: var(--governor-bay); 
+    box-shadow: 0 0 0 4px rgba(37, 83, 235, 0.1); 
+    background: white; transform: translateY(-1px);
+}
+.form-input-enhanced.error {
+    border-color: var(--soft-coral);
+    box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.1);
+}
+.form-input-enhanced.success {
+    border-color: var(--emerald);
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+}
+
+/* LOADING STATES - Better Feedback */
+.loading-skeleton {
+    background: linear-gradient(90deg, var(--primary-100) 25%, var(--primary-50) 50%, var(--primary-100) 75%);
+    background-size: 200% 100%; animation: skeleton-loading 1.5s infinite;
+    border-radius: 0.5rem; height: 1rem;
+}
+@keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.loading-dots {
+    display: inline-flex; gap: 0.25rem;
+}
+.loading-dot {
+    width: 8px; height: 8px; background: var(--governor-bay);
+    border-radius: 50%; animation: loading-bounce 1.4s infinite ease-in-out;
+}
+.loading-dot:nth-child(1) { animation-delay: -0.32s; }
+.loading-dot:nth-child(2) { animation-delay: -0.16s; }
+@keyframes loading-bounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1); }
+}
+
+/* NOTIFICATION SYSTEM - User Feedback */
+.notification-toast {
+    position: fixed; top: 100px; right: 2rem; z-index: 2000;
+    background: white; border-radius: 0.75rem; padding: 1rem 1.5rem;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); transform: translateX(120%);
+    transition: transform 0.3s ease; border-left: 4px solid var(--emerald);
+}
+.notification-toast.show { transform: translateX(0); }
+.notification-toast.error { border-left-color: var(--soft-coral); }
+.notification-toast.warning { border-left-color: var(--premium-amber); }
+
+/* MOBILE OPTIMIZATIONS */
+@media (max-width: 768px) {
+    .trust-bar { flex-direction: column; gap: 0.5rem; text-align: center; }
+    .card-enhanced { margin-bottom: 1rem; }
+    .btn-primary, .btn-secondary { width: 100%; }
+}
+
+/* ACCESSIBILITY ENHANCEMENTS */
+.sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+.focus-visible {
+    outline: 2px solid var(--governor-bay);
+    outline-offset: 2px;
+}
+
+/* HIGH CONTRAST MODE */
+@media (prefers-contrast: high) {
+    :root {
+        --primary-100: #000000;
+        --primary-900: #FFFFFF;
+        --governor-bay: #0000FF;
+        --emerald: #00FF00;
+        --soft-coral: #FF0000;
+    }
+}
+
+/* REDUCED MOTION */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+</style>
+
+<script>
+// MASTER COMPONENT JAVASCRIPT
+class TravelAIComponents {
+    constructor() {
+        this.init();
+    }
+
+    init() {
+        this.setupTrustIndicators();
+        this.setupProgressTracking();
+        this.setupNotifications();
+        this.setupFormValidation();
+        this.setupAccessibility();
+    }
+
+    // Trust Indicators - Build Confidence
+    setupTrustIndicators() {
+        const trustData = [
+            { icon: 'fas fa-shield-alt', text: '100% Secure Booking' },
+            { icon: 'fas fa-award', text: 'Best Price Guarantee' },
+            { icon: 'fas fa-headset', text: '24/7 Customer Support' },
+            { icon: 'fas fa-users', text: '50,000+ Happy Travelers' }
+        ];
+
+        document.querySelectorAll('.trust-bar').forEach(bar => {
+            if (!bar.innerHTML.trim()) {
+                bar.innerHTML = trustData.map(item => `
+                    <div class="trust-item">
+                        <i class="${item.icon}"></i>
+                        <span>${item.text}</span>
+                    </div>
+                `).join('');
+            }
+        });
+    }
+
+    // Progress Psychology - Reduce Abandonment
+    setupProgressTracking() {
+        const progressElements = document.querySelectorAll('.progress-psychology');
+        progressElements.forEach(element => {
+            const step = parseInt(element.dataset.step) || 1;
+            const total = parseInt(element.dataset.total) || 4;
+            const percentage = Math.round((step / total) * 100);
+            
+            element.innerHTML = `
+                <div class="progress-text">
+                    🎆 You're ${percentage}% closer to your dream trip!
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${percentage}%;"></div>
+                </div>
+            `;
+        });
+    }
+
+    // Notification System - User Feedback
+    setupNotifications() {
+        window.showNotification = (message, type = 'success', duration = 5000) => {
+            const toast = document.createElement('div');
+            toast.className = `notification-toast ${type}`;
+            toast.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        };
+    }
+
+    // Form Validation - Better UX
+    setupFormValidation() {
+        document.querySelectorAll('.form-input-enhanced').forEach(input => {
+            input.addEventListener('blur', () => this.validateField(input));
+            input.addEventListener('input', () => this.clearValidation(input));
+        });
+    }
+
+    validateField(input) {
+        const value = input.value.trim();
+        const type = input.type;
+        let isValid = true;
+        let message = '';
+
+        if (input.required && !value) {
+            isValid = false;
+            message = 'This field is required';
+        } else if (type === 'email' && value && !this.isValidEmail(value)) {
+            isValid = false;
+            message = 'Please enter a valid email address';
+        } else if (type === 'tel' && value && !this.isValidPhone(value)) {
+            isValid = false;
+            message = 'Please enter a valid phone number';
+        }
+
+        input.classList.remove('error', 'success');
+        input.classList.add(isValid ? 'success' : 'error');
+
+        let feedback = input.parentNode.querySelector('.form-feedback');
+        if (!feedback) {
+            feedback = document.createElement('div');
+            feedback.className = 'form-feedback';
+            input.parentNode.appendChild(feedback);
+        }
+        
+        feedback.textContent = message;
+        feedback.className = `form-feedback ${isValid ? 'success' : 'error'}`;
+        feedback.style.display = message ? 'block' : 'none';
+
+        return isValid;
+    }
+
+    clearValidation(input) {
+        input.classList.remove('error', 'success');
+        const feedback = input.parentNode.querySelector('.form-feedback');
+        if (feedback) feedback.style.display = 'none';
+    }
+
+    isValidEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    isValidPhone(phone) {
+        return /^[\+]?[1-9][\d]{0,15}$/.test(phone.replace(/[\s\-\(\)]/g, ''));
+    }
+
+    // Accessibility Enhancements
+    setupAccessibility() {
+        // Skip links
+        if (!document.querySelector('.skip-link')) {
+            const skipLink = document.createElement('a');
+            skipLink.href = '#main-content';
+            skipLink.className = 'skip-link';
+            skipLink.textContent = 'Skip to main content';
+            skipLink.style.cssText = `
+                position: absolute; top: -40px; left: 6px; background: var(--governor-bay);
+                color: white; padding: 8px; text-decoration: none; border-radius: 0.25rem;
+                z-index: 1000; transition: top 0.3s ease;
+            `;
+            skipLink.addEventListener('focus', () => skipLink.style.top = '6px');
+            skipLink.addEventListener('blur', () => skipLink.style.top = '-40px');
+            document.body.insertBefore(skipLink, document.body.firstChild);
+        }
+
+        // Focus management
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab') {
+                document.body.classList.add('keyboard-navigation');
+            }
+        });
+
+        document.addEventListener('mousedown', () => {
+            document.body.classList.remove('keyboard-navigation');
+        });
+    }
+
+    // Social Proof - Live Activity
+    showLiveActivity(activities) {
+        const container = document.querySelector('.social-proof');
+        if (!container) return;
+
+        let index = 0;
+        setInterval(() => {
+            const activity = activities[index % activities.length];
+            container.innerHTML = `
+                <div class="live-activity">
+                    <strong>${activity.name}</strong> just booked a trip to <strong>${activity.destination}</strong>
+                    <span style="display: block; font-size: 0.8rem; color: var(--primary-600); margin-top: 0.25rem;">
+                        ${activity.time}
+                    </span>
+                </div>
+            `;
+            index++;
+        }, 6000);
+    }
+
+    // Urgency Indicators - Drive Action
+    createUrgencyIndicator(text, element) {
+        const indicator = document.createElement('div');
+        indicator.className = 'urgency-indicator';
+        indicator.textContent = text;
+        element.appendChild(indicator);
+        return indicator;
+    }
+
+    // Loading States
+    showLoading(element, text = 'Loading...') {
+        const originalContent = element.innerHTML;
+        element.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <div class="loading-dots">
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                </div>
+                <span>${text}</span>
+            </div>
+        `;
+        element.disabled = true;
+        
+        return () => {
+            element.innerHTML = originalContent;
+            element.disabled = false;
+        };
+    }
+}
+
+// Initialize components when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    window.travelAI = new TravelAIComponents();
+    
+    // Sample live activities
+    const sampleActivities = [
+        { name: "Sarah", destination: "Japan", time: "2 minutes ago" },
+        { name: "Mike", destination: "Iceland", time: "5 minutes ago" },
+        { name: "Emma", destination: "Bali", time: "8 minutes ago" },
+        { name: "David", destination: "Morocco", time: "12 minutes ago" }
+    ];
+    
+    window.travelAI.showLiveActivity(sampleActivities);
+});
+
+// Global utility functions
+window.copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text).then(() => {
+        window.showNotification('Copied to clipboard!', 'success', 2000);
+    });
+};
+
+window.shareContent = (title, text, url) => {
+    if (navigator.share) {
+        navigator.share({ title, text, url });
+    } else {
+        window.copyToClipboard(url);
+        window.showNotification('Link copied to clipboard!', 'success');
+    }
+};
+</script>

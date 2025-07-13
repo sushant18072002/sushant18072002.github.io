@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Booking - TravelAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary-900: #0F172A; --primary-800: #1E293B; --primary-700: #334155; --primary-600: #475569; --primary-400: #94A3B8; --primary-100: #F1F5F9;
+            --ocean-blue: #1E40AF; --mirage-blue: #4b90e6; --governor-bay: #2553eb; --emerald: #10B981; --premium-amber: #F59E0B; --soft-coral: #FF6B6B;
+        }
+
+        body { font-family: 'Inter', sans-serif; line-height: 1.5; background: var(--primary-50); }
+
+        /* Navigation */
+        .nav-container {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background: rgba(248, 250, 252, 0.95); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2); height: 60px;
+        }
+        .navbar {
+            max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; height: 100%;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo {
+            font-size: 1.4rem; font-weight: 800; color: var(--primary-900);
+            background: linear-gradient(135deg, var(--governor-bay), var(--mirage-blue));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        /* Main Content */
+        .main-content { padding-top: 20px; min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+
+        /* Booking Layout */
+        .booking-layout { display: grid; grid-template-columns: 1fr 400px; gap: 2rem; }
+
+        /* Enhanced Booking Steps with Progress Psychology */
+        .booking-steps {
+            background: white; border-radius: 1rem; padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        .booking-steps::before {
+            content: '🔒 Your booking is secured with 256-bit SSL encryption';
+            position: absolute; top: -1rem; left: 50%; transform: translateX(-50%);
+            background: rgba(16, 185, 129, 0.1); color: var(--emerald);
+            padding: 0.5rem 1rem; border-radius: 50px; font-size: 0.75rem;
+            font-weight: 600; white-space: nowrap;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        .step-indicator {
+            display: flex; justify-content: space-between; margin-bottom: 2rem;
+        }
+        .step {
+            display: flex; align-items: center; gap: 0.5rem; flex: 1;
+        }
+        .step-number {
+            width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: 600; font-size: 0.9rem;
+        }
+        .step.active .step-number { 
+            background: var(--governor-bay); color: white;
+            animation: step-pulse 2s infinite;
+        }
+        .step.completed .step-number { 
+            background: var(--emerald); color: white;
+            position: relative;
+        }
+        .step.completed .step-number::after {
+            content: '✓';
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+        }
+        @keyframes step-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(37, 83, 235, 0.4); }
+            50% { box-shadow: 0 0 0 10px rgba(37, 83, 235, 0); }
+        }
+        .step:not(.active):not(.completed) .step-number { background: var(--primary-200); color: var(--primary-600); }
+        .step-title { font-weight: 500; color: var(--primary-700); }
+        .step.active .step-title { color: var(--governor-bay); font-weight: 600; }
+
+        /* Form Sections */
+        .form-section { display: none; }
+        .form-section.active { display: block; }
+        .section-title { font-size: 1.5rem; font-weight: 600; color: var(--primary-900); margin-bottom: 1.5rem; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+        .form-group { margin-bottom: 1rem; }
+        .form-label { display: block; font-weight: 500; color: var(--primary-700); margin-bottom: 0.5rem; }
+        .form-input {
+            width: 100%; padding: 0.75rem; border: 2px solid #e2e8f0; border-radius: 0.5rem;
+            font-size: 0.9rem; transition: all 0.3s ease;
+        }
+        .form-input:focus { outline: none; border-color: var(--governor-bay); box-shadow: 0 0 0 3px rgba(37, 83, 235, 0.1); }
+
+        /* Seat Selection */
+        .seat-map {
+            background: var(--primary-50); border-radius: 1rem; padding: 2rem; margin: 1rem 0;
+            text-align: center;
+        }
+        .aircraft-layout {
+            display: grid; grid-template-columns: repeat(10, 1fr); gap: 0.25rem; max-width: 400px; margin: 0 auto;
+        }
+        .seat {
+            width: 32px; height: 32px; border-radius: 0.25rem; display: flex; align-items: center; justify-content: center;
+            font-size: 0.7rem; cursor: pointer; transition: all 0.3s ease;
+        }
+        .seat.available { background: var(--primary-200); color: var(--primary-700); }
+        .seat.occupied { background: var(--soft-coral); color: white; cursor: not-allowed; }
+        .seat.selected { background: var(--governor-bay); color: white; }
+        .seat-legend { display: flex; justify-content: center; gap: 2rem; margin-top: 1rem; }
+        .legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; }
+
+        /* Payment Section */
+        .payment-methods { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .payment-method {
+            border: 2px solid var(--primary-200); border-radius: 0.5rem; padding: 1rem; text-align: center;
+            cursor: pointer; transition: all 0.3s ease;
+        }
+        .payment-method.selected { border-color: var(--governor-bay); background: rgba(37, 83, 235, 0.05); }
+        .payment-method i { font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--governor-bay); }
+
+        /* Order Summary */
+        .order-summary {
+            background: white; border-radius: 1rem; padding: 2rem; height: fit-content;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); position: sticky; top: 100px;
+        }
+        .summary-title { font-size: 1.3rem; font-weight: 600; color: var(--primary-900); margin-bottom: 1.5rem; }
+        .summary-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.75rem 0; border-bottom: 1px solid var(--primary-200);
+        }
+        .summary-item:last-child { border-bottom: none; font-weight: 600; font-size: 1.1rem; }
+        .total-price { color: var(--governor-bay); font-size: 1.5rem; font-weight: 700; }
+
+        /* Navigation Buttons */
+        .form-navigation {
+            display: flex; justify-content: space-between; align-items: center; margin-top: 2rem;
+            padding-top: 2rem; border-top: 1px solid var(--primary-200);
+        }
+        .nav-btn {
+            padding: 0.75rem 2rem; border-radius: 0.5rem; font-weight: 600; cursor: pointer;
+            transition: all 0.3s ease; border: none; font-size: 0.9rem;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--governor-bay), var(--ocean-blue));
+            color: white; box-shadow: 0 4px 15px rgba(37, 83, 235, 0.4);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37, 83, 235, 0.5); }
+        .btn-secondary {
+            background: var(--primary-100); color: var(--primary-700);
+        }
+        .btn-secondary:hover { background: var(--primary-200); }
+
+        /* Confirmation Screen */
+        .confirmation-screen {
+            text-align: center; padding: 3rem; display: none;
+        }
+        .confirmation-screen.active { display: block; }
+        .success-icon {
+            width: 80px; height: 80px; background: var(--emerald); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem;
+            font-size: 2rem; color: white;
+        }
+        .confirmation-title { font-size: 2rem; font-weight: 700; color: var(--primary-900); margin-bottom: 1rem; }
+        .booking-reference {
+            background: var(--primary-50); padding: 1rem; border-radius: 0.5rem; margin: 2rem 0;
+            font-family: monospace; font-size: 1.2rem; font-weight: 600; color: var(--governor-bay);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .booking-layout { grid-template-columns: 1fr; }
+            .order-summary { position: static; order: -1; }
+            .form-grid { grid-template-columns: 1fr; }
+            .step-indicator { flex-direction: column; gap: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-container">
+        <div class="navbar">
+            <div class="logo">TravelAI</div>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <button onclick="history.back()" style="background: var(--primary-100); color: var(--primary-700); border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer;">← Back</button>
+                <a href="auth.html" style="background: linear-gradient(135deg, var(--governor-bay), var(--ocean-blue)); color: white; padding: 0.5rem 1.5rem; border-radius: 0.5rem; text-decoration: none; font-weight: 600;">Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <div style="background: white; padding: 1rem 1.5rem; margin-top: 60px; border-bottom: 1px solid var(--primary-200);">
+        <nav style="max-width: 1200px; margin: 0 auto; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--primary-600);">
+            <a href="index.html" style="color: var(--governor-bay); text-decoration: none;">Home</a>
+            <span>›</span>
+            <a href="#" onclick="history.back()" style="color: var(--governor-bay); text-decoration: none;">Back</a>
+            <span>›</span>
+            <span>Booking</span>
+        </nav>
+    </div>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="booking-layout">
+                <div class="booking-steps">
+                    <!-- Step Indicator -->
+                    <div class="step-indicator">
+                        <div class="step active" data-step="1">
+                            <div class="step-number">1</div>
+                            <div class="step-title">Details</div>
+                        </div>
+                        <div class="step" data-step="2">
+                            <div class="step-number">2</div>
+                            <div class="step-title">Seats</div>
+                        </div>
+                        <div class="step" data-step="3">
+                            <div class="step-number">3</div>
+                            <div class="step-title">Payment</div>
+                        </div>
+                        <div class="step" data-step="4">
+                            <div class="step-number">4</div>
+                            <div class="step-title">Confirm</div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Indicator -->
+                    <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(37, 83, 235, 0.1)); padding: 1rem; border-radius: 0.75rem; margin-bottom: 2rem; text-align: center;">
+                        <div style="font-weight: 600; color: var(--primary-900); margin-bottom: 0.5rem;">
+                            🎆 You're 75% closer to your dream trip!
+                        </div>
+                        <div style="background: var(--primary-200); height: 8px; border-radius: 4px; overflow: hidden;">
+                            <div style="background: linear-gradient(90deg, var(--governor-bay), var(--emerald)); height: 100%; width: 25%; border-radius: 4px; transition: width 0.5s ease;"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 1: Passenger Details -->
+                    <div class="form-section active" id="step-1">
+                        <h2 class="section-title">Passenger Details</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">First Name</label>
+                                <input type="text" class="form-input" placeholder="John" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Last Name</label>
+                                <input type="text" class="form-input" placeholder="Smith" required>
+                            </div>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-input" placeholder="john@example.com" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Phone</label>
+                                <input type="tel" class="form-input" placeholder="+1 555 123 4567" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Special Requests</label>
+                            <textarea class="form-input" rows="3" placeholder="Any special requirements..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Seat Selection -->
+                    <div class="form-section" id="step-2">
+                        <h2 class="section-title">Select Your Seats</h2>
+                        <div class="seat-map">
+                            <h3 style="margin-bottom: 1rem;">Boeing 737 - Economy Class</h3>
+                            <div class="aircraft-layout" id="seat-map">
+                                <!-- Seats will be generated by JavaScript -->
+                            </div>
+                            <div class="seat-legend">
+                                <div class="legend-item">
+                                    <div class="seat available"></div>
+                                    <span>Available</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="seat occupied"></div>
+                                    <span>Occupied</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="seat selected"></div>
+                                    <span>Selected</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Payment -->
+                    <div class="form-section" id="step-3">
+                        <h2 class="section-title">Payment Information</h2>
+                        
+                        <!-- Travel Insurance -->
+                        <div style="background: var(--primary-50); padding: 1.5rem; border-radius: 0.75rem; margin-bottom: 2rem;">
+                            <h4 style="color: var(--primary-900); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-shield-alt" style="color: var(--emerald);"></i>
+                                Travel Insurance (Recommended)
+                            </h4>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <div>
+                                    <div style="font-weight: 500; color: var(--primary-900);">Comprehensive Coverage</div>
+                                    <div style="font-size: 0.8rem; color: var(--primary-600);">Trip cancellation, medical, baggage protection</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-weight: 600; color: var(--governor-bay);">$89</div>
+                                    <div style="font-size: 0.8rem; color: var(--primary-600);">per person</div>
+                                </div>
+                            </div>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" id="insurance" style="accent-color: var(--governor-bay);">
+                                <span style="font-size: 0.9rem; color: var(--primary-700);">Yes, protect my trip</span>
+                            </label>
+                        </div>
+                        <div class="payment-methods">
+                            <div class="payment-method selected" onclick="selectPayment(this)">
+                                <i class="fas fa-credit-card"></i>
+                                <div>Credit Card</div>
+                            </div>
+                            <div class="payment-method" onclick="selectPayment(this)">
+                                <i class="fab fa-paypal"></i>
+                                <div>PayPal</div>
+                            </div>
+                            <div class="payment-method" onclick="selectPayment(this)">
+                                <i class="fas fa-university"></i>
+                                <div>Bank Transfer</div>
+                            </div>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Card Number</label>
+                                <input type="text" class="form-input" placeholder="1234 5678 9012 3456" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Expiry Date</label>
+                                <input type="text" class="form-input" placeholder="MM/YY" required>
+                            </div>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">CVV</label>
+                                <input type="text" class="form-input" placeholder="123" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Cardholder Name</label>
+                                <input type="text" class="form-input" placeholder="John Smith" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation -->
+                    <div class="form-navigation">
+                        <button class="nav-btn btn-secondary" id="prev-btn" onclick="previousStep()" style="display: none;">← Previous</button>
+                        <button class="nav-btn btn-primary" id="next-btn" onclick="nextStep()">Next →</button>
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="order-summary">
+                    <h3 class="summary-title">Booking Summary</h3>
+                    
+                    <!-- Security Badges -->
+                    <div style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--primary-200);">
+                        <div style="text-align: center;">
+                            <i class="fas fa-lock" style="color: var(--emerald); font-size: 1.2rem;"></i>
+                            <div style="font-size: 0.7rem; color: var(--primary-600);">SSL Secure</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <i class="fas fa-shield-alt" style="color: var(--emerald); font-size: 1.2rem;"></i>
+                            <div style="font-size: 0.7rem; color: var(--primary-600);">PCI Compliant</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <i class="fas fa-award" style="color: var(--premium-amber); font-size: 1.2rem;"></i>
+                            <div style="font-size: 0.7rem; color: var(--primary-600);">Verified</div>
+                        </div>
+                    </div>
+                    <div class="summary-item">
+                        <span>Flight: JFK → NRT</span>
+                        <span>$1,299</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Seat Selection</span>
+                        <span>$25</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Taxes & Fees</span>
+                        <span>$89</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Insurance (Optional)</span>
+                        <span id="insurance-cost">$0</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Total</span>
+                        <span class="total-price" id="total-price">$1,413</span>
+                    </div>
+                    
+                    <!-- Save Progress -->
+                    <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--primary-200);">
+                        <button onclick="saveProgress()" style="background: var(--primary-100); color: var(--primary-700); border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; width: 100%; margin-bottom: 0.5rem;">
+                            💾 Save & Continue Later
+                        </button>
+                        <button onclick="contactSupport()" style="background: var(--emerald); color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; width: 100%;">
+                            💬 Need Help?
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Confirmation Screen -->
+            <div class="confirmation-screen" id="confirmation">
+                <div class="success-icon">✓</div>
+                <h1 class="confirmation-title">Booking Confirmed!</h1>
+                <p>Your flight has been successfully booked. You'll receive a confirmation email shortly.</p>
+                <div class="booking-reference">
+                    Booking Reference: <strong>TRV-ABC123</strong>
+                </div>
+                <button class="nav-btn btn-primary" onclick="location.href='dashboard.html'">Go to Dashboard</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentStep = 1;
+        const totalSteps = 4;
+
+        function nextStep() {
+            if (currentStep < totalSteps) {
+                if (currentStep === 3) {
+                    // Show confirmation instead of step 4
+                    document.querySelector('.booking-layout').style.display = 'none';
+                    document.getElementById('confirmation').classList.add('active');
+                    return;
+                }
+                
+                currentStep++;
+                updateStep();
+            }
+        }
+
+        function previousStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateStep();
+            }
+        }
+
+        function updateStep() {
+            // Update step indicator
+            document.querySelectorAll('.step').forEach((step, index) => {
+                step.classList.remove('active', 'completed');
+                if (index + 1 < currentStep) {
+                    step.classList.add('completed');
+                } else if (index + 1 === currentStep) {
+                    step.classList.add('active');
+                }
+            });
+
+            // Update form sections
+            document.querySelectorAll('.form-section').forEach((section, index) => {
+                section.classList.remove('active');
+                if (index + 1 === currentStep) {
+                    section.classList.add('active');
+                }
+            });
+
+            // Update navigation buttons
+            document.getElementById('prev-btn').style.display = currentStep > 1 ? 'block' : 'none';
+            document.getElementById('next-btn').textContent = currentStep === 3 ? 'Complete Booking' : 'Next →';
+        }
+
+        function selectPayment(element) {
+            document.querySelectorAll('.payment-method').forEach(method => method.classList.remove('selected'));
+            element.classList.add('selected');
+        }
+
+        // Generate seat map
+        function generateSeatMap() {
+            const seatMap = document.getElementById('seat-map');
+            const rows = 20;
+            const seatsPerRow = ['A', 'B', 'C', '', 'D', 'E', 'F', '', 'G', 'H'];
+            
+            for (let row = 1; row <= rows; row++) {
+                seatsPerRow.forEach((seat, index) => {
+                    if (seat === '') {
+                        const spacer = document.createElement('div');
+                        seatMap.appendChild(spacer);
+                        return;
+                    }
+                    
+                    const seatElement = document.createElement('div');
+                    seatElement.className = 'seat available';
+                    seatElement.textContent = row + seat;
+                    seatElement.onclick = () => selectSeat(seatElement);
+                    
+                    // Randomly make some seats occupied
+                    if (Math.random() < 0.3) {
+                        seatElement.className = 'seat occupied';
+                        seatElement.onclick = null;
+                    }
+                    
+                    seatMap.appendChild(seatElement);
+                });
+            }
+        }
+
+        function selectSeat(seatElement) {
+            if (seatElement.classList.contains('occupied')) return;
+            
+            // Remove previous selection
+            document.querySelectorAll('.seat.selected').forEach(seat => {
+                seat.classList.remove('selected');
+                seat.classList.add('available');
+            });
+            
+            // Select new seat
+            seatElement.classList.remove('available');
+            seatElement.classList.add('selected');
+        }
+
+        // Insurance toggle
+        document.getElementById('insurance').addEventListener('change', function() {
+            const insuranceCost = document.getElementById('insurance-cost');
+            const totalPrice = document.getElementById('total-price');
+            
+            if (this.checked) {
+                insuranceCost.textContent = '$89';
+                totalPrice.textContent = '$1,502';
+            } else {
+                insuranceCost.textContent = '$0';
+                totalPrice.textContent = '$1,413';
+            }
+        });
+        
+        function saveProgress() {
+            localStorage.setItem('bookingProgress', JSON.stringify({
+                step: currentStep,
+                timestamp: new Date().toISOString()
+            }));
+            alert('Booking progress saved! You can continue later.');
+        }
+        
+        function contactSupport() {
+            window.open('contact.html', '_blank');
+        }
+        
+        // Initialize
+        generateSeatMap();
+    </script>
+</body>
+</html>
