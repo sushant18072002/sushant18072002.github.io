@@ -17,7 +17,7 @@
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
     line-height: 1.6;
     color: var(--color-blue-16);
     background: var(--color-grey-99);
@@ -111,12 +111,12 @@ body {
     background: var(--color-grey-99);
     border: 2px solid var(--color-grey-91);
     border-radius: 12px;
-    font-size: 16px;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 700;
     color: var(--color-azure-52);
     cursor: pointer;
     transition: all 0.3s ease;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
 }
 
 .legal-tab:hover,
@@ -138,11 +138,12 @@ body {
 }
 
 .legal-content h1 {
-    font-size: 36px;
+    font-size: 48px;
     font-weight: 700;
     color: var(--color-blue-16);
     margin-bottom: 8px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
+    line-height: 1.2;
 }
 
 .last-updated {
@@ -155,10 +156,10 @@ body {
 .legal-content h2 {
     font-size: 24px;
     font-weight: 600;
-    color: var(--color-azure-61);
+    color: var(--color-blue-16);
     margin-top: 32px;
     margin-bottom: 16px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Poppins', sans-serif;
 }
 
 .legal-content p {
@@ -198,12 +199,14 @@ body {
     font-size: 20px;
     font-weight: 600;
     margin-bottom: 16px;
+    font-family: 'DM Sans', sans-serif;
 }
 
 .footer-section h4 {
     font-size: 16px;
     font-weight: 600;
     margin-bottom: 16px;
+    font-family: 'DM Sans', sans-serif;
 }
 
 .footer-section p {
@@ -225,6 +228,7 @@ body {
     text-decoration: none;
     transition: color 0.3s ease;
     font-weight: 700;
+    font-family: 'DM Sans', sans-serif;
 }
 
 .footer-section ul li a:hover {
