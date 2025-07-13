@@ -41,14 +41,17 @@ TravelAI is a comprehensive AI-powered travel platform that enables users to pla
 | [🔧 Detailed Endpoints](./api/endpoints.md) | Complete API specifications with examples | 130+ | ✅ Complete |
 | [📝 CRUD Operations](./api/CRUD_OPERATIONS.md) | Complete database operations guide | All Types | ✅ Complete |
 | [📄 Page-by-Page Analysis](./api/PAGE_BY_PAGE_ANALYSIS.md) | Missing APIs identified for each page | 50+ New | ✅ Complete |
+| [🏠 Page-Specific APIs](./PAGE_SPECIFIC_APIS.md) | Clear APIs for each page with CRUD | By Page | ✅ Complete |
+| [🔌 Backend API Structure](./BACKEND_API_STRUCTURE.md) | Complete backend organization | Full Stack | ✅ Complete |
 
 ### 🔗 **Database Documentation**
 
 | Document | Description | Collections | Status |
 |----------|-------------|-------------|--------|
-| [🗄️ Database Design](./database/README.md) | MongoDB architecture and design decisions | 25 | ✅ Complete |
+| [🗜️ Database Design](./database/README.md) | MongoDB architecture and design decisions | 25 | ✅ Complete |
 | [📋 Database Schema](./database/schema.md) | Detailed collection schemas with examples | 25 | ✅ Complete |
 | [🔄 Data Operations](./database/DATA_MODIFICATION_OPERATIONS.md) | Data push, modify, and bulk operations | All | ✅ Complete |
+| [🗃️ Detailed Collections](./DATABASE_COLLECTIONS_DETAILED.md) | Complete schema with indexes and CRUD | 25 Collections | ✅ Complete |
 
 ### 🔗 **AI Implementation**
 
@@ -230,6 +233,16 @@ npm run dev:all
 3. Check [Technical KPIs](#technical-kpis)
 4. Review [Business KPIs](#business-kpis)
 5. Understand [Security Measures](./SECURITY_GUIDE.md)
+
+## 🧭 Navigation Help
+
+### **📚 [Complete Navigation Guide](./NAVIGATION_GUIDE.md)**
+Detailed guide to navigate all documentation efficiently with quick links and cross-references.
+
+### **Quick Links by Role:**
+- **Developers:** [Development Guide](./DEVELOPMENT_GUIDE.md) → [Page-Specific APIs](./PAGE_SPECIFIC_APIS.md) → [Database Collections](./DATABASE_COLLECTIONS_DETAILED.md)
+- **Project Managers:** [Project Management](./PROJECT_MANAGEMENT.md) → [Updated Technical Summary](./UPDATED_TECHNICAL_SUMMARY.md)
+- **AI Implementation:** [Affordable AI Alternatives](./ai/AFFORDABLE_AI_ALTERNATIVES.md) → [Page-Specific APIs](./PAGE_SPECIFIC_APIS.md#-ai-itinerary-page)
 
 ## 🔗 External Resources
 
