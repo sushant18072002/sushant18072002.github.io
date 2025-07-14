@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Travel Hub - TravelAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="user-hub-styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav-container">
+        <div class="navbar">
+            <div class="logo">TravelAI</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="flights.html">Flights</a></li>
+                <li><a href="hotels.html">Hotels</a></li>
+                <li><a href="itinerary-master-hub.html">Itineraries</a></li>
+                <li><a href="packages.html">Packages</a></li>
+            </ul>
+            <div class="user-menu">
+                <button class="notification-btn">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge">3</span>
+                </button>
+                <div class="user-avatar active">SJ</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="user-hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="welcome-section">
+                    <h1>Good morning, Sarah! ✨</h1>
+                    <p>Ready for your next adventure? You have 2 upcoming trips.</p>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">🌍</div>
+                        <div class="stat-info">
+                            <span class="stat-number">12</span>
+                            <span class="stat-label">Countries</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-info">
+                            <span class="stat-number">$18.5K</span>
+                            <span class="stat-label">Total Spent</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">✈️</div>
+                        <div class="stat-info">
+                            <span class="stat-number">3</span>
+                            <span class="stat-label">Upcoming</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⭐</div>
+                        <div class="stat-info">
+                            <span class="stat-number">Gold</span>
+                            <span class="stat-label">Status</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quick-actions">
+                    <button class="action-btn primary" onclick="location.href='itinerary-ai.html'">
+                        <span class="btn-icon">🎯</span>
+                        <span>Plan New Trip</span>
+                    </button>
+                    <button class="action-btn secondary" onclick="location.href='flights.html'">
+                        <span class="btn-icon">✈️</span>
+                        <span>Book Flight</span>
+                    </button>
+                    <button class="action-btn secondary" onclick="location.href='hotels.html'">
+                        <span class="btn-icon">🏨</span>
+                        <span>Find Hotel</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <section class="main-content">
+        <div class="container">
+            <div class="content-layout">
+                <!-- Left Content -->
+                <div class="content-main">
+                    <!-- Tab Navigation -->
+                    <div class="tab-navigation">
+                        <button class="tab-btn active" onclick="showTab('overview')">
+                            <i class="fas fa-home"></i>
+                            <span>Overview</span>
+                        </button>
+                        <button class="tab-btn" onclick="showTab('trips')">
+                            <i class="fas fa-suitcase"></i>
+                            <span>My Trips</span>
+                        </button>
+                        <button class="tab-btn" onclick="showTab('profile')">
+                            <i class="fas fa-user"></i>
+                            <span>Profile</span>
+                        </button>
+                        <button class="tab-btn" onclick="showTab('preferences')">
+                            <i class="fas fa-heart"></i>
+                            <span>Preferences</span>
+                        </button>
+                        <button class="tab-btn" onclick="showTab('security')">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Security</span>
+                        </button>
+                    </div>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content">
+                        <!-- Overview Tab -->
+                        <div id="overview-tab" class="tab-panel active">
+                            <!-- Upcoming Trips -->
+                            <div class="section-card">
+                                <div class="section-header">
+                                    <h2>🗓️ Upcoming Trips</h2>
+                                    <button class="view-all-btn">View All</button>
+                                </div>
+                                
+                                <div class="trips-grid">
+                                    <div class="trip-card featured">
+                                        <div class="trip-image">
+                                            <img src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=300&h=180&fit=crop" alt="Tokyo">
+                                            <div class="trip-status confirmed">✅ Confirmed</div>
+                                        </div>
+                                        <div class="trip-content">
+                                            <h3>Japan Adventure</h3>
+                                            <div class="trip-details">
+                                                <span>📅 Mar 15-22, 2024</span>
+                                                <span>✈️ United Airlines</span>
+                                                <span>💰 $2,400</span>
+                                            </div>
+                                            <div class="trip-actions">
+                                                <button class="btn-primary">View Itinerary</button>
+                                                <button class="btn-secondary">Manage</button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="trip-card">
+                                        <div class="trip-image">
+                                            <img src="https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=300&h=180&fit=crop" alt="Europe">
+                                            <div class="trip-status pending">⏳ Payment Pending</div>
+                                        </div>
+                                        <div class="trip-content">
+                                            <h3>Europe City Hop</h3>
+                                            <div class="trip-details">
+                                                <span>📅 Apr 10-17, 2024</span>
+                                                <span>✈️ Lufthansa</span>
+                                                <span>💰 $2,850</span>
+                                            </div>
+                                            <div class="trip-actions">
+                                                <button class="btn-primary">Complete Payment</button>
+                                                <button class="btn-secondary">Modify</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Recent Activity -->
+                            <div class="section-card">
+                                <div class="section-header">
+                                    <h2>📈 Recent Activity</h2>
+                                </div>
+                                
+                                <div class="activity-timeline">
+                                    <div class="activity-item">
+                                        <div class="activity-icon">✅</div>
+                                        <div class="activity-content">
+                                            <h4>Japan trip confirmed</h4>
+                                            <p>Your booking for Tokyo adventure has been confirmed</p>
+                                            <span class="activity-time">2 hours ago</span>
+                                        </div>
+                                    </div>
+                                    <div class="activity-item">
+                                        <div class="activity-icon">💰</div>
+                                        <div class="activity-content">
+                                            <h4>Price alert triggered</h4>
+                                            <p>NYC → Paris flights dropped to $599 (-$50)</p>
+                                            <span class="activity-time">1 day ago</span>
+                                        </div>
+                                    </div>
+                                    <div class="activity-item">
+                                        <div class="activity-icon">⭐</div>
+                                        <div class="activity-content">
+                                            <h4>Review submitted</h4>
+                                            <p>You reviewed Bali Romance Getaway (5 stars)</p>
+                                            <span class="activity-time">3 days ago</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- My Trips Tab -->
+                        <div id="trips-tab" class="tab-panel">
+                            <div class="trips-filter">
+                                <button class="filter-btn active" onclick="filterTrips('all')">All Trips</button>
+                                <button class="filter-btn" onclick="filterTrips('upcoming')">Upcoming</button>
+                                <button class="filter-btn" onclick="filterTrips('completed')">Completed</button>
+                                <button class="filter-btn" onclick="filterTrips('cancelled')">Cancelled</button>
+                            </div>
+
+                            <div class="trips-list">
+                                <div class="trip-item upcoming">
+                                    <div class="trip-summary">
+                                        <img src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=80&h=80&fit=crop" alt="Tokyo">
+                                        <div class="trip-info">
+                                            <h3>Japan Adventure</h3>
+                                            <p>Tokyo, Kyoto, Osaka</p>
+                                            <div class="trip-meta">
+                                                <span>📅 Mar 15-22, 2024</span>
+                                                <span>👥 2 travelers</span>
+                                                <span>💰 $2,400</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="trip-status-badge confirmed">Confirmed</div>
+                                    <div class="trip-actions-menu">
+                                        <button class="menu-btn">⋮</button>
+                                        <div class="menu-dropdown">
+                                            <a href="#">View Details</a>
+                                            <a href="#">Download Vouchers</a>
+                                            <a href="#">Contact Support</a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="trip-item upcoming">
+                                    <div class="trip-summary">
+                                        <img src="https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=80&h=80&fit=crop" alt="Europe">
+                                        <div class="trip-info">
+                                            <h3>Europe City Hop</h3>
+                                            <p>Paris, Rome, Barcelona</p>
+                                            <div class="trip-meta">
+                                                <span>📅 Apr 10-17, 2024</span>
+                                                <span>👥 2 travelers</span>
+                                                <span>💰 $2,850</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="trip-status-badge pending">Payment Pending</div>
+                                    <div class="trip-actions-menu">
+                                        <button class="menu-btn">⋮</button>
+                                        <div class="menu-dropdown">
+                                            <a href="#">Complete Payment</a>
+                                            <a href="#">Modify Booking</a>
+                                            <a href="#">Cancel</a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="trip-item completed">
+                                    <div class="trip-summary">
+                                        <img src="https://images.unsplash.com/photo-1537953773345-d172ccf13cf1?w=80&h=80&fit=crop" alt="Bali">
+                                        <div class="trip-info">
+                                            <h3>Bali Romance Getaway</h3>
+                                            <p>Ubud, Seminyak</p>
+                                            <div class="trip-meta">
+                                                <span>📅 Jan 5-12, 2024</span>
+                                                <span>👥 2 travelers</span>
+                                                <span>💰 $1,800</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="trip-status-badge completed">Completed</div>
+                                    <div class="trip-actions-menu">
+                                        <button class="menu-btn">⋮</button>
+                                        <div class="menu-dropdown">
+                                            <a href="#">Write Review</a>
+                                            <a href="#">Book Again</a>
+                                            <a href="#">Share Experience</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Profile Tab -->
+                        <div id="profile-tab" class="tab-panel">
+                            <div class="profile-section">
+                                <div class="profile-header">
+                                    <div class="profile-avatar-large">
+                                        <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=120&h=120&fit=crop&crop=face" alt="Sarah Johnson">
+                                        <button class="avatar-edit">📷</button>
+                                    </div>
+                                    <div class="profile-info">
+                                        <h2>Sarah Johnson</h2>
+                                        <p>sarah.johnson@email.com</p>
+                                        <div class="profile-badges">
+                                            <span class="badge gold">🏆 Gold Member</span>
+                                            <span class="badge verified">✅ Verified</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="profile-form">
+                                    <div class="form-section">
+                                        <h3>Personal Information</h3>
+                                        <div class="form-grid">
+                                            <div class="form-field">
+                                                <label>First Name</label>
+                                                <input type="text" value="Sarah">
+                                            </div>
+                                            <div class="form-field">
+                                                <label>Last Name</label>
+                                                <input type="text" value="Johnson">
+                                            </div>
+                                            <div class="form-field">
+                                                <label>Email</label>
+                                                <input type="email" value="sarah.johnson@email.com">
+                                            </div>
+                                            <div class="form-field">
+                                                <label>Phone</label>
+                                                <input type="tel" value="+1 555 123 4567">
+                                            </div>
+                                            <div class="form-field">
+                                                <label>Date of Birth</label>
+                                                <input type="date" value="1990-05-15">
+                                            </div>
+                                            <div class="form-field">
+                                                <label>Nationality</label>
+                                                <select>
+                                                    <option>United States</option>
+                                                    <option>Canada</option>
+                                                    <option>United Kingdom</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-section">
+                                        <h3>Emergency Contact</h3>
+                                        <div class="form-grid">
+                                            <div class="form-field">
+                                                <label>Contact Name</label>
+                                                <input type="text" placeholder="Emergency contact name">
+                                            </div>
+                                            <div class="form-field">
+                                                <label>Contact Phone</label>
+                                                <input type="tel" placeholder="Emergency contact phone">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button class="save-btn">Save Changes</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Preferences Tab -->
+                        <div id="preferences-tab" class="tab-panel">
+                            <div class="preferences-section">
+                                <div class="form-section">
+                                    <h3>Travel Preferences</h3>
+                                    <div class="preference-grid">
+                                        <div class="preference-card selected">
+                                            <div class="preference-icon">🏖️</div>
+                                            <h4>Beach & Relaxation</h4>
+                                            <p>Sunny beaches and peaceful getaways</p>
+                                        </div>
+                                        <div class="preference-card">
+                                            <div class="preference-icon">🏔️</div>
+                                            <h4>Adventure & Outdoors</h4>
+                                            <p>Hiking, climbing, outdoor activities</p>
+                                        </div>
+                                        <div class="preference-card selected">
+                                            <div class="preference-icon">🏛️</div>
+                                            <h4>Culture & History</h4>
+                                            <p>Museums, historical sites, local culture</p>
+                                        </div>
+                                        <div class="preference-card">
+                                            <div class="preference-icon">🍽️</div>
+                                            <h4>Food & Culinary</h4>
+                                            <p>Local cuisine and food experiences</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-section">
+                                    <h3>Booking Preferences</h3>
+                                    <div class="form-grid">
+                                        <div class="form-field">
+                                            <label>Typical Budget</label>
+                                            <select>
+                                                <option>$500 - $1,000</option>
+                                                <option>$1,000 - $2,500</option>
+                                                <option selected>$2,500 - $5,000</option>
+                                                <option>$5,000+</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-field">
+                                            <label>Accommodation Type</label>
+                                            <select>
+                                                <option>Budget Hotels</option>
+                                                <option selected>Mid-range Hotels</option>
+                                                <option>Luxury Hotels</option>
+                                                <option>Vacation Rentals</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-field">
+                                            <label>Preferred Currency</label>
+                                            <select>
+                                                <option selected>USD ($)</option>
+                                                <option>EUR (€)</option>
+                                                <option>GBP (£)</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-field">
+                                            <label>Language</label>
+                                            <select>
+                                                <option selected>English</option>
+                                                <option>Spanish</option>
+                                                <option>French</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-section">
+                                    <h3>Notifications</h3>
+                                    <div class="notification-settings">
+                                        <div class="notification-item">
+                                            <div class="notification-info">
+                                                <h4>Email Notifications</h4>
+                                                <p>Booking confirmations and updates</p>
+                                            </div>
+                                            <label class="toggle-switch">
+                                                <input type="checkbox" checked>
+                                                <span class="toggle-slider"></span>
+                                            </label>
+                                        </div>
+                                        <div class="notification-item">
+                                            <div class="notification-info">
+                                                <h4>Price Alerts</h4>
+                                                <p>Get notified when prices drop</p>
+                                            </div>
+                                            <label class="toggle-switch">
+                                                <input type="checkbox" checked>
+                                                <span class="toggle-slider"></span>
+                                            </label>
+                                        </div>
+                                        <div class="notification-item">
+                                            <div class="notification-info">
+                                                <h4>Marketing Emails</h4>
+                                                <p>Travel deals and promotions</p>
+                                            </div>
+                                            <label class="toggle-switch">
+                                                <input type="checkbox">
+                                                <span class="toggle-slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button class="save-btn">Save Preferences</button>
+                            </div>
+                        </div>
+
+                        <!-- Security Tab -->
+                        <div id="security-tab" class="tab-panel">
+                            <div class="security-section">
+                                <div class="form-section">
+                                    <h3>Change Password</h3>
+                                    <div class="form-grid">
+                                        <div class="form-field">
+                                            <label>Current Password</label>
+                                            <input type="password" placeholder="Enter current password">
+                                        </div>
+                                        <div class="form-field">
+                                            <label>New Password</label>
+                                            <input type="password" placeholder="Enter new password">
+                                        </div>
+                                        <div class="form-field">
+                                            <label>Confirm New Password</label>
+                                            <input type="password" placeholder="Confirm new password">
+                                        </div>
+                                    </div>
+                                    <button class="save-btn">Update Password</button>
+                                </div>
+
+                                <div class="form-section">
+                                    <h3>Two-Factor Authentication</h3>
+                                    <div class="security-feature enabled">
+                                        <div class="feature-icon">🛡️</div>
+                                        <div class="feature-info">
+                                            <h4>Two-factor authentication is enabled</h4>
+                                            <p>Your account is protected with 2FA</p>
+                                        </div>
+                                        <button class="btn-secondary">Disable</button>
+                                    </div>
+                                </div>
+
+                                <div class="form-section">
+                                    <h3>Login Activity</h3>
+                                    <div class="login-activity">
+                                        <div class="activity-item">
+                                            <div class="activity-details">
+                                                <h4>Current Session</h4>
+                                                <p>Chrome on Windows • New York, US</p>
+                                                <span class="activity-time">Active now</span>
+                                            </div>
+                                            <span class="activity-status current">Current</span>
+                                        </div>
+                                        <div class="activity-item">
+                                            <div class="activity-details">
+                                                <h4>Previous Session</h4>
+                                                <p>Safari on iPhone • New York, US</p>
+                                                <span class="activity-time">2 hours ago</span>
+                                            </div>
+                                            <button class="btn-text">Revoke</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Sidebar -->
+                <div class="content-sidebar">
+                    <!-- Weather Widget -->
+                    <div class="widget-card">
+                        <div class="widget-header">
+                            <h3>🌤️ Next Destination</h3>
+                        </div>
+                        <div class="weather-widget">
+                            <div class="weather-location">
+                                <h4>Tokyo, Japan</h4>
+                                <p>Your next trip in 45 days</p>
+                            </div>
+                            <div class="weather-info">
+                                <div class="weather-temp">22°C</div>
+                                <div class="weather-desc">☀️ Sunny</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trip Planning Progress -->
+                    <div class="widget-card">
+                        <div class="widget-header">
+                            <h3>🎯 Planning Progress</h3>
+                        </div>
+                        <div class="progress-items">
+                            <div class="progress-item">
+                                <div class="progress-info">
+                                    <h4>Japan Adventure</h4>
+                                    <p>Ready to go!</p>
+                                </div>
+                                <div class="progress-circle complete">
+                                    <span>100%</span>
+                                </div>
+                            </div>
+                            <div class="progress-item">
+                                <div class="progress-info">
+                                    <h4>Europe City Hop</h4>
+                                    <p>Payment pending</p>
+                                </div>
+                                <div class="progress-circle">
+                                    <span>75%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recommendations -->
+                    <div class="widget-card">
+                        <div class="widget-header">
+                            <h3>💡 Recommendations</h3>
+                        </div>
+                        <div class="recommendation-items">
+                            <div class="recommendation-item">
+                                <div class="rec-image">🏔️</div>
+                                <div class="rec-content">
+                                    <h4>Iceland Northern Lights</h4>
+                                    <p>Perfect for Feb-Mar</p>
+                                    <span class="rec-price">From $2,299</span>
+                                </div>
+                            </div>
+                            <div class="recommendation-item">
+                                <div class="rec-image">🏛️</div>
+                                <div class="rec-content">
+                                    <h4>Morocco Cultural Journey</h4>
+                                    <p>Great weather in March</p>
+                                    <span class="rec-price">From $1,599</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="widget-btn">Explore All</button>
+                    </div>
+
+                    <!-- Loyalty Status -->
+                    <div class="widget-card">
+                        <div class="widget-header">
+                            <h3>🏆 Loyalty Status</h3>
+                        </div>
+                        <div class="loyalty-status">
+                            <div class="loyalty-tier">
+                                <span class="tier-badge gold">Gold Member</span>
+                                <p>1,250 points to Platinum</p>
+                            </div>
+                            <div class="loyalty-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 75%"></div>
+                                </div>
+                                <div class="progress-labels">
+                                    <span>2,750</span>
+                                    <span>4,000</span>
+                                </div>
+                            </div>
+                            <div class="loyalty-benefits">
+                                <div class="benefit">✅ Priority support</div>
+                                <div class="benefit">✅ Free upgrades</div>
+                                <div class="benefit">✅ Exclusive deals</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="user-hub-script.js"></script>
+</body>
+</html>
