@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const hotelController = require('../controllers/hotelController');
 const { auth, optionalAuth } = require('../middleware/auth');
-const { validateHotelSearch, validateReview } = require('../middleware/validation');
+const { reviewValidation } = require('../middleware/validation');
 
 // @desc    Search hotels
 // @route   GET /api/v1/hotels/search
@@ -27,7 +27,7 @@ router.get('/:id/rooms', hotelController.getHotelRooms);
 // @desc    Check availability
 // @route   GET /api/v1/hotels/:id/availability
 // @access  Public
-router.get('/:id/availability', hotelController.checkAvailability);
+router.get('/:id/availability', hotelController.getAvailability);
 
 // @desc    Get hotel reviews
 // @route   GET /api/v1/hotels/:id/reviews
@@ -37,7 +37,7 @@ router.get('/:id/reviews', hotelController.getHotelReviews);
 // @desc    Add hotel review
 // @route   POST /api/v1/hotels/:id/reviews
 // @access  Private
-router.post('/:id/reviews', auth, validateReview, hotelController.addHotelReview);
+router.post('/:id/reviews', auth, reviewValidation, hotelController.addHotelReview);
 
 // @desc    Get hotel amenities
 // @route   GET /api/v1/hotels/:id/amenities

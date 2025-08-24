@@ -1,15 +1,12 @@
-// Core Models
 const User = require('./User');
 const Flight = require('./Flight');
-const Hotel = require('./Hotel').default;
+const Hotel = require('./Hotel');
 const Booking = require('./Booking');
 const Itinerary = require('./Itinerary');
 const Review = require('./Review');
 const Destination = require('./Destination');
 const Package = require('./Package');
 const BlogPost = require('./BlogPost');
-
-// New Models
 const Session = require('./Session');
 const Notification = require('./Notification');
 const SupportTicket = require('./SupportTicket');
@@ -26,9 +23,10 @@ const Country = require('./Country');
 const City = require('./City');
 const Currency = require('./Currency');
 const AITemplate = require('./AITemplate');
+const Tag = require('./Tag');
+const Payment = require('./Payment');
 
 module.exports = {
-  // Core Models
   User,
   Flight,
   Hotel,
@@ -38,8 +36,6 @@ module.exports = {
   Destination,
   Package,
   BlogPost,
-  
-  // New Models
   Session,
   Notification,
   SupportTicket,
@@ -55,5 +51,7 @@ module.exports = {
   Country,
   City,
   Currency,
-  AITemplate
+  AITemplate,
+  Tag,
+  Payment
 };

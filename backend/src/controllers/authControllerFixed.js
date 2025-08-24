@@ -20,25 +20,35 @@ const register = async (req, res) => {
     }
 
     const verificationToken = crypto.randomBytes(32).toString('hex');
+    console.log('🔑 Generated verification token:', verificationToken);
+    
     const user = await User.create({
       email,
       password,
       profile: { firstName, lastName, phone },
       verification: {
-        email: {
-          token: verificationToken,
-          expires: new Date(Date.now() + 24 * 60 * 60 * 1000)
-        }
+        token: verificationToken,
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000)
       }
     });
+
+    console.log('✅ User created with ID:', user._id);
+    console.log('🔍 Verification data saved:', JSON.stringify(user.verification, null, 2));
 
     await emailService.sendVerificationEmail(user.email, verificationToken);
     
     return success(res, {
       message: 'Registration successful. Please verify your email.',
-      user: user.toSafeObject()
+      verificationToken: verificationToken,
+      user: {
+        id: user._id,
+        email: user.email,
+        profile: user.profile,
+        status: user.status
+      }
     }, 'User registered successfully', 201);
   } catch (err) {
+    console.error('❌ Registration error:', err);
     return error(res, err.message, 500);
   }
 };
@@ -185,25 +195,38 @@ const resetPassword = async (req, res) => {
 const verifyEmail = async (req, res) => {
   try {
     const { token } = req.query;
+    console.log('🔍 Verifying token:', token);
     
     const user = await User.findOne({
-      'verification.email.token': token,
-      'verification.email.expires': { $gt: new Date() },
+      'verification.token': token,
+      'verification.expires': { $gt: new Date() },
       active: true
     });
 
+    console.log('👤 User found:', user ? 'YES' : 'NO');
+    
     if (!user) {
+      // Debug: Check if token exists but expired
+      const expiredUser = await User.findOne({ 'verification.token': token });
+      if (expiredUser) {
+        console.log('⚠️ Token expired. Expires:', expiredUser.verification.expires, 'Current:', new Date());
+      } else {
+        console.log('❌ Token not found in database');
+      }
       return error(res, 'Invalid or expired verification token', 400);
     }
 
+    console.log('✅ Verifying user:', user.email);
     user.status = 'active';
     user.emailVerified = true;
     user.emailVerifiedAt = new Date();
-    user.verification.email = undefined;
+    user.verification = undefined;
     await user.save();
     
+    console.log('✨ Email verified successfully for:', user.email);
     return success(res, null, 'Email verified successfully');
   } catch (err) {
+    console.error('❌ Verification error:', err);
     return error(res, err.message, 500);
   }
 };

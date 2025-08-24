@@ -191,6 +191,126 @@ const getSharedItinerary = async (req, res) => {
   }
 };
 
+// NEW: Featured itineraries for ItineraryHubPage
+const getFeaturedItineraries = async (req, res) => {
+  try {
+    const { limit = 6 } = req.query;
+    
+    const itineraries = await Itinerary.find({
+      'sharing.isPublic': true,
+      status: 'published'
+    })
+    .populate('user', 'profile.firstName profile.lastName')
+    .sort({ 'stats.likes': -1, 'stats.views': -1 })
+    .limit(parseInt(limit));
+
+    // Transform data to match frontend expectations
+    const transformedItineraries = itineraries.map(itinerary => ({
+      id: itinerary._id,
+      title: itinerary.title,
+      description: itinerary.description,
+      image: itinerary.days?.[0]?.activities?.[0]?.images?.[0] || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=400&h=300&fit=crop',
+      price: itinerary.budget?.total || 0,
+      rating: 4.8, // Default rating
+      reviews: itinerary.stats?.views || 0,
+      duration: `${itinerary.duration?.days || 7} Days`,
+      tags: itinerary.preferences?.interests || ['adventure'],
+      badges: [itinerary.preferences?.travelStyle || 'Adventure']
+    }));
+
+    res.json({ success: true, data: { itineraries: transformedItineraries } });
+  } catch (error) {
+    res.status(500).json({ success: false, error: { message: error.message } });
+  }
+};
+
+// NEW: Search public itineraries
+const searchItineraries = async (req, res) => {
+  try {
+    const { q, destination, category, minPrice, maxPrice, duration } = req.query;
+    
+    const query = { 'sharing.isPublic': true, status: 'published' };
+    
+    if (q) {
+      query.$or = [
+        { title: { $regex: q, $options: 'i' } },
+        { description: { $regex: q, $options: 'i' } }
+      ];
+    }
+    
+    if (destination) {
+      query['destination.cities'] = { $regex: destination, $options: 'i' };
+    }
+    
+    if (category) {
+      query['preferences.travelStyle'] = category;
+    }
+    
+    if (minPrice || maxPrice) {
+      query['budget.total'] = {};
+      if (minPrice) query['budget.total'].$gte = parseFloat(minPrice);
+      if (maxPrice) query['budget.total'].$lte = parseFloat(maxPrice);
+    }
+    
+    if (duration) {
+      query['duration.days'] = parseInt(duration);
+    }
+
+    const itineraries = await Itinerary.find(query)
+      .populate('user', 'profile.firstName profile.lastName')
+      .sort({ 'stats.likes': -1 })
+      .limit(20);
+
+    // Transform data
+    const transformedItineraries = itineraries.map(itinerary => ({
+      id: itinerary._id,
+      title: itinerary.title,
+      description: itinerary.description,
+      image: itinerary.days?.[0]?.activities?.[0]?.images?.[0] || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=400&h=300&fit=crop',
+      price: itinerary.budget?.total || 0,
+      rating: 4.8,
+      reviews: itinerary.stats?.views || 0,
+      duration: `${itinerary.duration?.days || 7} Days`,
+      tags: itinerary.preferences?.interests || ['adventure'],
+      badges: [itinerary.preferences?.travelStyle || 'Adventure']
+    }));
+
+    res.json({ success: true, data: { itineraries: transformedItineraries } });
+  } catch (error) {
+    res.status(500).json({ success: false, error: { message: error.message } });
+  }
+};
+
+// NEW: Get public itinerary details
+const getPublicItineraryDetails = async (req, res) => {
+  try {
+    const itinerary = await Itinerary.findById(req.params.id)
+      .populate('user', 'profile.firstName profile.lastName');
+    
+    if (!itinerary || !itinerary.sharing?.isPublic) {
+      return res.status(404).json({ success: false, error: { message: 'Itinerary not found' } });
+    }
+
+    // Transform data
+    const transformedItinerary = {
+      id: itinerary._id,
+      title: itinerary.title,
+      description: itinerary.description,
+      image: itinerary.days?.[0]?.activities?.[0]?.images?.[0] || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=400&h=300&fit=crop',
+      price: itinerary.budget?.total || 0,
+      rating: 4.8,
+      reviews: itinerary.stats?.views || 0,
+      duration: `${itinerary.duration?.days || 7} Days`,
+      tags: itinerary.preferences?.interests || ['adventure'],
+      badges: [itinerary.preferences?.travelStyle || 'Adventure']
+    };
+
+    res.json({ success: true, data: { itinerary: transformedItinerary } });
+  } catch (error) {
+    res.status(500).json({ success: false, error: { message: error.message } });
+  }
+};
+
 module.exports = {
   createItinerary,
   getUserItineraries,
@@ -199,5 +319,8 @@ module.exports = {
   deleteItinerary,
   getPublicItineraries,
   shareItinerary,
-  getSharedItinerary
+  getSharedItinerary,
+  getFeaturedItineraries,
+  searchItineraries,
+  getPublicItineraryDetails
 };

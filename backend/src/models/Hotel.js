@@ -1,15 +1,15 @@
-import { Schema, model } from 'mongoose';
+const mongoose = require('mongoose');
 
-const hotelSchema = new Schema({
+const hotelSchema = new mongoose.Schema({
   name: { type: String, required: true, index: true },
   description: { type: String, required: true },
   shortDescription: { type: String, maxlength: 300 },
   starRating: { type: Number, min: 1, max: 5, required: true },
   
   location: {
-    destination: { type: Schema.Types.ObjectId, ref: 'Destination' },
-    city: { type: Schema.Types.ObjectId, ref: 'City', required: true },
-    country: { type: Schema.Types.ObjectId, ref: 'Country', required: true },
+    destination: { type: mongoose.Schema.Types.ObjectId, ref: 'Destination' },
+    city: { type: mongoose.Schema.Types.ObjectId, ref: 'City', required: true },
+    country: { type: mongoose.Schema.Types.ObjectId, ref: 'Country', required: true },
     address: {
       street: { type: String, required: true },
       area: String,
@@ -156,8 +156,8 @@ const hotelSchema = new Schema({
     keywords: [String]
   },
   
-  createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
-  updatedBy: { type: Schema.Types.ObjectId, ref: 'User' }
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 }, { timestamps: true });
 
 // Generate slug from name
@@ -186,4 +186,4 @@ hotelSchema.index({
   tags: 'text'
 });
 
-export default model('Hotel', hotelSchema);
+module.exports = mongoose.model('Hotel', hotelSchema);

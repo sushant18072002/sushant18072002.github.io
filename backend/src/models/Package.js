@@ -14,6 +14,7 @@ const packageSchema = new mongoose.Schema({
   },
   includes: [String],
   excludes: [String],
+  highlights: [String], // Added for frontend compatibility
   itinerary: {
     overview: String,
     days: [{
@@ -23,7 +24,12 @@ const packageSchema = new mongoose.Schema({
       activities: [String]
     }]
   },
-  images: [String],
+  images: [{
+    url: String,
+    alt: String,
+    isPrimary: { type: Boolean, default: false },
+    order: { type: Number, default: 0 }
+  }],
   category: String,
   rating: {
     overall: { type: Number, default: 0 },
@@ -32,7 +38,21 @@ const packageSchema = new mongoose.Schema({
   availability: {
     startDates: [Date],
     maxBookings: Number,
-    currentBookings: { type: Number, default: 0 }
+    currentBookings: { type: Number, default: 0 },
+    calendar: [{
+      date: Date,
+      available: { type: Boolean, default: true },
+      price: Number,
+      maxBookings: Number,
+      currentBookings: { type: Number, default: 0 }
+    }],
+    seasonalPricing: [{
+      name: String,
+      startDate: Date,
+      endDate: Date,
+      priceMultiplier: { type: Number, default: 1 },
+      available: { type: Boolean, default: true }
+    }]
   },
   featured: { type: Boolean, default: false },
   status: { type: String, enum: ['active', 'inactive'], default: 'active' }

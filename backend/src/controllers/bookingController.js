@@ -201,7 +201,7 @@ const cancelBooking = async (req, res) => {
 
     // Process refund if payment was completed
     if (booking.payment.status === 'completed') {
-      await processRefund(booking);
+      await processRefundHelper(booking);
     }
 
     await auditService.log({
@@ -393,7 +393,7 @@ const validateBookingData = async (bookingData) => {
 };
 
 // Helper function to process refund
-const processRefund = async (booking) => {
+const processRefundHelper = async (booking) => {
   try {
     // Here you would integrate with payment gateway for refund
     // For now, we'll just update the booking status
@@ -406,6 +406,187 @@ const processRefund = async (booking) => {
   }
 };
 
+const createFlightBooking = async (req, res) => {
+  try {
+    const bookingData = { ...req.body, type: 'flight', user: req.user._id };
+    const booking = await createBooking({ body: bookingData, user: req.user }, res);
+  } catch (error) {
+    res.status(500).json({ success: false, error: { message: error.message } });
+  }
+};
+
+const createHotelBooking = async (req, res) => {
+  try {
+    const bookingData = { ...req.body, type: 'hotel', user: req.user._id };
+    const booking = await createBooking({ body: bookingData, user: req.user }, res);
+  } catch (error) {
+    res.status(500).json({ success: false, error: { message: error.message } });
+  }
+};
+
+const createPackageBooking = async (req, res) => {
+  try {
+    const bookingData = { ...req.body, type: 'package', user: req.user._id };
+    const booking = await createBooking({ body: bookingData, user: req.user }, res);
+  } catch (error) {
+    res.status(500).json({ success: false, error: { message: error.message } });
+  }
+};
+
+const getBookingInvoice = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id)
+      .populate('user', 'email profile');
+
+    if (!booking || booking.user._id.toString() !== req.user._id.toString()) {
+      return res.status(404).json({ success: false, error: { message: 'Booking not found' } });
+    }
+
+    const invoice = {
+      bookingReference: booking.bookingReference,
+      date: booking.createdAt,
+      customer: booking.user,
+      items: [{
+        description: `${booking.type.charAt(0).toUpperCase() + booking.type.slice(1)} Booking`,
+        amount: booking.pricing.baseAmount,
+        taxes: booking.pricing.taxes,
+        total: booking.pricing.totalAmount
+      }],
+      total: booking.pricing.totalAmount,
+      currency: booking.pricing.currency
+    };
+
+    res.json({ success: true, data: { invoice } });
+  } catch (error) {
+    res.status(500).json({ success: false, error: { message: error.message } });
+  }
+};
+
+const modifyBooking = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+
+    if (!booking || booking.user.toString() !== req.user._id.toString()) {
+      return res.status(404).json({ success: false, error: { message: 'Booking not found' } });
+    }
+
+    if (!['confirmed', 'pending'].includes(booking.status)) {
+      return res.status(400).json({ success: false, error: { message: 'Booking cannot be modified' } });
+    }
+
+    const updatedBooking = await Booking.findByIdAndUpdate(
+      req.params.id,
+      { ...req.body, status: 'pending', updatedBy: req.user._id },
+      { new: true }
+    );
+
+    res.json({ success: true, data: { booking: updatedBooking } });
+  } catch (error) {
+    res.status(500).json({ success: false, error: { message: error.message } });
+  }
+};
+
+const getBookingHistory = async (req, res) => {
+  try {
+    const { page = 1, limit = 20 } = req.query;
+    
+    const bookings = await Booking.find({
+      user: req.user._id,
+      status: { $in: ['completed', 'cancelled'] }
+    })
+    .sort({ createdAt: -1 })
+    .limit(limit * 1)
+    .skip((page - 1) * limit);
+
+    const total = await Booking.countDocuments({
+      user: req.user._id,
+      status: { $in: ['completed', 'cancelled'] }
+    });
+
+    res.json({
+      success: true,
+      data: {
+        bookings,
+        pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / limit) }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: { message: error.message } });
+  }
+};
+
+const getUpcomingBookings = async (req, res) => {
+  try {
+    const bookings = await Booking.find({
+      user: req.user._id,
+      status: { $in: ['confirmed', 'pending'] },
+      $or: [
+        { 'flight.route.departure.scheduledTime': { $gte: new Date() } },
+        { 'hotel.checkIn': { $gte: new Date() } },
+        { 'package.startDate': { $gte: new Date() } }
+      ]
+    })
+    .sort({ createdAt: 1 })
+    .limit(10);
+
+    res.json({ success: true, data: { bookings } });
+  } catch (error) {
+    res.status(500).json({ success: false, error: { message: error.message } });
+  }
+};
+
+const addBookingReview = async (req, res) => {
+  try {
+    const { Review } = require('../models');
+    const booking = await Booking.findById(req.params.id);
+
+    if (!booking || booking.user.toString() !== req.user._id.toString()) {
+      return res.status(404).json({ success: false, error: { message: 'Booking not found' } });
+    }
+
+    if (booking.status !== 'completed') {
+      return res.status(400).json({ success: false, error: { message: 'Can only review completed bookings' } });
+    }
+
+    const review = new Review({
+      user: req.user._id,
+      entityType: 'booking',
+      entityId: req.params.id,
+      ...req.body,
+      verified: true
+    });
+
+    await review.save();
+    res.status(201).json({ success: true, data: { review } });
+  } catch (error) {
+    res.status(500).json({ success: false, error: { message: error.message } });
+  }
+};
+
+const processRefund = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+
+    if (!booking) {
+      return res.status(404).json({ success: false, error: { message: 'Booking not found' } });
+    }
+
+    if (booking.payment.status !== 'completed') {
+      return res.status(400).json({ success: false, error: { message: 'No payment to refund' } });
+    }
+
+    // Process refund (integrate with payment gateway)
+    booking.payment.status = 'refunded';
+    booking.payment.refundDate = new Date();
+    booking.status = 'refunded';
+    await booking.save();
+
+    res.json({ success: true, data: { message: 'Refund processed successfully', booking } });
+  } catch (error) {
+    res.status(500).json({ success: false, error: { message: error.message } });
+  }
+};
+
 module.exports = {
   getUserBookings,
   getBookingById,
@@ -413,5 +594,14 @@ module.exports = {
   updateBooking,
   cancelBooking,
   confirmBooking,
-  processPayment
+  processPayment,
+  createFlightBooking,
+  createHotelBooking,
+  createPackageBooking,
+  getBookingInvoice,
+  modifyBooking,
+  getBookingHistory,
+  getUpcomingBookings,
+  addBookingReview,
+  processRefund
 };

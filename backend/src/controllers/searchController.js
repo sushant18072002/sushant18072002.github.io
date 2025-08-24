@@ -457,9 +457,57 @@ const getPopularSearches = async (req, res) => {
   }
 };
 
+const getSearchHistory = async (req, res) => {
+  try {
+    const { page = 1, limit = 20 } = req.query;
+    
+    const searchHistory = await SearchLog.find({ user: req.user._id })
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
+      .select('query searchType createdAt resultsCount');
+
+    const total = await SearchLog.countDocuments({ user: req.user._id });
+
+    res.json({
+      success: true,
+      data: {
+        history: searchHistory,
+        pagination: {
+          current: parseInt(page),
+          pages: Math.ceil(total / limit),
+          total
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: { message: error.message } });
+  }
+};
+
+const deleteSearchHistory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    if (id) {
+      // Delete specific search
+      await SearchLog.findOneAndDelete({ _id: id, user: req.user._id });
+      res.json({ success: true, data: { message: 'Search deleted from history' } });
+    } else {
+      // Delete all search history
+      await SearchLog.deleteMany({ user: req.user._id });
+      res.json({ success: true, data: { message: 'All search history deleted' } });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, error: { message: error.message } });
+  }
+};
+
 module.exports = {
   globalSearch,
   getSearchSuggestions,
   advancedSearch,
-  getPopularSearches
+  getPopularSearches,
+  getSearchHistory,
+  deleteSearchHistory
 };

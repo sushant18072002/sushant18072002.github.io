@@ -1,1 +1,52 @@
-const nodemailer = require('nodemailer');\nconst { EmailTemplate } = require('../models');\n\nclass EmailService {\n  constructor() {\n    this.transporter = nodemailer.createTransporter({\n      host: process.env.SMTP_HOST,\n      port: process.env.SMTP_PORT,\n      secure: process.env.SMTP_SECURE === 'true',\n      auth: {\n        user: process.env.SMTP_USER,\n        pass: process.env.SMTP_PASS\n      }\n    });\n  }\n\n  async sendEmail(to, subject, html, text) {\n    try {\n      const mailOptions = {\n        from: process.env.FROM_EMAIL,\n        to,\n        subject,\n        html,\n        text\n      };\n\n      const result = await this.transporter.sendMail(mailOptions);\n      return { success: true, messageId: result.messageId };\n    } catch (error) {\n      console.error('Email send error:', error);\n      return { success: false, error: error.message };\n    }\n  }\n\n  async sendTemplateEmail(to, templateType, variables = {}) {\n    try {\n      const template = await EmailTemplate.findOne({ type: templateType, isActive: true });\n      if (!template) {\n        throw new Error(`Email template not found: ${templateType}`);\n      }\n\n      let html = template.htmlContent;\n      let subject = template.subject;\n      let text = template.textContent || '';\n\n      // Replace variables in template\n      Object.keys(variables).forEach(key => {\n        const regex = new RegExp(`{{${key}}}`, 'g');\n        html = html.replace(regex, variables[key]);\n        subject = subject.replace(regex, variables[key]);\n        text = text.replace(regex, variables[key]);\n      });\n\n      return await this.sendEmail(to, subject, html, text);\n    } catch (error) {\n      console.error('Template email error:', error);\n      return { success: false, error: error.message };\n    }\n  }\n\n  async sendVerificationEmail(email, token) {\n    const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;\n    \n    return await this.sendTemplateEmail(email, 'welcome', {\n      verificationUrl,\n      email\n    });\n  }\n\n  async sendPasswordResetEmail(email, token) {\n    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;\n    \n    return await this.sendTemplateEmail(email, 'password_reset', {\n      resetUrl,\n      email\n    });\n  }\n\n  async sendBookingConfirmation(email, booking) {\n    return await this.sendTemplateEmail(email, 'booking_confirmation', {\n      bookingReference: booking.bookingReference,\n      customerName: booking.customerName,\n      bookingDetails: booking.details,\n      totalAmount: booking.pricing.total,\n      currency: booking.pricing.currency\n    });\n  }\n\n  async sendPriceAlert(email, alert) {\n    return await this.sendTemplateEmail(email, 'price_alert', {\n      alertName: alert.alertName,\n      currentPrice: alert.currentPrice,\n      targetPrice: alert.criteria.targetPrice,\n      currency: alert.criteria.currency,\n      searchUrl: alert.searchUrl\n    });\n  }\n\n  async sendTripReminder(email, trip) {\n    return await this.sendTemplateEmail(email, 'trip_reminder', {\n      tripName: trip.name,\n      departureDate: trip.departureDate,\n      destination: trip.destination,\n      bookingReference: trip.bookingReference\n    });\n  }\n}\n\nmodule.exports = new EmailService();
+// Mock Email Service for Development
+const sendVerificationEmail = async (email, token) => {
+  console.log('\n📧 EMAIL SERVICE - VERIFICATION EMAIL');
+  console.log('='.repeat(50));
+  console.log(`📧 To: ${email}`);
+  console.log(`🔗 Verification Link: http://localhost:3000/api/auth/verify-email?token=${token}`);
+  console.log(`⏰ Token expires in: 24 hours`);
+  console.log('='.repeat(50));
+  
+  // In production, replace with real email service (SendGrid, AWS SES, etc.)
+  return Promise.resolve({
+    success: true,
+    messageId: `mock-${Date.now()}`,
+    message: 'Verification email sent successfully'
+  });
+};
+
+const sendPasswordResetEmail = async (email, token) => {
+  console.log('\n📧 EMAIL SERVICE - PASSWORD RESET EMAIL');
+  console.log('='.repeat(50));
+  console.log(`📧 To: ${email}`);
+  console.log(`🔗 Reset Link: http://localhost:3000/reset-password?token=${token}`);
+  console.log(`⏰ Token expires in: 1 hour`);
+  console.log('='.repeat(50));
+  
+  return Promise.resolve({
+    success: true,
+    messageId: `mock-${Date.now()}`,
+    message: 'Password reset email sent successfully'
+  });
+};
+
+const sendBookingConfirmation = async (email, bookingDetails) => {
+  console.log('\n📧 EMAIL SERVICE - BOOKING CONFIRMATION');
+  console.log('='.repeat(50));
+  console.log(`📧 To: ${email}`);
+  console.log(`🎫 Booking ID: ${bookingDetails.id}`);
+  console.log(`✈️ Details: ${JSON.stringify(bookingDetails, null, 2)}`);
+  console.log('='.repeat(50));
+  
+  return Promise.resolve({
+    success: true,
+    messageId: `mock-${Date.now()}`,
+    message: 'Booking confirmation sent successfully'
+  });
+};
+
+module.exports = {
+  sendVerificationEmail,
+  sendPasswordResetEmail,
+  sendBookingConfirmation
+};

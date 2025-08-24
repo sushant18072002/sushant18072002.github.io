@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const flightController = require('../controllers/flightControllerFixed');
 const { auth, admin, optionalAuth } = require('../middleware/auth');
-const { validateFlightSearch } = require('../middleware/validation');
+// Validation middleware not used in this route
 
 // @desc    Search flights
 // @route   GET /api/v1/flights/search
@@ -64,5 +64,48 @@ router.delete('/:id', auth, admin, flightController.deleteFlight);
 // @route   POST /api/v1/flights/bulk-import
 // @access  Admin
 router.post('/bulk-import', auth, admin, flightController.bulkImportFlights);
+
+// Missing endpoints
+// @desc    Get baggage info
+// @route   GET /api/v1/flights/:id/baggage-info
+// @access  Public
+router.get('/:id/baggage-info', flightController.getBaggageInfo);
+
+// @desc    Get meal options
+// @route   GET /api/v1/flights/:id/meal-options
+// @access  Public
+router.get('/:id/meal-options', flightController.getMealOptions);
+
+// @desc    Get popular routes
+// @route   GET /api/v1/flights/popular-routes
+// @access  Public
+router.get('/popular-routes', flightController.getPopularRoutes);
+
+// @desc    Get flight deals
+// @route   GET /api/v1/flights/deals
+// @access  Public
+router.get('/deals', flightController.getFlightDeals);
+
+
+
+// @desc    Get calendar prices
+// @route   GET /api/v1/flights/calendar-prices
+// @access  Public
+router.get('/calendar-prices', flightController.getCalendarPrices);
+
+// @desc    Flexible search
+// @route   POST /api/v1/flights/flexible-search
+// @access  Public
+router.post('/flexible-search', flightController.flexibleSearch);
+
+// @desc    Multi-city search
+// @route   POST /api/v1/flights/multi-city
+// @access  Public
+router.post('/multi-city', flightController.multiCitySearch);
+
+// @desc    Hold seat
+// @route   POST /api/v1/flights/:id/hold-seat
+// @access  Private
+router.post('/:id/hold-seat', auth, flightController.holdSeat);
 
 module.exports = router;

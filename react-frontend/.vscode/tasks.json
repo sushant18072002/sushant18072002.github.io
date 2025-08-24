@@ -1,0 +1,37 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Start Dev Server",
+            "type": "npm",
+            "script": "dev",
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "new"
+            },
+            "isBackground": true,
+            "problemMatcher": {
+                "owner": "vite",
+                "pattern": {
+                    "regexp": "^(.*)$",
+                    "file": 1
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^.*Local:.*$",
+                    "endsPattern": "^.*ready in.*$"
+                }
+            }
+        },
+        {
+            "label": "Stop Dev Server",
+            "type": "shell",
+            "command": "echo",
+            "args": ["Stopping dev server..."],
+            "group": "build"
+        }
+    ]
+}

@@ -4,8 +4,8 @@ const { auth } = require('../middleware/auth');
 const aiItineraryService = require('../services/aiItineraryService');
 const { Itinerary } = require('../models');
 
-// Generate AI itinerary
-router.post('/itinerary/generate', auth, async (req, res) => {
+// Generate AI trip
+router.post('/generate-trip', auth, async (req, res) => {
   try {
     const {
       destination,
@@ -182,9 +182,58 @@ router.post('/chat', auth, async (req, res) => {
   }
 });
 
+// Get AI templates
+router.get('/templates', auth, async (req, res) => {
+  try {
+    const { AITemplate } = require('../models');
+    const templates = await AITemplate.find({ isActive: true, isPublic: true })
+      .select('name category description duration budget destinations')
+      .sort({ 'metadata.popularity': -1 });
+    
+    res.json({ success: true, data: { templates } });
+  } catch (error) {
+    res.status(500).json({ success: false, error: { message: error.message } });
+  }
+});
+
+// Refine itinerary
+router.post('/refine-itinerary', auth, async (req, res) => {
+  try {
+    const { itineraryId, refinements } = req.body;
+    
+    const itinerary = await Itinerary.findOne({
+      _id: itineraryId,
+      user: req.user._id
+    });
+
+    if (!itinerary) {
+      return res.status(404).json({ success: false, error: { message: 'Itinerary not found' } });
+    }
+
+    // Apply refinements
+    refinements.forEach(refinement => {
+      if (refinement.type === 'budget_adjustment') {
+        itinerary.budget.total = refinement.newBudget;
+      } else if (refinement.type === 'activity_replacement') {
+        const day = itinerary.days.find(d => d.day === refinement.day);
+        if (day) {
+          const activityIndex = day.activities.findIndex(a => a.id === refinement.oldActivityId);
+          if (activityIndex !== -1) {
+            day.activities[activityIndex] = refinement.newActivity;
+          }
+        }
+      }
+    });
+
+    await itinerary.save();
+    res.json({ success: true, data: { itinerary } });
+  } catch (error) {
+    res.status(500).json({ success: false, error: { message: error.message } });
+  }
+});
+
 // Helper function for chat (placeholder)
 async function generateChatResponse(message, context) {
-  // This would integrate with OpenAI, Claude, or custom AI model
   const responses = {
     'budget': 'For budget travel, I recommend staying in hostels, eating at local restaurants, and using public transportation. What\'s your daily budget range?',
     'activities': 'Based on your interests, I suggest visiting museums in the morning, exploring local markets in the afternoon, and enjoying nightlife in the evening. What activities interest you most?',

@@ -317,6 +317,136 @@ const deleteUser = async (req, res) => {
   }
 };
 
+const getUserTrips = async (req, res) => {
+  try {
+    const { year = new Date().getFullYear() } = req.query;
+    
+    const trips = await Booking.find({
+      user: req.user._id,
+      status: { $in: ['confirmed', 'completed'] },
+      $or: [
+        { 'flight.route.departure.scheduledTime': {
+          $gte: new Date(`${year}-01-01`),
+          $lt: new Date(`${parseInt(year) + 1}-01-01`)
+        }},
+        { 'hotel.checkIn': {
+          $gte: new Date(`${year}-01-01`),
+          $lt: new Date(`${parseInt(year) + 1}-01-01`)
+        }}
+      ]
+    }).sort({ createdAt: -1 });
+
+    res.json({ success: true, data: { trips } });
+  } catch (error) {
+    res.status(500).json({ success: false, error: { message: error.message } });
+  }
+};
+
+const getLoyaltyPoints = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('loyaltyPoints totalBookings totalSpent');
+    
+    const tier = user.loyaltyPoints >= 50000 ? 'Platinum' :
+                 user.loyaltyPoints >= 25000 ? 'Gold' :
+                 user.loyaltyPoints >= 10000 ? 'Silver' : 'Bronze';
+
+    const loyaltyInfo = {
+      points: user.loyaltyPoints,
+      tier,
+      totalBookings: user.totalBookings,
+      totalSpent: user.totalSpent,
+      nextTierPoints: tier === 'Bronze' ? 10000 - user.loyaltyPoints :
+                      tier === 'Silver' ? 25000 - user.loyaltyPoints :
+                      tier === 'Gold' ? 50000 - user.loyaltyPoints : 0
+    };
+
+    res.json({ success: true, data: { loyalty: loyaltyInfo } });
+  } catch (error) {
+    res.status(500).json({ success: false, error: { message: error.message } });
+  }
+};
+
+const addToFavorites = async (req, res) => {
+  try {
+    const { entityType, entityId } = req.body;
+    
+    const user = await User.findById(req.user._id);
+    if (!user.favorites) user.favorites = [];
+    
+    const existingFavorite = user.favorites.find(fav => 
+      fav.entityType === entityType && fav.entityId.toString() === entityId
+    );
+
+    if (existingFavorite) {
+      return res.status(400).json({ success: false, error: { message: 'Already in favorites' } });
+    }
+
+    user.favorites.push({ entityType, entityId, addedAt: new Date() });
+    await user.save();
+
+    res.json({ success: true, data: { message: 'Added to favorites' } });
+  } catch (error) {
+    res.status(500).json({ success: false, error: { message: error.message } });
+  }
+};
+
+const removeFromFavorites = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const user = await User.findById(req.user._id);
+    if (!user.favorites) user.favorites = [];
+    
+    user.favorites = user.favorites.filter(fav => fav._id.toString() !== id);
+    await user.save();
+
+    res.json({ success: true, data: { message: 'Removed from favorites' } });
+  } catch (error) {
+    res.status(500).json({ success: false, error: { message: error.message } });
+  }
+};
+
+const deleteAccount = async (req, res) => {
+  try {
+    const { password } = req.body;
+    const user = await User.findById(req.user._id);
+
+    if (!(await user.comparePassword(password))) {
+      return res.status(400).json({ success: false, error: { message: 'Invalid password' } });
+    }
+
+    // Soft delete
+    user.status = 'deleted';
+    user.active = false;
+    user.deletedAt = new Date();
+    await user.save();
+
+    res.json({ success: true, data: { message: 'Account deleted successfully' } });
+  } catch (error) {
+    res.status(500).json({ success: false, error: { message: error.message } });
+  }
+};
+
+const markNotificationRead = async (req, res) => {
+  try {
+    const { Notification } = require('../models');
+    
+    const notification = await Notification.findOneAndUpdate(
+      { _id: req.params.id, user: req.user._id },
+      { isRead: true, readAt: new Date() },
+      { new: true }
+    );
+
+    if (!notification) {
+      return res.status(404).json({ success: false, error: { message: 'Notification not found' } });
+    }
+
+    res.json({ success: true, data: { notification } });
+  } catch (error) {
+    res.status(500).json({ success: false, error: { message: error.message } });
+  }
+};
+
 module.exports = {
   getDashboard,
   getProfile,
@@ -327,5 +457,11 @@ module.exports = {
   getAllUsers,
   getUserById,
   updateUser,
-  deleteUser
+  deleteUser,
+  getUserTrips,
+  getLoyaltyPoints,
+  addToFavorites,
+  removeFromFavorites,
+  deleteAccount,
+  markNotificationRead
 };

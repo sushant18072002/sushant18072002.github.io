@@ -54,4 +54,46 @@ router.put('/:id', auth, admin, userController.updateUser);
 // @access  Admin
 router.delete('/:id', auth, admin, userController.deleteUser);
 
+// Additional user endpoints
+const {
+  getUserTrips,
+  getLoyaltyPoints,
+  addToFavorites,
+  removeFromFavorites,
+  deleteAccount,
+  markNotificationRead
+} = require('../controllers/userController');
+
+router.get('/trips', auth, getUserTrips);
+router.get('/loyalty-points', auth, getLoyaltyPoints);
+router.post('/favorites', auth, addToFavorites);
+router.delete('/favorites/:id', auth, removeFromFavorites);
+router.delete('/account', auth, deleteAccount);
+router.get('/notifications', auth, async (req, res) => {
+  try {
+    const { Notification } = require('../models');
+    const { page = 1, limit = 20 } = req.query;
+    
+    const notifications = await Notification.find({ user: req.user._id })
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+    
+    const total = await Notification.countDocuments({ user: req.user._id });
+    const unread = await Notification.countDocuments({ user: req.user._id, isRead: false });
+    
+    res.json({
+      success: true,
+      data: {
+        notifications,
+        unread,
+        pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / limit) }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: { message: error.message } });
+  }
+});
+router.put('/notifications/:id/read', auth, markNotificationRead);
+
 module.exports = router;

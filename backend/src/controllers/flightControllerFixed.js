@@ -286,6 +286,226 @@ const bulkImportFlights = async (req, res) => {
   }
 };
 
+const getBaggageInfo = async (req, res) => {
+  try {
+    const flight = await Flight.findById(req.params.id).populate('airline');
+    if (!flight) return error(res, 'Flight not found', 404);
+
+    const baggageInfo = {
+      carryOn: flight.services?.baggage?.carryOn || { weight: 7, pieces: 1 },
+      checked: flight.services?.baggage?.checked || { weight: 23, pieces: 1, fee: 0 },
+      restrictions: ['No liquids over 100ml', 'No sharp objects', 'Electronics in carry-on']
+    };
+
+    return success(res, { baggageInfo });
+  } catch (err) {
+    return error(res, err.message, 500);
+  }
+};
+
+const getMealOptions = async (req, res) => {
+  try {
+    const flight = await Flight.findById(req.params.id);
+    if (!flight) return error(res, 'Flight not found', 404);
+
+    const mealOptions = flight.services?.meals || [
+      { type: 'standard', name: 'Standard Meal', price: 0 },
+      { type: 'vegetarian', name: 'Vegetarian', price: 0 },
+      { type: 'vegan', name: 'Vegan', price: 5 },
+      { type: 'halal', name: 'Halal', price: 5 }
+    ];
+
+    return success(res, { mealOptions });
+  } catch (err) {
+    return error(res, err.message, 500);
+  }
+};
+
+const getPopularRoutes = async (req, res) => {
+  try {
+    const routes = await Flight.aggregate([
+      { $group: {
+        _id: { from: '$route.departure.airport', to: '$route.arrival.airport' },
+        count: { $sum: 1 },
+        avgPrice: { $avg: '$pricing.economy.totalPrice' }
+      }},
+      { $sort: { count: -1 } },
+      { $limit: 10 },
+      { $lookup: { from: 'airports', localField: '_id.from', foreignField: '_id', as: 'fromAirport' } },
+      { $lookup: { from: 'airports', localField: '_id.to', foreignField: '_id', as: 'toAirport' } }
+    ]);
+
+    return success(res, { routes });
+  } catch (err) {
+    return error(res, err.message, 500);
+  }
+};
+
+const getFlightDeals = async (req, res) => {
+  try {
+    const deals = await Flight.find({
+      'pricing.economy.totalPrice': { $lt: 200 },
+      status: 'scheduled'
+    })
+    .populate('airline', 'name logo')
+    .populate('route.departure.airport', 'code name city')
+    .populate('route.arrival.airport', 'code name city')
+    .sort({ 'pricing.economy.totalPrice': 1 })
+    .limit(20);
+
+    return success(res, { deals });
+  } catch (err) {
+    return error(res, err.message, 500);
+  }
+};
+
+const getAirlines = async (req, res) => {
+  try {
+    const { Airline } = require('../models');
+    const airlines = await Airline.find({ status: 'active' })
+      .select('code name logo country')
+      .sort({ name: 1 });
+
+    return success(res, { airlines });
+  } catch (err) {
+    return error(res, err.message, 500);
+  }
+};
+
+const searchAirports = async (req, res) => {
+  try {
+    const { q } = req.query;
+    const { Airport } = require('../models');
+    
+    const airports = await Airport.find({
+      $or: [
+        { name: { $regex: q, $options: 'i' } },
+        { code: { $regex: q, $options: 'i' } },
+        { city: { $regex: q, $options: 'i' } }
+      ]
+    })
+    .select('code name city country')
+    .limit(10);
+
+    return success(res, { airports });
+  } catch (err) {
+    return error(res, err.message, 500);
+  }
+};
+
+const getCalendarPrices = async (req, res) => {
+  try {
+    const { from, to, month, year } = req.query;
+    
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0);
+    
+    const flights = await Flight.aggregate([
+      {
+        $match: {
+          'route.departure.airport': from,
+          'route.arrival.airport': to,
+          'route.departure.scheduledTime': { $gte: startDate, $lte: endDate }
+        }
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$route.departure.scheduledTime' } },
+          minPrice: { $min: '$pricing.economy.totalPrice' },
+          avgPrice: { $avg: '$pricing.economy.totalPrice' },
+          flightCount: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    return success(res, { calendar: flights });
+  } catch (err) {
+    return error(res, err.message, 500);
+  }
+};
+
+const flexibleSearch = async (req, res) => {
+  try {
+    const { from, to, departMonth, returnMonth, duration } = req.body;
+    
+    const results = [];
+    const startDate = new Date(departMonth);
+    const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
+    
+    for (let day = 1; day <= endDate.getDate(); day++) {
+      const searchDate = new Date(startDate.getFullYear(), startDate.getMonth(), day);
+      
+      const flights = await Flight.find({
+        'route.departure.airport': from,
+        'route.arrival.airport': to,
+        'route.departure.scheduledTime': {
+          $gte: searchDate,
+          $lt: new Date(searchDate.getTime() + 24 * 60 * 60 * 1000)
+        }
+      }).sort({ 'pricing.economy.totalPrice': 1 }).limit(3);
+      
+      if (flights.length > 0) {
+        results.push({
+          date: searchDate,
+          flights: flights.slice(0, 3)
+        });
+      }
+    }
+
+    return success(res, { flexibleOptions: results });
+  } catch (err) {
+    return error(res, err.message, 500);
+  }
+};
+
+const multiCitySearch = async (req, res) => {
+  try {
+    const { segments } = req.body; // [{ from, to, date }, ...]
+    
+    const searchPromises = segments.map(async (segment, index) => {
+      const flights = await Flight.find({
+        'route.departure.airport': segment.from,
+        'route.arrival.airport': segment.to,
+        'route.departure.scheduledTime': {
+          $gte: new Date(segment.date),
+          $lt: new Date(new Date(segment.date).getTime() + 24 * 60 * 60 * 1000)
+        }
+      }).sort({ 'pricing.economy.totalPrice': 1 }).limit(5);
+      
+      return { segment: index + 1, ...segment, flights };
+    });
+    
+    const results = await Promise.all(searchPromises);
+    return success(res, { multiCity: results });
+  } catch (err) {
+    return error(res, err.message, 500);
+  }
+};
+
+const holdSeat = async (req, res) => {
+  try {
+    const { seatNumber, holdDuration = 15 } = req.body; // minutes
+    const flight = await Flight.findById(req.params.id);
+    
+    if (!flight) return error(res, 'Flight not found', 404);
+    
+    // Simulate seat hold (in real implementation, this would update seat availability)
+    const holdExpiry = new Date(Date.now() + holdDuration * 60 * 1000);
+    
+    return success(res, {
+      seatHold: {
+        flightId: req.params.id,
+        seatNumber,
+        holdExpiry,
+        holdToken: Math.random().toString(36).substr(2, 9)
+      }
+    });
+  } catch (err) {
+    return error(res, err.message, 500);
+  }
+};
+
 module.exports = {
   searchFlights,
   getFilters,
@@ -298,5 +518,15 @@ module.exports = {
   createFlight,
   updateFlight,
   deleteFlight,
-  bulkImportFlights
+  bulkImportFlights,
+  getBaggageInfo,
+  getMealOptions,
+  getPopularRoutes,
+  getFlightDeals,
+  getAirlines,
+  searchAirports,
+  getCalendarPrices,
+  flexibleSearch,
+  multiCitySearch,
+  holdSeat
 };
