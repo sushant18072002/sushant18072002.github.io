@@ -13,42 +13,44 @@ router.get('/', async (req, res) => {
       date, 
       departDate,
       airline, 
-      class: flightClass,
+      class: flightClass = 'economy',
       minPrice,
       maxPrice,
+      stops,
+      sort = 'price',
       page = 1,
       limit = 20
     } = req.query;
 
-    const query = {};
+    const query = { status: 'scheduled' };
     
-    // Handle departure airport (ID or code)
+    // Handle departure airport (city name or code)
     const departureParam = departure || from;
     if (departureParam) {
-      if (departureParam.length > 3) {
-        // It's an ID
-        query['route.departure.airport'] = departureParam;
-      } else {
-        // It's a code, find the airport ID
-        const airport = await Airport.findOne({ code: departureParam });
-        if (airport) {
-          query['route.departure.airport'] = airport._id;
-        }
+      const airport = await Airport.findOne({
+        $or: [
+          { code: departureParam.toUpperCase() },
+          { city: { $regex: new RegExp(departureParam, 'i') } },
+          { name: { $regex: new RegExp(departureParam, 'i') } }
+        ]
+      });
+      if (airport) {
+        query['route.departure.airport'] = airport._id;
       }
     }
     
-    // Handle arrival airport (ID or code)
+    // Handle arrival airport (city name or code)
     const arrivalParam = arrival || to;
     if (arrivalParam) {
-      if (arrivalParam.length > 3) {
-        // It's an ID
-        query['route.arrival.airport'] = arrivalParam;
-      } else {
-        // It's a code, find the airport ID
-        const airport = await Airport.findOne({ code: arrivalParam });
-        if (airport) {
-          query['route.arrival.airport'] = airport._id;
-        }
+      const airport = await Airport.findOne({
+        $or: [
+          { code: arrivalParam.toUpperCase() },
+          { city: { $regex: new RegExp(arrivalParam, 'i') } },
+          { name: { $regex: new RegExp(arrivalParam, 'i') } }
+        ]
+      });
+      if (airport) {
+        query['route.arrival.airport'] = airport._id;
       }
     }
     if (airline) query.airline = airline;
@@ -65,86 +67,80 @@ router.get('/', async (req, res) => {
     }
 
     // Price filter
-    if (minPrice || maxPrice) {
-      const priceQuery = {};
+    if (maxPrice) {
+      const priceQuery = { $lte: parseFloat(maxPrice) };
       if (minPrice) priceQuery.$gte = parseFloat(minPrice);
-      if (maxPrice) priceQuery.$lte = parseFloat(maxPrice);
       
-      if (flightClass === 'business') {
-        query['pricing.business.totalPrice'] = priceQuery;
-      } else {
-        query['pricing.economy.totalPrice'] = priceQuery;
+      const priceField = `pricing.${flightClass}.totalPrice`;
+      query[priceField] = priceQuery;
+    }
+    
+    // Stops filter
+    if (stops && stops !== 'any') {
+      if (stops === '0') {
+        query.flightType = 'direct';
+      } else if (stops === '1') {
+        query['layovers.0'] = { $exists: true };
+        query['layovers.1'] = { $exists: false };
+      } else if (stops === '2+') {
+        query['layovers.1'] = { $exists: true };
       }
     }
 
-    console.log('Final MongoDB query:', JSON.stringify(query, null, 2));
-    
-    // Check total flights in database
-    const totalFlights = await Flight.countDocuments();
-    console.log('Total flights in database:', totalFlights);
-    
-    // Check flights without filters
-    const allFlights = await Flight.find().limit(5).populate('route.departure.airport route.arrival.airport', 'code city');
-    console.log('Sample flights:', allFlights.map(f => ({
-      id: f._id,
-      flightNumber: f.flightNumber,
-      departure: f.route?.departure?.airport?.code,
-      arrival: f.route?.arrival?.airport?.code,
-      date: f.route?.departure?.scheduledTime
-    })));
-    
-    // Update all flights to current search date for testing
-    const searchDate = new Date(dateParam || '2025-08-29');
-    const updateResult = await Flight.updateMany(
-      {},
-      [{
-        $set: {
-          'route.departure.scheduledTime': {
-            $dateFromString: {
-              dateString: {
-                $concat: [
-                  { $dateToString: { format: "%Y-%m-%d", date: searchDate } },
-                  "T08:00:00.000Z"
-                ]
-              }
-            }
-          },
-          'route.arrival.scheduledTime': {
-            $dateFromString: {
-              dateString: {
-                $concat: [
-                  { $dateToString: { format: "%Y-%m-%d", date: searchDate } },
-                  "T16:00:00.000Z"
-                ]
-              }
-            }
-          }
-        }
-      }]
-    );
-    console.log('Updated flights to search date:', updateResult.modifiedCount);
+    // Sort options
+    let sortQuery = {};
+    switch (sort) {
+      case 'price':
+        sortQuery[`pricing.${flightClass}.totalPrice`] = 1;
+        break;
+      case 'duration':
+        sortQuery['duration.scheduled'] = 1;
+        break;
+      case 'departure':
+        sortQuery['route.departure.scheduledTime'] = 1;
+        break;
+      case 'arrival':
+        sortQuery['route.arrival.scheduledTime'] = 1;
+        break;
+      default:
+        sortQuery[`pricing.${flightClass}.totalPrice`] = 1;
+    }
     
     const flights = await Flight.find(query)
       .populate('airline', 'name code logo')
       .populate('route.departure.airport', 'name code city country')
       .populate('route.arrival.airport', 'name code city country')
-      .sort({ 'route.departure.scheduledTime': 1 })
-      .limit(limit * 1)
-      .skip((page - 1) * limit);
-      
-    console.log('Found flights:', flights.length);
+      .sort(sortQuery)
+      .limit(parseInt(limit))
+      .skip((parseInt(page) - 1) * parseInt(limit));
+    
+    // Ensure pricing data exists for selected class
+    const processedFlights = flights.map(flight => {
+      if (!flight.pricing[flightClass] && flight.pricing.economy) {
+        flight.pricing[flightClass] = flight.pricing.economy;
+      }
+      return flight;
+    });
 
     const total = await Flight.countDocuments(query);
 
     res.json({
       success: true,
       data: {
-        flights,
+        flights: processedFlights,
         pagination: {
           page: parseInt(page),
           limit: parseInt(limit),
           total,
           pages: Math.ceil(total / limit)
+        },
+        searchParams: {
+          from: departureParam,
+          to: arrivalParam,
+          date: dateParam,
+          class: flightClass,
+          sort,
+          stops
         }
       }
     });
@@ -346,6 +342,114 @@ router.delete('/:id', async (req, res) => {
     }
 
     res.json({ success: true, message: 'Flight deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: { message: error.message } });
+  }
+});
+
+// Create sample flights for testing
+router.post('/create-samples', async (req, res) => {
+  try {
+    const { Flight, Airport, Airline } = require('../models');
+    
+    // Clear existing flights
+    await Flight.deleteMany({});
+    
+    // Get or create airports
+    const airports = await Airport.find().limit(10);
+    if (airports.length < 4) {
+      return res.status(400).json({ success: false, error: { message: 'Need at least 4 airports in database' } });
+    }
+    
+    // Get or create airlines
+    const airlines = await Airline.find().limit(5);
+    if (airlines.length < 2) {
+      return res.status(400).json({ success: false, error: { message: 'Need at least 2 airlines in database' } });
+    }
+    
+    const sampleFlights = [];
+    const today = new Date();
+    
+    // Create flights for next 30 days
+    for (let day = 0; day < 30; day++) {
+      const flightDate = new Date(today);
+      flightDate.setDate(today.getDate() + day);
+      
+      // Create multiple flights per day
+      for (let i = 0; i < 5; i++) {
+        const departureTime = new Date(flightDate);
+        departureTime.setHours(8 + (i * 3), 0, 0, 0);
+        
+        const arrivalTime = new Date(departureTime);
+        arrivalTime.setHours(departureTime.getHours() + 2 + Math.floor(Math.random() * 4));
+        
+        const fromAirport = airports[Math.floor(Math.random() * airports.length)];
+        const toAirport = airports[Math.floor(Math.random() * airports.length)];
+        
+        if (fromAirport._id.toString() !== toAirport._id.toString()) {
+          const airline = airlines[Math.floor(Math.random() * airlines.length)];
+          const basePrice = 200 + Math.floor(Math.random() * 800);
+          
+          sampleFlights.push({
+            flightNumber: `${airline.code}${1000 + Math.floor(Math.random() * 9000)}`,
+            airline: airline._id,
+            flightType: Math.random() > 0.7 ? 'connecting' : 'direct',
+            route: {
+              departure: {
+                airport: fromAirport._id,
+                scheduledTime: departureTime,
+                terminal: Math.random() > 0.5 ? 'T1' : 'T2',
+                gate: `A${Math.floor(Math.random() * 20) + 1}`
+              },
+              arrival: {
+                airport: toAirport._id,
+                scheduledTime: arrivalTime,
+                terminal: Math.random() > 0.5 ? 'T1' : 'T2',
+                gate: `B${Math.floor(Math.random() * 20) + 1}`
+              }
+            },
+            duration: {
+              scheduled: Math.floor((arrivalTime - departureTime) / (1000 * 60))
+            },
+            distance: 500 + Math.floor(Math.random() * 2000),
+            aircraft: {
+              type: 'Boeing',
+              model: Math.random() > 0.5 ? '737-800' : 'A320',
+              configuration: {
+                economy: 150,
+                business: 20,
+                total: 170
+              }
+            },
+            pricing: {
+              economy: {
+                basePrice: basePrice,
+                taxes: Math.floor(basePrice * 0.15),
+                fees: 25,
+                totalPrice: Math.floor(basePrice * 1.15) + 25,
+                availability: Math.floor(Math.random() * 50) + 10
+              },
+              business: {
+                basePrice: basePrice * 3,
+                taxes: Math.floor(basePrice * 3 * 0.15),
+                fees: 50,
+                totalPrice: Math.floor(basePrice * 3 * 1.15) + 50,
+                availability: Math.floor(Math.random() * 10) + 2
+              }
+            },
+            status: 'scheduled'
+          });
+        }
+      }
+    }
+    
+    const createdFlights = await Flight.insertMany(sampleFlights);
+    
+    res.json({
+      success: true,
+      message: `Created ${createdFlights.length} sample flights`,
+      data: { count: createdFlights.length }
+    });
   } catch (error) {
     res.status(500).json({ success: false, error: { message: error.message } });
   }
