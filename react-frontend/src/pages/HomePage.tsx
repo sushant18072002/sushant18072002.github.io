@@ -68,11 +68,6 @@ interface Destination {
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('itinerary');
-  
-  // Initialize with packages selected when component mounts
-  useEffect(() => {
-    setSelectedOption('packages');
-  }, []);
   const [dreamInput, setDreamInput] = useState('');
   const [liveCounter, setLiveCounter] = useState(0);
   const [currentHeroImage, setCurrentHeroImage] = useState(0);
@@ -109,14 +104,15 @@ const HomePage: React.FC = () => {
   const [featuredContent, setFeaturedContent] = useState<any>(null);
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [searchLoading, setSearchLoading] = useState(false);
 
   useEffect(() => {
     // Load initial counter from API
     const loadLiveStats = async () => {
       try {
         const response = await apiService.getLiveStats();
-        if (response.success && response.data?.tripsPlannedToday) {
-          setLiveCounter(response.data.tripsPlannedToday);
+        if (response.success && response.data && 'tripsPlannedToday' in response.data) {
+          setLiveCounter((response.data as any).tripsPlannedToday);
         }
       } catch (error) {
         console.error('Live stats loading error:', error);
@@ -127,7 +123,10 @@ const HomePage: React.FC = () => {
     loadLiveStats();
     
     const interval = setInterval(() => {
-      setLiveCounter(prev => prev + Math.floor(Math.random() * 5) + 1);
+      setLiveCounter(prev => {
+        const increment = Math.floor(Math.random() * 5) + 1;
+        return prev + increment;
+      });
     }, 8000);
     return () => clearInterval(interval);
   }, []);
@@ -152,6 +151,12 @@ const HomePage: React.FC = () => {
 
   const switchTab = (tabName: string) => {
     setActiveTab(tabName);
+    setFormError(''); // Clear errors when switching tabs
+    // Close all dropdowns
+    setShowFromSuggestions(false);
+    setShowToSuggestions(false);
+    setShowLocationSuggestions(false);
+    setShowTripToSuggestions(false);
   };
 
   const selectItineraryOption = (option: string) => {
@@ -215,7 +220,7 @@ const HomePage: React.FC = () => {
   const getAirportCodeFromCity = async (cityName: string): Promise<string> => {
     try {
       const response = await apiService.searchAirports(cityName);
-      if (response.success && response.data?.airports?.length > 0) {
+      if (response.success && response.data?.airports && response.data.airports.length > 0) {
         return response.data.airports[0].code;
       }
       return cityName; // Fallback to city name if no airport found
@@ -225,12 +230,19 @@ const HomePage: React.FC = () => {
     }
   };
 
+  const [formError, setFormError] = useState('');
+  
   const performSearch = async () => {
-    if (activeTab === 'itinerary') {
-      if (!dreamInput.trim() && !tripForm.to) {
-        alert('Please describe your dream trip or select a destination');
-        return;
-      }
+    setFormError('');
+    setSearchLoading(true);
+    
+    try {
+      if (activeTab === 'itinerary') {
+        if (!dreamInput.trim() && !tripForm.to) {
+          setFormError('Please describe your dream trip or select a destination');
+          setSearchLoading(false);
+          return;
+        }
       
       if (selectedOption === 'ai-magic') {
         const params = new URLSearchParams();
@@ -247,14 +259,15 @@ const HomePage: React.FC = () => {
         if (tripForm.tripType && tripForm.tripType !== 'any') params.append('category', tripForm.tripType);
         if (tripForm.budget) params.append('priceRange', tripForm.budget);
         navigate(`/trips?${params}`);
-      } else {
-        navigate('/itineraries/custom');
-      }
-    } else if (activeTab === 'flights') {
-      if (!flightForm.from || !flightForm.to) {
-        alert('Please select departure and arrival cities');
-        return;
-      }
+        } else {
+          navigate('/itineraries/custom');
+        }
+      } else if (activeTab === 'flights') {
+        if (!flightForm.from || !flightForm.to) {
+          setFormError('Please select departure and arrival cities');
+          setSearchLoading(false);
+          return;
+        }
       
       const fromCode = await getAirportCodeFromCity(flightForm.from);
       const toCode = await getAirportCodeFromCity(flightForm.to);
@@ -268,12 +281,13 @@ const HomePage: React.FC = () => {
         class: flightForm.class,
         autoSearch: 'true'
       });
-      navigate(`/flights?${params}`);
-    } else if (activeTab === 'hotels') {
-      if (!hotelForm.location) {
-        alert('Please select a destination');
-        return;
-      }
+        navigate(`/flights?${params}`);
+      } else if (activeTab === 'hotels') {
+        if (!hotelForm.location) {
+          setFormError('Please select a destination');
+          setSearchLoading(false);
+          return;
+        }
       const params = new URLSearchParams({
         location: hotelForm.location,
         checkIn: hotelForm.checkIn.toISOString().split('T')[0],
@@ -282,9 +296,15 @@ const HomePage: React.FC = () => {
         rooms: hotelForm.rooms.toString(),
         autoSearch: 'true'
       });
-      navigate(`/hotels?${params}`);
-    } else {
-      navigate('/hotels');
+        navigate(`/hotels?${params}`);
+      } else {
+        navigate('/hotels');
+      }
+    } catch (error) {
+      console.error('Search error:', error);
+      setFormError('Something went wrong. Please try again.');
+    } finally {
+      setSearchLoading(false);
     }
   };
 
@@ -299,9 +319,16 @@ const HomePage: React.FC = () => {
     navigate(`/trips?category=${searchTerm}`);
   };
 
-  const viewDestination = (id: string) => {
-    // Check if we have trips for this destination, otherwise show destination info
-    navigate(`/destination/${id}`);
+  const viewDestination = (destination: Destination) => {
+    // Navigate to trips page filtered by destination location
+    const params = new URLSearchParams();
+    if (destination.location) {
+      params.append('destination', destination.location);
+    }
+    if (destination.name) {
+      params.append('search', destination.name);
+    }
+    navigate(`/trips?${params}`);
   };
 
   const viewPackage = (id: string) => {
@@ -311,39 +338,21 @@ const HomePage: React.FC = () => {
   const adventureCategories: AdventureCategory[] = featuredContent?.adventureCategories || [
     {
       icon: '🏔️',
-      title: 'Mountain Adventures',
+      title: 'Adventure Trips',
       places: '50+ Places',
-      type: 'adventure'
-    },
-    {
-      icon: '🏖️',
-      title: 'Beach Escapes',
-      places: '30+ Places',
-      type: 'relaxation'
+      type: 'adventure-trips'
     },
     {
       icon: '🏛️',
-      title: 'Cultural Tours',
+      title: 'Cultural Trips',
       places: '40+ Places',
-      type: 'cultural'
+      type: 'cultural-trips'
     },
     {
-      icon: '🌆',
-      title: 'City Breaks',
-      places: '25+ Places',
-      type: 'city'
-    },
-    {
-      icon: '🦁',
-      title: 'Wildlife Safari',
-      places: '15+ Places',
-      type: 'nature'
-    },
-    {
-      icon: '🍷',
-      title: 'Food & Wine',
-      places: '20+ Places',
-      type: 'food'
+      icon: '🏖️',
+      title: 'Beach Trips',
+      places: '30+ Places',
+      type: 'beach-trips'
     }
   ];
 
@@ -377,6 +386,22 @@ const HomePage: React.FC = () => {
     },
   ];
 
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('.form-field')) {
+        setShowFromSuggestions(false);
+        setShowToSuggestions(false);
+        setShowLocationSuggestions(false);
+        setShowTripToSuggestions(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   useEffect(() => {
     loadHomeData();
   }, []);
@@ -393,10 +418,15 @@ const HomePage: React.FC = () => {
       // Check if hero data is cached
       const cachedHero = sessionStorage.getItem('hero_data');
       if (cachedHero) {
-        const parsed = JSON.parse(cachedHero);
-        if (Date.now() - parsed.timestamp < 300000) { // 5 minutes cache
-          setFeaturedContent(parsed.data);
-          return;
+        try {
+          const parsed = JSON.parse(cachedHero);
+          if (Date.now() - parsed.timestamp < 300000) { // 5 minutes cache
+            setFeaturedContent(parsed.data);
+            return;
+          }
+        } catch (parseError) {
+          // Clear invalid cache
+          sessionStorage.removeItem('hero_data');
         }
       }
       
@@ -454,7 +484,7 @@ const HomePage: React.FC = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="hero relative h-[calc(100vh-120px)] flex items-center overflow-visible">
+      <section className="hero relative min-h-[80vh] md:h-[calc(100vh-120px)] flex items-center overflow-visible">
         {featuredContent?.heroVideo ? (
           <video 
             className="hero-bg absolute top-0 left-0 w-full h-full object-cover z-[1]" 
@@ -467,7 +497,7 @@ const HomePage: React.FC = () => {
           />
         ) : featuredContent?.heroImages?.length > 1 ? (
           <div className="hero-slider absolute top-0 left-0 w-full h-full z-[1]">
-            {featuredContent.heroImages.map((image, index) => (
+            {featuredContent.heroImages.map((image: string, index: number) => (
               <img 
                 key={index}
                 className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-1000 ${
@@ -495,7 +525,7 @@ const HomePage: React.FC = () => {
         )}
         <div className="hero-overlay absolute top-0 left-0 w-full h-full bg-gradient-to-br from-[rgba(15,23,42,0.4)] via-[rgba(30,64,175,0.3)] to-[rgba(16,185,129,0.4)] z-[2]"></div>
         
-        <div className="hero-content relative z-10 max-w-[1280px] mx-auto px-4 md:px-8 lg:px-12 grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-4 lg:gap-6 items-center w-full h-full">
+        <div className="hero-content relative z-10 max-w-[1280px] mx-auto px-4 md:px-8 lg:px-12 grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6 lg:gap-6 items-center w-full h-full">
           <div className="hero-text text-white text-center lg:text-left order-2 lg:order-1">
             <div className="hero-badge inline-flex items-center gap-2 bg-white/20 backdrop-blur-[10px] border border-white/30 px-3 py-1.5 rounded-full text-xs mb-3">
               <div className="live-dot w-1.5 h-1.5 bg-emerald rounded-full animate-pulse"></div>
@@ -511,18 +541,19 @@ const HomePage: React.FC = () => {
             <button 
               className="hero-cta bg-blue-ocean text-white border-none px-5 py-2 rounded-2xl text-sm font-semibold cursor-pointer transition-all duration-300 font-['DM_Sans'] inline-flex items-center gap-2 hover:bg-emerald hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(88,194,125,0.3)]"
               onClick={() => document.querySelector('.search-widget')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+              aria-label="Scroll to search widget to start planning your trip"
             >
               Start your search
             </button>
           </div>
 
           {/* Search Widget */}
-          <div className="search-widget bg-white/95 rounded-2xl p-4 md:p-6 shadow-[0_20px_40px_-10px_rgba(15,15,15,0.15)] border border-white/50 w-full max-w-none relative order-1 lg:order-2" style={{zIndex: 1}}>
+          <div className="search-widget bg-white/95 rounded-2xl p-4 md:p-6 shadow-[0_20px_40px_-10px_rgba(15,15,15,0.15)] border border-white/50 w-full max-w-none relative order-1 lg:order-2 mx-auto" style={{zIndex: 1, maxWidth: '100%'}}>
             {/* Search Tabs */}
             <div className="search-tabs flex gap-1 mb-4 bg-gray-100 p-1 rounded-lg">
               <button
                 onClick={() => switchTab('flights')}
-                className={`search-tab flex-1 py-2 px-2 md:px-3 font-semibold text-sm cursor-pointer relative font-['DM_Sans'] transition-all duration-300 rounded-md flex items-center justify-center gap-2 ${
+                className={`search-tab flex-1 py-3 px-2 md:px-3 font-semibold text-sm cursor-pointer relative font-['DM_Sans'] transition-all duration-300 rounded-md flex items-center justify-center gap-2 min-h-[44px] ${
                   activeTab === 'flights'
                     ? 'text-white bg-blue-ocean shadow-md'
                     : 'text-gray-600 hover:text-blue-ocean hover:bg-white'
@@ -533,7 +564,7 @@ const HomePage: React.FC = () => {
               </button>
               <button
                 onClick={() => switchTab('hotels')}
-                className={`search-tab flex-1 py-2 px-2 md:px-3 font-semibold text-sm cursor-pointer relative font-['DM_Sans'] transition-all duration-300 rounded-md flex items-center justify-center gap-2 ${
+                className={`search-tab flex-1 py-3 px-2 md:px-3 font-semibold text-sm cursor-pointer relative font-['DM_Sans'] transition-all duration-300 rounded-md flex items-center justify-center gap-2 min-h-[44px] ${
                   activeTab === 'hotels'
                     ? 'text-white bg-blue-ocean shadow-md'
                     : 'text-gray-600 hover:text-blue-ocean hover:bg-white'
@@ -544,7 +575,7 @@ const HomePage: React.FC = () => {
               </button>
               <button
                 onClick={() => switchTab('itinerary')}
-                className={`search-tab flex-1 py-2 px-2 md:px-3 font-semibold text-sm cursor-pointer relative font-['DM_Sans'] transition-all duration-300 rounded-md flex items-center justify-center gap-2 ${
+                className={`search-tab flex-1 py-3 px-2 md:px-3 font-semibold text-sm cursor-pointer relative font-['DM_Sans'] transition-all duration-300 rounded-md flex items-center justify-center gap-2 min-h-[44px] ${
                   activeTab === 'itinerary'
                     ? 'text-white bg-blue-ocean shadow-md'
                     : 'text-gray-600 hover:text-blue-ocean hover:bg-white'
@@ -559,7 +590,7 @@ const HomePage: React.FC = () => {
             {/* Search Forms */}
             <div className={`search-content ${activeTab === 'flights' ? 'block' : 'hidden'}`} style={{overflow: 'visible'}}>
               <div className="search-form flex flex-col gap-2">
-                <div className="form-row grid grid-cols-2 gap-3 items-end">
+                <div className="form-row grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
                   <div className="form-field flex-1 flex items-center bg-white/90 backdrop-blur-sm rounded-xl py-3 px-4 pl-12 relative min-h-[52px] border border-gray-100 hover:border-blue-200 transition-all">
                     <div className="field-icon absolute left-3 top-1/2 -translate-y-1/2 text-base opacity-60">🛫</div>
                     <div className="field-content flex-1 flex flex-col gap-0.5 relative">
@@ -579,9 +610,13 @@ const HomePage: React.FC = () => {
                             searchAirports(flightForm.from, setFromAirports);
                           }
                         }}
+                        onBlur={() => {
+                          // Delay hiding to allow click on suggestions
+                          setTimeout(() => setShowFromSuggestions(false), 150);
+                        }}
                       />
                       {showFromSuggestions && fromAirports.length > 0 && (
-                        <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto mt-1" style={{zIndex: 999999}}>
+                        <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto mt-1" style={{zIndex: 9999}}>
                           {fromAirports.map((airport) => (
                             <div
                               key={airport._id}
@@ -590,7 +625,15 @@ const HomePage: React.FC = () => {
                                 setFlightForm(prev => ({ ...prev, from: airport.city }));
                                 setShowFromSuggestions(false);
                               }}
-                              className="w-full px-3 py-2 text-left hover:bg-gray-50 flex flex-col text-sm border-b border-gray-100 last:border-b-0 cursor-pointer"
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault();
+                                  setFlightForm(prev => ({ ...prev, from: airport.city }));
+                                  setShowFromSuggestions(false);
+                                }
+                              }}
+                              className="w-full px-3 py-2 text-left hover:bg-gray-50 flex flex-col text-sm border-b border-gray-100 last:border-b-0 cursor-pointer focus:bg-blue-50 focus:outline-none"
+                              tabIndex={0}
                             >
                               <div className="font-medium text-gray-900">{airport.name}</div>
                               <div className="text-xs text-gray-500">{airport.code} - {airport.city}</div>
@@ -619,9 +662,12 @@ const HomePage: React.FC = () => {
                             searchAirports(flightForm.to, setToAirports);
                           }
                         }}
+                        onBlur={() => {
+                          setTimeout(() => setShowToSuggestions(false), 150);
+                        }}
                       />
                       {showToSuggestions && toAirports.length > 0 && (
-                        <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto mt-1" style={{zIndex: 999999}}>
+                        <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto mt-1" style={{zIndex: 9999}}>
                           {toAirports.map((airport) => (
                             <div
                               key={airport._id}
@@ -630,7 +676,15 @@ const HomePage: React.FC = () => {
                                 setFlightForm(prev => ({ ...prev, to: airport.city }));
                                 setShowToSuggestions(false);
                               }}
-                              className="w-full px-3 py-2 text-left hover:bg-gray-50 flex flex-col text-sm border-b border-gray-100 last:border-b-0 cursor-pointer"
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault();
+                                  setFlightForm(prev => ({ ...prev, to: airport.city }));
+                                  setShowToSuggestions(false);
+                                }
+                              }}
+                              className="w-full px-3 py-2 text-left hover:bg-gray-50 flex flex-col text-sm border-b border-gray-100 last:border-b-0 cursor-pointer focus:bg-blue-50 focus:outline-none"
+                              tabIndex={0}
                             >
                               <div className="font-medium text-gray-900">{airport.name}</div>
                               <div className="text-xs text-gray-500">{airport.code} - {airport.city}</div>
@@ -641,7 +695,7 @@ const HomePage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                <div className="form-row grid grid-cols-2 gap-2 items-end">
+                <div className="form-row grid grid-cols-1 sm:grid-cols-2 gap-2 items-end">
                   <div className="form-field flex-1 flex items-center bg-white/90 backdrop-blur-sm rounded-xl py-3 px-4 pl-12 relative min-h-[52px] border border-gray-100 hover:border-blue-200 transition-all">
                     <div className="field-icon absolute left-3 top-1/2 -translate-y-1/2 text-base opacity-60">📅</div>
                     <div className="field-content flex-1 flex flex-col gap-0.5">
@@ -675,7 +729,7 @@ const HomePage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                <div className="form-row grid grid-cols-2 gap-2 items-end">
+                <div className="form-row grid grid-cols-1 sm:grid-cols-2 gap-2 items-end">
                   <div className="form-field flex-1 flex items-center bg-white/90 backdrop-blur-sm rounded-xl py-3 px-4 pl-12 relative min-h-[52px] border border-gray-100 hover:border-blue-200 transition-all">
                     <div className="field-icon absolute left-3 top-1/2 -translate-y-1/2 text-base opacity-60">👥</div>
                     <div className="field-content flex-1 flex flex-col gap-0.5">
@@ -715,9 +769,14 @@ const HomePage: React.FC = () => {
                 <div className="form-row grid grid-cols-1 gap-3 items-end">
                   <button 
                     onClick={performSearch}
-                    className="search-btn w-full h-12 bg-blue-ocean border-none rounded-xl cursor-pointer flex items-center justify-center text-sm transition-all duration-300 text-white font-['DM_Sans'] font-bold gap-2 px-5 hover:bg-emerald hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(88,194,125,0.3)]"
+                    disabled={searchLoading}
+                    className="search-btn w-full h-12 bg-blue-ocean border-none rounded-xl cursor-pointer flex items-center justify-center text-sm transition-all duration-300 text-white font-['DM_Sans'] font-bold gap-2 px-5 hover:bg-emerald hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(88,194,125,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <span>Search Flights</span>
+                    {searchLoading ? (
+                      <LoadingSpinner size="sm" />
+                    ) : (
+                      <span>Search Flights</span>
+                    )}
                   </button>
                 </div>
               </div>
@@ -745,9 +804,12 @@ const HomePage: React.FC = () => {
                             searchLocations(hotelForm.location);
                           }
                         }}
+                        onBlur={() => {
+                          setTimeout(() => setShowLocationSuggestions(false), 150);
+                        }}
                       />
                       {showLocationSuggestions && locationSuggestions.length > 0 && (
-                        <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto mt-1" style={{zIndex: 999999}}>
+                        <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto mt-1" style={{zIndex: 9999}}>
                           {locationSuggestions.map((location) => (
                             <div
                               key={location._id}
@@ -767,7 +829,7 @@ const HomePage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                <div className="form-row grid grid-cols-2 gap-2 items-end">
+                <div className="form-row grid grid-cols-1 sm:grid-cols-2 gap-2 items-end">
                   <div className="form-field flex-1 flex items-center bg-white/90 backdrop-blur-sm rounded-xl py-3 px-4 pl-12 relative min-h-[52px] border border-gray-100 hover:border-blue-200 transition-all">
                     <div className="field-icon absolute left-3 top-1/2 -translate-y-1/2 text-base opacity-60">📅</div>
                     <div className="field-content flex-1 flex flex-col gap-0.5">
@@ -801,7 +863,7 @@ const HomePage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                <div className="form-row grid grid-cols-[1fr_auto] gap-2 items-end">
+                <div className="form-row grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2 items-end">
                   <div className="form-field flex-1 flex items-center bg-white/90 backdrop-blur-sm rounded-xl py-3 px-4 pl-12 relative min-h-[52px] border border-gray-100 hover:border-blue-200 transition-all">
                     <div className="field-icon absolute left-3 top-1/2 -translate-y-1/2 text-base opacity-60">👥</div>
                     <div className="field-content flex-1 flex flex-col gap-0.5">
@@ -831,10 +893,17 @@ const HomePage: React.FC = () => {
                   </div>
                   <button 
                     onClick={performSearch}
-                    className="search-btn w-auto h-12 bg-gradient-to-r from-blue-600 to-blue-700 border-none rounded-xl cursor-pointer flex items-center justify-center text-sm ml-4 transition-all duration-300 text-white font-['DM_Sans'] font-semibold gap-2 px-5 min-w-[120px] hover:from-blue-700 hover:to-blue-800 hover:shadow-lg"
+                    disabled={searchLoading}
+                    className="search-btn w-full sm:w-auto h-12 bg-gradient-to-r from-blue-600 to-blue-700 border-none rounded-xl cursor-pointer flex items-center justify-center text-sm ml-0 sm:ml-4 transition-all duration-300 text-white font-['DM_Sans'] font-semibold gap-2 px-5 min-w-[120px] hover:from-blue-700 hover:to-blue-800 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <span className="text-base">🏨</span>
-                    <span>Search Hotels</span>
+                    {searchLoading ? (
+                      <LoadingSpinner size="sm" />
+                    ) : (
+                      <>
+                        <span className="text-base">🏨</span>
+                        <span>Search Hotels</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
@@ -856,13 +925,13 @@ const HomePage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                <div className="form-row grid grid-cols-2 gap-2 items-end">
+                <div className="form-row grid grid-cols-1 sm:grid-cols-2 gap-2 items-end">
                   <div className="form-field flex-1 flex items-center bg-white/90 backdrop-blur-sm rounded-xl py-3 px-4 pl-12 relative min-h-[52px] border border-gray-100 hover:border-blue-200 transition-all">
                     <div className="field-icon absolute left-3 top-1/2 -translate-y-1/2 text-base opacity-60">🌍</div>
                     <div className="field-content flex-1 flex flex-col gap-0.5 relative">
                       <div className="field-label text-xs font-medium text-primary-600 font-['Poppins'] uppercase tracking-wide">Destination</div>
                       <input 
-                        className="field-input border-none bg-none text-sm text-primary-400 font-['Poppins'] outline-none w-full" 
+                        className="field-input border-none bg-none text-sm text-primary-800 font-['Poppins'] font-medium outline-none w-full placeholder:text-primary-400 placeholder:font-normal" 
                         placeholder="Where do you want to go?" 
                         value={tripForm.to}
                         onChange={(e) => {
@@ -876,9 +945,12 @@ const HomePage: React.FC = () => {
                             searchLocations(tripForm.to);
                           }
                         }}
+                        onBlur={() => {
+                          setTimeout(() => setShowTripToSuggestions(false), 150);
+                        }}
                       />
                       {showTripToSuggestions && locationSuggestions.length > 0 && (
-                        <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto mt-1" style={{zIndex: 999999}}>
+                        <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto mt-1" style={{zIndex: 9999}}>
                           {locationSuggestions.map((location) => (
                             <div
                               key={location._id}
@@ -981,8 +1053,8 @@ const HomePage: React.FC = () => {
                 </div>
                 <div className="itinerary-options grid grid-cols-1 sm:grid-cols-3 gap-2 my-4">
                   <div 
-                    className={`option-card bg-white/95 backdrop-blur-sm border border-gray-200 rounded-xl py-4 px-4 text-center cursor-pointer transition-all duration-300 min-h-[80px] flex flex-col justify-center relative hover:-translate-y-0.5 hover:shadow-lg hover:border-blue-300 ${
-                      selectedOption === 'ai-magic' ? 'selected border-blue-500 bg-blue-50 shadow-md transform -translate-y-0.5' : ''
+                    className={`option-card bg-white/95 backdrop-blur-sm border-2 rounded-xl py-4 px-4 text-center cursor-pointer transition-all duration-300 min-h-[80px] flex flex-col justify-center relative hover:-translate-y-0.5 hover:shadow-lg hover:border-blue-300 ${
+                      selectedOption === 'ai-magic' ? 'selected border-blue-500 bg-blue-50 shadow-md transform -translate-y-0.5' : 'border-gray-200'
                     }`}
                     onClick={() => selectItineraryOption('ai-magic')}
                   >
@@ -992,34 +1064,47 @@ const HomePage: React.FC = () => {
                     <div className="text-xs text-primary-500 leading-tight">AI creates perfect trip</div>
                   </div>
                   <div 
-                    className={`option-card bg-white/95 backdrop-blur-sm border border-gray-200 rounded-xl py-4 px-4 text-center cursor-pointer transition-all duration-300 min-h-[80px] flex flex-col justify-center relative hover:-translate-y-0.5 hover:shadow-lg hover:border-blue-300 ${
-                      selectedOption === 'packages' ? 'selected border-blue-500 bg-blue-50 shadow-md transform -translate-y-0.5' : ''
+                    className={`option-card bg-white/95 backdrop-blur-sm border-2 rounded-xl py-4 px-4 text-center cursor-pointer transition-all duration-300 min-h-[80px] flex flex-col justify-center relative hover:-translate-y-0.5 hover:shadow-lg hover:border-blue-300 ${
+                      selectedOption === 'packages' ? 'selected border-blue-500 bg-blue-50 shadow-md transform -translate-y-0.5' : 'border-blue-300 shadow-sm'
                     }`}
                     onClick={() => selectItineraryOption('packages')}
                   >
-                    <div className="option-badge badge-ready absolute -top-2 left-1/2 -translate-x-1/2 text-[0.6rem] px-2 py-1 rounded-full font-bold font-['DM_Sans'] bg-emerald text-white shadow-sm">🌟 Default</div>
+                    <div className="option-badge badge-ready absolute -top-2 left-1/2 -translate-x-1/2 text-[0.6rem] px-2 py-1 rounded-full font-bold font-['DM_Sans'] bg-blue-ocean text-white shadow-sm">🌟 Recommended</div>
                     <div className="text-xl md:text-2xl mb-2">📦</div>
                     <div className="text-sm font-bold text-primary-900 mb-1">Trips</div>
                     <div className="text-xs text-primary-500 leading-tight">Pre-made adventures</div>
                   </div>
                   <div 
-                    className={`option-card bg-white/95 backdrop-blur-sm border border-gray-200 rounded-xl py-4 px-4 text-center cursor-pointer transition-all duration-300 min-h-[80px] flex flex-col justify-center relative hover:-translate-y-0.5 hover:shadow-lg hover:border-blue-300 ${
-                      selectedOption === 'custom' ? 'selected border-blue-500 bg-blue-50 shadow-md transform -translate-y-0.5' : ''
+                    className={`option-card bg-white/95 backdrop-blur-sm border-2 rounded-xl py-4 px-4 text-center cursor-pointer transition-all duration-300 min-h-[80px] flex flex-col justify-center relative hover:-translate-y-0.5 hover:shadow-lg hover:border-blue-300 ${
+                      selectedOption === 'custom' ? 'selected border-blue-500 bg-blue-50 shadow-md transform -translate-y-0.5' : 'border-gray-200'
                     }`}
                     onClick={() => selectItineraryOption('custom')}
                   >
-                    <div className="option-badge badge-pro absolute -top-2 left-1/2 -translate-x-1/2 text-[0.6rem] px-2 py-1 rounded-full font-bold font-['DM_Sans'] bg-blue-ocean text-white shadow-sm">🎯 Pro</div>
+                    <div className="option-badge badge-pro absolute -top-2 left-1/2 -translate-x-1/2 text-[0.6rem] px-2 py-1 rounded-full font-bold font-['DM_Sans'] bg-purple-600 text-white shadow-sm">🎯 Pro</div>
                     <div className="text-xl md:text-2xl mb-2">🛠️</div>
                     <div className="text-sm font-bold text-primary-900 mb-1">Custom</div>
                     <div className="text-xs text-primary-500 leading-tight">Build from scratch</div>
                   </div>
                 </div>
+                {formError && (
+                  <div className="error-message bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-4 flex items-center gap-2">
+                    <span>⚠️</span>
+                    <span>{formError}</span>
+                  </div>
+                )}
                 <button 
                   onClick={performSearch}
-                  className="search-btn full-width w-full ml-0 mt-4 text-base px-6 h-12 bg-gradient-to-r from-blue-600 to-blue-700 border-none rounded-xl cursor-pointer flex items-center justify-center transition-all duration-300 text-white font-['DM_Sans'] font-semibold gap-2 hover:from-blue-700 hover:to-blue-800 hover:shadow-lg active:transform active:scale-95"
+                  disabled={searchLoading}
+                  className="search-btn full-width w-full ml-0 mt-4 text-base px-6 h-12 bg-gradient-to-r from-blue-600 to-blue-700 border-none rounded-xl cursor-pointer flex items-center justify-center transition-all duration-300 text-white font-['DM_Sans'] font-semibold gap-2 hover:from-blue-700 hover:to-blue-800 hover:shadow-lg active:transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <span className="search-icon text-lg">🔍</span>
-                  <span>Find Perfect Trips</span>
+                  {searchLoading ? (
+                    <LoadingSpinner size="sm" />
+                  ) : (
+                    <>
+                      <span className="search-icon text-lg">🔍</span>
+                      <span>Find Perfect Trips</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>
@@ -1031,10 +1116,10 @@ const HomePage: React.FC = () => {
       <section className="adventure-section py-12 md:py-20 lg:py-[136px] bg-white">
         <div className="container max-w-[1280px] mx-auto px-4 md:px-8 lg:px-20">
           <div className="section-header text-center mb-16">
-            <h2 className="section-title text-5xl font-bold leading-[56px] text-primary-900 mb-3 font-['DM_Sans']">
+            <h2 className="section-title text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-primary-900 mb-3 font-['DM_Sans']">
               {featuredContent?.adventureSection?.title || "Let's go on an adventure"}
             </h2>
-            <p className="section-subtitle text-2xl font-normal leading-8 text-primary-400 font-['Poppins']">
+            <p className="section-subtitle text-lg sm:text-xl md:text-2xl font-normal leading-8 text-primary-400 font-['Poppins']">
               {featuredContent?.adventureSection?.subtitle || "Find and book a great experience."}
             </p>
           </div>
@@ -1046,11 +1131,11 @@ const HomePage: React.FC = () => {
                 className="adventure-card flex items-center gap-4 cursor-pointer transition-all duration-300 p-6 rounded-2xl bg-white shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)]"
                 onClick={() => selectAdventure(category.type)}
               >
-                <div className="adventure-icon w-20 h-20 md:w-32 md:h-32 lg:w-40 lg:h-40 flex items-center justify-center text-4xl md:text-6xl lg:text-[80px] rounded-2xl md:rounded-3xl bg-gradient-to-br from-[#C1FFF7] to-[#93E9DE]">
+                <div className="adventure-icon w-16 h-16 sm:w-20 sm:h-20 md:w-32 md:h-32 lg:w-40 lg:h-40 flex items-center justify-center text-2xl sm:text-4xl md:text-6xl lg:text-[80px] rounded-xl sm:rounded-2xl md:rounded-3xl bg-gradient-to-br from-[#C1FFF7] to-[#93E9DE]">
                   {category.icon}
                 </div>
                 <div className="adventure-content flex-1">
-                  <h3 className="text-base font-medium leading-6 text-primary-900 mb-2 font-['Poppins']">
+                  <h3 className="text-sm sm:text-base font-medium leading-6 text-primary-900 mb-2 font-['Poppins']">
                     {category.title}
                   </h3>
                   <div className="adventure-badge bg-primary-200 text-primary-900 px-3 rounded-[13px] text-xs font-bold uppercase leading-[26px] inline-block font-['Poppins']">
@@ -1071,24 +1156,29 @@ const HomePage: React.FC = () => {
       <section className="destinations-section py-12 md:py-16 lg:py-20 bg-white relative">
         <div className="container max-w-[1280px] mx-auto px-4 md:px-8 lg:px-20">
           <div className="section-header text-center mb-16">
-            <h2 className="section-title text-5xl font-bold leading-[56px] text-primary-900 mb-3 font-['DM_Sans']">
+            <h2 className="section-title text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-primary-900 mb-3 font-['DM_Sans']">
               {featuredContent?.destinationSpotlight?.title || 'Explore amazing destinations'}
             </h2>
-            <p className="section-subtitle text-xl text-primary-400 font-['Poppins']">
+            <p className="section-subtitle text-lg sm:text-xl md:text-2xl font-normal leading-8 text-primary-400 font-['Poppins']">
               {featuredContent?.destinationSpotlight?.subtitle || 'Discover breathtaking places around the world'}
             </p>
           </div>
           
           <div className="destinations-slider flex gap-8 overflow-x-auto scroll-smooth pb-5">
             {featuredContent?.destinationSpotlight?.destinations?.length > 0 ? featuredContent.destinationSpotlight.destinations.map((destination: Destination, index: number) => (
-              <div key={destination.id || index} className="destination-card min-w-[256px] cursor-pointer transition-all duration-300 rounded-3xl overflow-hidden bg-white shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)]" onClick={() => viewDestination(String(destination.id) || `destination-${index}`)}>
+              <div key={destination.id || index} className="destination-card min-w-[256px] cursor-pointer transition-all duration-300 rounded-3xl overflow-hidden bg-white shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)]" onClick={() => viewDestination(destination)}>
                 <div className="destination-image relative w-64 h-64 rounded-3xl overflow-hidden mb-5">
                   <img 
                     src={destination.image?.startsWith('http') ? destination.image : `https://images.unsplash.com/${destination.image}?w=400&h=400&fit=crop`} 
                     alt={destination.name || 'Beautiful destination'} 
                     className="w-full h-full object-cover"
+                    loading="lazy"
                     onError={(e) => {
-                      e.currentTarget.src = 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop';
+                      const target = e.currentTarget;
+                      if (!target.dataset.fallbackUsed) {
+                        target.dataset.fallbackUsed = 'true';
+                        target.src = 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop';
+                      }
                     }}
                   />
                   <div className="destination-badge absolute top-4 left-4 bg-primary-900 text-white px-3 rounded-[13px] text-xs font-bold uppercase leading-[26px] font-['Poppins']">
@@ -1125,8 +1215,30 @@ const HomePage: React.FC = () => {
           </div>
           
           <div className="slider-controls hidden lg:flex absolute top-1/2 right-20 -translate-y-1/2 gap-2">
-            <button className="slider-btn w-10 h-10 border-none rounded-2xl bg-white text-primary-400 cursor-pointer flex items-center justify-center text-lg transition-all duration-300 shadow-[0_2px_8px_rgba(0,0,0,0.1)] hover:bg-blue-ocean hover:text-white">‹</button>
-            <button className="slider-btn w-10 h-10 border-none rounded-2xl bg-white text-primary-400 cursor-pointer flex items-center justify-center text-lg transition-all duration-300 shadow-[0_2px_8px_rgba(0,0,0,0.1)] hover:bg-blue-ocean hover:text-white">›</button>
+            <button 
+              onClick={() => {
+                const slider = document.querySelector('.destinations-slider');
+                if (slider) {
+                  slider.scrollBy({ left: -300, behavior: 'smooth' });
+                }
+              }}
+              className="slider-btn w-10 h-10 border-none rounded-2xl bg-white text-primary-400 cursor-pointer flex items-center justify-center text-lg transition-all duration-300 shadow-[0_2px_8px_rgba(0,0,0,0.1)] hover:bg-blue-ocean hover:text-white"
+              aria-label="Previous destinations"
+            >
+              ‹
+            </button>
+            <button 
+              onClick={() => {
+                const slider = document.querySelector('.destinations-slider');
+                if (slider) {
+                  slider.scrollBy({ left: 300, behavior: 'smooth' });
+                }
+              }}
+              className="slider-btn w-10 h-10 border-none rounded-2xl bg-white text-primary-400 cursor-pointer flex items-center justify-center text-lg transition-all duration-300 shadow-[0_2px_8px_rgba(0,0,0,0.1)] hover:bg-blue-ocean hover:text-white"
+              aria-label="Next destinations"
+            >
+              ›
+            </button>
           </div>
         </div>
       </section>
@@ -1135,10 +1247,10 @@ const HomePage: React.FC = () => {
       <section className="planning-section py-12 md:py-20 lg:py-[136px] bg-white">
         <div className="container max-w-[1280px] mx-auto px-4 md:px-8 lg:px-20">
           <div className="section-header text-center mb-16">
-            <h2 className="section-title text-5xl font-bold leading-[56px] text-primary-900 mb-3 font-['DM_Sans']">
+            <h2 className="section-title text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-primary-900 mb-3 font-['DM_Sans']">
               How do you want to plan your trip?
             </h2>
-            <p className="section-subtitle text-2xl font-normal leading-8 text-primary-400 font-['Poppins']">
+            <p className="section-subtitle text-lg sm:text-xl md:text-2xl font-normal leading-8 text-primary-400 font-['Poppins']">
               Choose the perfect way to create your dream journey
             </p>
           </div>
@@ -1187,10 +1299,10 @@ const HomePage: React.FC = () => {
       <section className="packages-section py-12 md:py-20 lg:py-[136px] bg-white">
         <div className="container max-w-[1280px] mx-auto px-4 md:px-8 lg:px-20">
           <div className="section-header text-center mb-16">
-            <h2 className="section-title text-5xl font-bold leading-[56px] text-primary-900 mb-3 font-['DM_Sans']">
+            <h2 className="section-title text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-primary-900 mb-3 font-['DM_Sans']">
               Ready-made adventures
             </h2>
-            <p className="section-subtitle text-2xl font-normal leading-8 text-primary-400 font-['Poppins']">
+            <p className="section-subtitle text-lg sm:text-xl md:text-2xl font-normal leading-8 text-primary-400 font-['Poppins']">
               Handcrafted itineraries by travel experts
             </p>
           </div>
@@ -1258,19 +1370,19 @@ const HomePage: React.FC = () => {
         <div className="container max-w-[1280px] mx-auto px-4 md:px-8 lg:px-20">
           <div className="stats-grid grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-10 max-w-[1000px] mx-auto text-center">
             <div className="stat-item p-8 bg-gradient-to-br from-white to-blue-ocean/[0.02] rounded-3xl border border-primary-200 transition-all duration-300 relative overflow-hidden hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(59,113,254,0.1)] hover:border-blue-ocean before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-gradient-to-r before:from-blue-ocean before:via-emerald before:to-amber-premium">
-              <div className="stat-number text-[40px] font-black bg-gradient-to-br from-blue-ocean to-emerald bg-clip-text text-transparent mb-2 font-['DM_Sans']">{stats?.happyCustomers?.toLocaleString() || '0'}+</div>
+              <div className="stat-number text-2xl sm:text-3xl md:text-[40px] font-black bg-gradient-to-br from-blue-ocean to-emerald bg-clip-text text-transparent mb-2 font-['DM_Sans']">{stats?.happyCustomers?.toLocaleString() || '0'}+</div>
               <div className="stat-label text-base text-primary-400 font-medium font-['Poppins']">Happy Travelers</div>
             </div>
             <div className="stat-item p-8 bg-gradient-to-br from-white to-blue-ocean/[0.02] rounded-3xl border border-primary-200 transition-all duration-300 relative overflow-hidden hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(59,113,254,0.1)] hover:border-blue-ocean before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-gradient-to-r before:from-blue-ocean before:via-emerald before:to-amber-premium">
-              <div className="stat-number text-[40px] font-black bg-gradient-to-br from-blue-ocean to-emerald bg-clip-text text-transparent mb-2 font-['DM_Sans']">{stats?.averageRating || '0'}⭐</div>
+              <div className="stat-number text-2xl sm:text-3xl md:text-[40px] font-black bg-gradient-to-br from-blue-ocean to-emerald bg-clip-text text-transparent mb-2 font-['DM_Sans']">{stats?.averageRating || '0'}⭐</div>
               <div className="stat-label text-base text-primary-400 font-medium font-['Poppins']">Average Rating</div>
             </div>
             <div className="stat-item p-8 bg-gradient-to-br from-white to-blue-ocean/[0.02] rounded-3xl border border-primary-200 transition-all duration-300 relative overflow-hidden hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(59,113,254,0.1)] hover:border-blue-ocean before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-gradient-to-r before:from-blue-ocean before:via-emerald before:to-amber-premium">
-              <div className="stat-number text-[40px] font-black bg-gradient-to-br from-blue-ocean to-emerald bg-clip-text text-transparent mb-2 font-['DM_Sans']">{stats?.destinations || '0'}+</div>
+              <div className="stat-number text-2xl sm:text-3xl md:text-[40px] font-black bg-gradient-to-br from-blue-ocean to-emerald bg-clip-text text-transparent mb-2 font-['DM_Sans']">{stats?.destinations || '0'}+</div>
               <div className="stat-label text-base text-primary-400 font-medium font-['Poppins']">Destinations</div>
             </div>
             <div className="stat-item p-8 bg-gradient-to-br from-white to-blue-ocean/[0.02] rounded-3xl border border-primary-200 transition-all duration-300 relative overflow-hidden hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(59,113,254,0.1)] hover:border-blue-ocean before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-gradient-to-r before:from-blue-ocean before:via-emerald before:to-amber-premium">
-              <div className="stat-number text-[40px] font-black bg-gradient-to-br from-blue-ocean to-emerald bg-clip-text text-transparent mb-2 font-['DM_Sans']">{stats?.support || 'N/A'}</div>
+              <div className="stat-number text-2xl sm:text-3xl md:text-[40px] font-black bg-gradient-to-br from-blue-ocean to-emerald bg-clip-text text-transparent mb-2 font-['DM_Sans']">{stats?.support || 'N/A'}</div>
               <div className="stat-label text-base text-primary-400 font-medium font-['Poppins']">Support</div>
             </div>
           </div>
@@ -1281,10 +1393,10 @@ const HomePage: React.FC = () => {
       <section className="travel-blog py-12 md:py-16 lg:py-20 bg-white">
         <div className="container max-w-[1280px] mx-auto px-4 md:px-8 lg:px-20">
           <div className="section-header text-center mb-16">
-            <h2 className="section-title text-5xl font-bold leading-[56px] text-primary-900 mb-3 font-['DM_Sans']">
+            <h2 className="section-title text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-primary-900 mb-3 font-['DM_Sans']">
               Latest travel insights & tips
             </h2>
-            <p className="section-subtitle text-2xl font-normal leading-8 text-primary-400 font-['Poppins']">
+            <p className="section-subtitle text-lg sm:text-xl md:text-2xl font-normal leading-8 text-primary-400 font-['Poppins']">
               Expert advice and inspiration for your next adventure
             </p>
           </div>
@@ -1316,7 +1428,60 @@ const HomePage: React.FC = () => {
           </div>
           
           <div className="blog-cta text-center">
-            <a href="/blog" className="view-all-btn bg-blue-ocean text-white py-3 px-6 rounded-lg font-semibold transition-all duration-300 inline-block hover:bg-emerald hover:-translate-y-0.5">View All Articles</a>
+            <button 
+              onClick={() => navigate('/blog')}
+              className="view-all-btn bg-blue-ocean text-white py-3 px-6 rounded-lg font-semibold transition-all duration-300 inline-block hover:bg-emerald hover:-translate-y-0.5 border-none cursor-pointer"
+            >
+              View All Articles
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Quick Access - Last Component */}
+      <section className="quick-access py-12 md:py-16 lg:py-20 bg-gradient-to-br from-gray-50 to-blue-50">
+        <div className="container max-w-[1280px] mx-auto px-4 md:px-8 lg:px-20">
+          <div className="section-header text-center mb-8">
+            <h2 className="section-title text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-primary-900 mb-3 font-['DM_Sans']">
+              Quick Access
+            </h2>
+            <p className="section-subtitle text-lg sm:text-xl md:text-2xl font-normal leading-8 text-primary-400 font-['Poppins']">
+              Jump directly to any trip
+            </p>
+          </div>
+          
+          <div className="quick-access-list max-w-[1000px] mx-auto">
+            <div className="bg-white rounded-2xl p-6 shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-gray-100">
+              {(featuredContent?.quickAccessTrips && featuredContent.quickAccessTrips.length > 0) ? (
+                <div className="flex flex-wrap gap-3 justify-center">
+                  {featuredContent.quickAccessTrips.map((trip: any, index: number) => (
+                    <button
+                      key={trip.slug || index}
+                      onClick={() => navigate(`/trips/${trip.slug}`)}
+                      className="inline-flex items-center gap-2 py-2 px-4 rounded-lg bg-gray-50 hover:bg-blue-50 transition-all duration-200 group min-h-[44px] border border-gray-200 hover:border-blue-200"
+                    >
+                      <span className="text-blue-ocean group-hover:text-emerald transition-colors text-sm">#</span>
+                      <span className="text-primary-900 font-medium font-['Poppins'] group-hover:text-blue-ocean transition-colors text-sm whitespace-nowrap">
+                        {trip.title}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-primary-400 font-['Poppins']">No quick access trips available</p>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <div className="quick-access-cta text-center mt-8">
+            <button 
+              onClick={() => navigate('/trips')}
+              className="view-all-btn bg-blue-ocean text-white py-3 px-6 rounded-2xl text-sm font-bold cursor-pointer transition-all duration-300 font-['DM_Sans'] hover:bg-emerald hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(88,194,125,0.3)] border-none"
+            >
+              View All Trips
+            </button>
           </div>
         </div>
       </section>

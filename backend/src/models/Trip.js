@@ -63,7 +63,12 @@ const tripSchema = new mongoose.Schema({
   // Pricing Information
   pricing: {
     currency: { type: String, default: 'USD' },
-    estimated: Number,
+    basePrice: Number, // Cost price
+    sellPrice: Number, // Selling price to customers
+    discountPercent: { type: Number, default: 0 }, // Discount percentage
+    discountAmount: { type: Number, default: 0 }, // Fixed discount amount
+    finalPrice: Number, // Final price after discount
+    estimated: Number, // Legacy field for compatibility
     breakdown: {
       flights: { type: Number, default: 0 },
       accommodation: { type: Number, default: 0 },
@@ -75,7 +80,9 @@ const tripSchema = new mongoose.Schema({
     priceRange: { 
       type: String, 
       enum: ['budget', 'mid-range', 'luxury'] 
-    }
+    },
+    profitMargin: Number, // Profit margin percentage
+    taxIncluded: { type: Boolean, default: true }
   },
   
   // Day-by-day Itinerary
@@ -250,6 +257,7 @@ const tripSchema = new mongoose.Schema({
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   template: { type: Boolean, default: false },
   featured: { type: Boolean, default: false },
+  quickAccess: { type: Boolean, default: false },
   priority: { type: Number, default: 0 },
   status: { 
     type: String, 

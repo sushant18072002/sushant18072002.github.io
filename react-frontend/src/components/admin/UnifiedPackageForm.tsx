@@ -12,12 +12,24 @@ interface PackageFormData {
   destinations: string;
   duration: number;
   price: number;
+  basePrice: number;
+  sellPrice: number;
+  discountPercent: number;
+  discountAmount: number;
+  finalPrice: number;
+  profitMargin: number;
+  taxIncluded: boolean;
   currency: string;
   category: string;
   includes: string;
   excludes: string;
   highlights: string;
   featured: boolean;
+  quickAccess: boolean;
+  template: boolean;
+  priority: number;
+  status: string;
+  type: string;
   travelStyle: string;
   difficulty: string;
   couples: boolean;
@@ -30,6 +42,8 @@ interface PackageFormData {
   fitnessLevel: string;
   walkingDistance: number;
   altitude: number;
+  specialNeeds: string;
+  priceRange: string;
   priceBreakdownFlights: number;
   priceBreakdownAccommodation: number;
   priceBreakdownActivities: number;
@@ -40,6 +54,7 @@ interface PackageFormData {
   requiresApproval: boolean;
   advanceBooking: number;
   cancellationPolicy: string;
+  paymentTerms: string;
   depositRequired: number;
   finalPaymentDue: number;
   // Travel Info
@@ -47,14 +62,25 @@ interface PackageFormData {
   weather: string;
   minTemp: number;
   maxTemp: number;
+  rainfall: string;
   visaRequired: boolean;
+  visaCountries: string;
+  visaProcessingTime: string;
   visaCost: number;
   healthInsurance: boolean;
   vaccinations: string;
+  medicalFacilities: string;
   safetyLevel: string;
+  safetyWarnings: string;
+  emergencyContacts: string;
   languages: string;
   localCurrency: string;
   customs: string;
+  etiquette: string;
+  packingEssentials: string;
+  packingClothing: string;
+  packingEquipment: string;
+  packingOptional: string;
   // Availability
   maxBookings: number;
   seasonal: boolean;
@@ -62,13 +88,13 @@ interface PackageFormData {
   isPublic: boolean;
   allowCopy: boolean;
   allowComments: boolean;
-  // Missing fields
+  // Customization
+  customizableDuration: boolean;
+  customizableActivities: boolean;
+  customizableAccommodation: boolean;
+  customizableDates: boolean;
+  customizableGroupSize: boolean;
   tags: string;
-  includes: string;
-  excludes: string;
-  travelStyle: string;
-  template: boolean;
-  shareCode: string;
 }
 
 interface UnifiedPackageFormProps {
@@ -186,16 +212,27 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
           destinations: pkg.primaryDestination?.name ? `${pkg.primaryDestination.name}, ${pkg.primaryDestination.country?.name || ''}` : '',
           duration: pkg.duration?.days || pkg.duration || 7,
           price: pkg.pricing?.estimated || pkg.price?.amount || pkg.price || 0,
+          basePrice: pkg.pricing?.basePrice || 0,
+          sellPrice: pkg.pricing?.sellPrice || 0,
+          discountPercent: pkg.pricing?.discountPercent || 0,
+          discountAmount: pkg.pricing?.discountAmount || 0,
+          finalPrice: pkg.pricing?.finalPrice || 0,
+          profitMargin: pkg.pricing?.profitMargin || 0,
+          taxIncluded: pkg.pricing?.taxIncluded !== false,
           currency: pkg.pricing?.currency || pkg.price?.currency || 'USD',
           category: pkg.category?.name || pkg.category || '',
           highlights,
           includes,
           excludes,
           featured: pkg.featured || false,
+          quickAccess: pkg.quickAccess || false,
           template: pkg.template || false,
+          priority: pkg.priority || 0,
+          status: pkg.status || 'draft',
+          type: pkg.type || 'custom',
           tags: pkg.tags?.join(', ') || '',
-          travelStyle: pkg.travelStyle || '',
-          difficulty: pkg.difficulty || '',
+          travelStyle: pkg.travelStyle || 'cultural',
+          difficulty: pkg.difficulty || 'moderate',
           couples: pkg.suitableFor?.couples || false,
           families: pkg.suitableFor?.families || false,
           soloTravelers: pkg.suitableFor?.soloTravelers || false,
@@ -206,6 +243,8 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
           fitnessLevel: pkg.physicalRequirements?.fitnessLevel || 'low',
           walkingDistance: pkg.physicalRequirements?.walkingDistance || 0,
           altitude: pkg.physicalRequirements?.altitude || 0,
+          specialNeeds: pkg.physicalRequirements?.specialNeeds?.join(', ') || '',
+          priceRange: pkg.pricing?.priceRange || 'mid-range',
           priceBreakdownFlights: pkg.pricing?.breakdown?.flights || 0,
           priceBreakdownAccommodation: pkg.pricing?.breakdown?.accommodation || 0,
           priceBreakdownActivities: pkg.pricing?.breakdown?.activities || 0,
@@ -216,6 +255,7 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
           requiresApproval: pkg.bookingInfo?.requiresApproval !== false,
           advanceBooking: pkg.bookingInfo?.advanceBooking || 7,
           cancellationPolicy: pkg.bookingInfo?.cancellationPolicy || '',
+          paymentTerms: pkg.bookingInfo?.paymentTerms || '',
           depositRequired: pkg.bookingInfo?.depositRequired || 50,
           finalPaymentDue: pkg.bookingInfo?.finalPaymentDue || 30,
           // Travel Info
@@ -223,20 +263,37 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
           weather: pkg.travelInfo?.bestTimeToVisit?.weather || '',
           minTemp: pkg.travelInfo?.bestTimeToVisit?.temperature?.min || 0,
           maxTemp: pkg.travelInfo?.bestTimeToVisit?.temperature?.max || 0,
+          rainfall: pkg.travelInfo?.bestTimeToVisit?.rainfall || '',
           visaRequired: pkg.travelInfo?.visaRequirements?.required || false,
+          visaCountries: pkg.travelInfo?.visaRequirements?.countries?.join(', ') || '',
+          visaProcessingTime: pkg.travelInfo?.visaRequirements?.processingTime || '',
           visaCost: pkg.travelInfo?.visaRequirements?.cost || 0,
           healthInsurance: pkg.travelInfo?.healthRequirements?.healthInsurance || false,
           vaccinations: pkg.travelInfo?.healthRequirements?.vaccinations?.join(', ') || '',
+          medicalFacilities: pkg.travelInfo?.healthRequirements?.medicalFacilities || '',
           safetyLevel: pkg.travelInfo?.safetyInformation?.level || 'low',
+          safetyWarnings: pkg.travelInfo?.safetyInformation?.warnings?.join(', ') || '',
+          emergencyContacts: pkg.travelInfo?.safetyInformation?.emergencyContacts?.join(', ') || '',
           languages: pkg.travelInfo?.localCulture?.language?.join(', ') || '',
           localCurrency: pkg.travelInfo?.localCulture?.currency || '',
           customs: pkg.travelInfo?.localCulture?.customs?.join(', ') || '',
+          etiquette: pkg.travelInfo?.localCulture?.etiquette?.join(', ') || '',
+          packingEssentials: pkg.travelInfo?.packingList?.essentials?.join(', ') || '',
+          packingClothing: pkg.travelInfo?.packingList?.clothing?.join(', ') || '',
+          packingEquipment: pkg.travelInfo?.packingList?.equipment?.join(', ') || '',
+          packingOptional: pkg.travelInfo?.packingList?.optional?.join(', ') || '',
           // Availability & Sharing
           maxBookings: pkg.availability?.maxBookings || 20,
           seasonal: pkg.availability?.seasonal || false,
           isPublic: pkg.sharing?.isPublic !== false,
           allowCopy: pkg.sharing?.allowCopy !== false,
-          allowComments: pkg.sharing?.allowComments !== false
+          allowComments: pkg.sharing?.allowComments !== false,
+          // Customization
+          customizableDuration: pkg.customizable?.duration !== false,
+          customizableActivities: pkg.customizable?.activities !== false,
+          customizableAccommodation: pkg.customizable?.accommodation !== false,
+          customizableDates: pkg.customizable?.dates !== false,
+          customizableGroupSize: pkg.customizable?.groupSize !== false
         });
         
         // Initialize selected destinations and countries
@@ -319,9 +376,16 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
           nights: parseInt(data.duration.toString()) - 1
         },
         pricing: {
-          estimated: parseFloat(data.price.toString()),
+          basePrice: parseFloat(data.basePrice?.toString()) || 0,
+          sellPrice: parseFloat(data.sellPrice?.toString()) || 0,
+          discountPercent: parseFloat(data.discountPercent?.toString()) || 0,
+          discountAmount: parseFloat(data.discountAmount?.toString()) || 0,
+          finalPrice: parseFloat(data.finalPrice?.toString()) || parseFloat(data.price?.toString()) || 0,
+          profitMargin: parseFloat(data.profitMargin?.toString()) || 0,
+          taxIncluded: data.taxIncluded !== false,
+          estimated: parseFloat(data.price?.toString()) || parseFloat(data.finalPrice?.toString()) || 0,
           currency: data.currency || 'USD',
-          priceRange: parseFloat(data.price.toString()) < 1000 ? 'budget' : parseFloat(data.price.toString()) < 3000 ? 'mid-range' : 'luxury',
+          priceRange: data.priceRange || (parseFloat(data.price?.toString() || '0') < 1000 ? 'budget' : parseFloat(data.price?.toString() || '0') < 3000 ? 'mid-range' : 'luxury'),
           breakdown: {
             flights: parseFloat(data.priceBreakdownFlights?.toString()) || 0,
             accommodation: parseFloat(data.priceBreakdownAccommodation?.toString()) || 0,
@@ -342,9 +406,11 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
         includes: data.includes ? data.includes.split(',').map(item => item.trim()).filter(item => item) : [],
         excludes: data.excludes ? data.excludes.split(',').map(item => item.trim()).filter(item => item) : [],
         featured: data.featured || false,
+        quickAccess: data.quickAccess || false,
         template: data.template || false,
-        status: 'published',
-        type: 'custom',
+        priority: parseInt(data.priority?.toString()) || 0,
+        status: data.status || 'published',
+        type: data.type || 'custom',
         suitableFor: {
           couples: data.couples || false,
           families: data.families || false,
@@ -362,21 +428,21 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
           fitnessLevel: data.fitnessLevel || 'low',
           walkingDistance: parseFloat(data.walkingDistance?.toString()) || 0,
           altitude: parseInt(data.altitude?.toString()) || 0,
-          specialNeeds: []
+          specialNeeds: data.specialNeeds ? data.specialNeeds.split(',').map(item => item.trim()).filter(item => item) : []
         },
         customizable: {
-          duration: true,
-          activities: true,
-          accommodation: true,
-          dates: true,
-          groupSize: true
+          duration: data.customizableDuration !== false,
+          activities: data.customizableActivities !== false,
+          accommodation: data.customizableAccommodation !== false,
+          dates: data.customizableDates !== false,
+          groupSize: data.customizableGroupSize !== false
         },
         bookingInfo: {
           instantBook: data.instantBook || false,
           requiresApproval: data.requiresApproval !== false,
           advanceBooking: parseInt(data.advanceBooking?.toString()) || 7,
           cancellationPolicy: data.cancellationPolicy || '',
-          paymentTerms: '',
+          paymentTerms: data.paymentTerms || '',
           depositRequired: parseInt(data.depositRequired?.toString()) || 50,
           finalPaymentDue: parseInt(data.finalPaymentDue?.toString()) || 30
         },
@@ -757,24 +823,80 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
                         }} />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-primary-900 mb-2">Total Price *</label>
-                      <div className="grid grid-cols-2 gap-2 mb-2">
-                        <label className="flex items-center">
-                          <input type="radio" name="priceType" value="per-person" defaultChecked className="mr-2" />
-                          <span className="text-sm">Per Person</span>
-                        </label>
-                        <label className="flex items-center">
-                          <input type="radio" name="priceType" value="per-group" className="mr-2" />
-                          <span className="text-sm">Per Group</span>
-                        </label>
-                      </div>
+                      <label className="block text-sm font-semibold text-primary-900 mb-2">Legacy Price (for compatibility)</label>
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-600">$</span>
-                        <input {...form.register('price', { required: 'Price required' })} 
+                        <input {...form.register('price')} 
                           type="number" min="0" step="0.01" className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" 
                           placeholder="2499" />
                       </div>
-                      <p className="text-xs text-primary-500 mt-1">Detailed breakdown can be set in Details tab</p>
+                    </div>
+                  </div>
+
+                  {/* Comprehensive Pricing */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-primary-900 mb-3">💰 Pricing Details</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-primary-900 mb-2">Base Price (Cost) *</label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-600">$</span>
+                          <input {...form.register('basePrice', { required: 'Base price required' })} 
+                            type="number" min="0" step="0.01" className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" 
+                            placeholder="1800" />
+                        </div>
+                        <p className="text-xs text-primary-500 mt-1">Your cost for this trip</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-primary-900 mb-2">Sell Price *</label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-600">$</span>
+                          <input {...form.register('sellPrice', { required: 'Sell price required' })} 
+                            type="number" min="0" step="0.01" className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" 
+                            placeholder="2500" />
+                        </div>
+                        <p className="text-xs text-primary-500 mt-1">Price before discount</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-primary-900 mb-2">Final Price *</label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-600">$</span>
+                          <input {...form.register('finalPrice', { required: 'Final price required' })} 
+                            type="number" min="0" step="0.01" className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" 
+                            placeholder="2250" />
+                        </div>
+                        <p className="text-xs text-primary-500 mt-1">Customer pays this amount</p>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-primary-900 mb-2">Discount %</label>
+                        <input {...form.register('discountPercent')} 
+                          type="number" min="0" max="100" step="0.1" className="w-full px-4 py-3 border border-primary-200 rounded-lg" 
+                          placeholder="10" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-primary-900 mb-2">Discount Amount</label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-600">$</span>
+                          <input {...form.register('discountAmount')} 
+                            type="number" min="0" step="0.01" className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" 
+                            placeholder="250" />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-primary-900 mb-2">Profit Margin %</label>
+                        <input {...form.register('profitMargin')} 
+                          type="number" min="0" step="0.1" className="w-full px-4 py-3 border border-primary-200 rounded-lg" 
+                          placeholder="25" />
+                      </div>
+                      <div className="flex items-center">
+                        <label className="flex items-center">
+                          <input type="checkbox" {...form.register('taxIncluded')} defaultChecked className="mr-2" />
+                          <span className="text-sm font-semibold text-primary-900">Tax Included</span>
+                        </label>
+                      </div>
                     </div>
                   </div>
 
@@ -799,7 +921,7 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                       <label className="block text-sm font-semibold text-primary-900 mb-2">Travel Style</label>
                       <select {...form.register('travelStyle')} className="w-full px-4 py-3 border border-primary-200 rounded-lg">
@@ -826,6 +948,40 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
                         <option value="GBP">GBP (£)</option>
                         <option value="INR">INR (₹)</option>
                       </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-primary-900 mb-2">Price Range</label>
+                      <select {...form.register('priceRange')} className="w-full px-4 py-3 border border-primary-200 rounded-lg">
+                        <option value="budget">Budget</option>
+                        <option value="mid-range">Mid-range</option>
+                        <option value="luxury">Luxury</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-primary-900 mb-2">Trip Type</label>
+                      <select {...form.register('type')} className="w-full px-4 py-3 border border-primary-200 rounded-lg">
+                        <option value="featured">Featured</option>
+                        <option value="custom">Custom</option>
+                        <option value="ai-generated">AI Generated</option>
+                        <option value="user-created">User Created</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-primary-900 mb-2">Status</label>
+                      <select {...form.register('status')} className="w-full px-4 py-3 border border-primary-200 rounded-lg">
+                        <option value="draft">Draft</option>
+                        <option value="published">Published</option>
+                        <option value="archived">Archived</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-primary-900 mb-2">Priority</label>
+                      <input {...form.register('priority')} type="number" min="0" 
+                        className="w-full px-4 py-3 border border-primary-200 rounded-lg" 
+                        placeholder="0" />
                     </div>
                   </div>
 
@@ -863,6 +1019,10 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
                     <label className="flex items-center">
                       <input type="checkbox" {...form.register('featured')} className="mr-2" />
                       <span className="text-sm font-semibold text-primary-900">⭐ Featured Trip</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input type="checkbox" {...form.register('quickAccess')} className="mr-2" />
+                      <span className="text-sm font-semibold text-primary-900">🚀 Quick Access</span>
                     </label>
                     <label className="flex items-center">
                       <input type="checkbox" {...form.register('template')} className="mr-2" />
@@ -932,6 +1092,12 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
                           className="w-full px-4 py-3 border border-primary-200 rounded-lg" placeholder="1000" />
                       </div>
                     </div>
+                    <div className="mt-4">
+                      <label className="block text-sm font-semibold text-primary-900 mb-2">Special Needs (comma separated)</label>
+                      <input {...form.register('specialNeeds')} 
+                        className="w-full px-4 py-3 border border-primary-200 rounded-lg" 
+                        placeholder="Wheelchair accessible, Dietary restrictions" />
+                    </div>
                   </div>
 
                   {/* Price Breakdown */}
@@ -999,11 +1165,19 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
                         </div>
                       </div>
                     </div>
-                    <div className="mt-4">
-                      <label className="block text-sm font-semibold text-primary-900 mb-2">Cancellation Policy</label>
-                      <textarea {...form.register('cancellationPolicy')} rows={3} 
-                        className="w-full px-4 py-3 border border-primary-200 rounded-lg" 
-                        placeholder="Free cancellation up to 72 hours before departure..." />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-primary-900 mb-2">Cancellation Policy</label>
+                        <textarea {...form.register('cancellationPolicy')} rows={3} 
+                          className="w-full px-4 py-3 border border-primary-200 rounded-lg" 
+                          placeholder="Free cancellation up to 72 hours before departure..." />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-primary-900 mb-2">Payment Terms</label>
+                        <textarea {...form.register('paymentTerms')} rows={3} 
+                          className="w-full px-4 py-3 border border-primary-200 rounded-lg" 
+                          placeholder="50% deposit required, balance due 30 days before departure..." />
+                      </div>
                     </div>
                   </div>
 
@@ -1203,6 +1377,18 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
                           <span className="text-sm font-semibold text-primary-900">📝 Visa Required</span>
                         </label>
                         <div>
+                          <label className="block text-sm font-semibold text-primary-900 mb-2">Visa Countries</label>
+                          <input {...form.register('visaCountries')} 
+                            className="w-full px-4 py-3 border border-primary-200 rounded-lg" 
+                            placeholder="USA, UK, Canada" />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-primary-900 mb-2">Processing Time</label>
+                          <input {...form.register('visaProcessingTime')} 
+                            className="w-full px-4 py-3 border border-primary-200 rounded-lg" 
+                            placeholder="5-10 business days" />
+                        </div>
+                        <div>
                           <label className="block text-sm font-semibold text-primary-900 mb-2">Visa Cost ($)</label>
                           <input {...form.register('visaCost')} type="number" min="0" 
                             className="w-full px-4 py-3 border border-primary-200 rounded-lg" placeholder="35" />
@@ -1219,6 +1405,39 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
                             className="w-full px-4 py-3 border border-primary-200 rounded-lg" 
                             placeholder="None required" />
                         </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-primary-900 mb-2">Medical Facilities</label>
+                          <input {...form.register('medicalFacilities')} 
+                            className="w-full px-4 py-3 border border-primary-200 rounded-lg" 
+                            placeholder="Good medical facilities available" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Safety Information */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-primary-900 mb-3">Safety Information</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-primary-900 mb-2">Safety Level</label>
+                        <select {...form.register('safetyLevel')} className="w-full px-4 py-3 border border-primary-200 rounded-lg">
+                          <option value="low">Low Risk</option>
+                          <option value="moderate">Moderate Risk</option>
+                          <option value="high">High Risk</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-primary-900 mb-2">Safety Warnings</label>
+                        <input {...form.register('safetyWarnings')} 
+                          className="w-full px-4 py-3 border border-primary-200 rounded-lg" 
+                          placeholder="Avoid certain areas at night" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-primary-900 mb-2">Emergency Contacts</label>
+                        <input {...form.register('emergencyContacts')} 
+                          className="w-full px-4 py-3 border border-primary-200 rounded-lg" 
+                          placeholder="Police: 911, Hospital: 112" />
                       </div>
                     </div>
                   </div>
@@ -1240,19 +1459,48 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
                           placeholder="USD, EUR" />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-primary-900 mb-2">Safety Level</label>
-                        <select {...form.register('safetyLevel')} className="w-full px-4 py-3 border border-primary-200 rounded-lg">
-                          <option value="low">Low Risk</option>
-                          <option value="moderate">Moderate Risk</option>
-                          <option value="high">High Risk</option>
-                        </select>
+                        <label className="block text-sm font-semibold text-primary-900 mb-2">Etiquette</label>
+                        <input {...form.register('etiquette')} 
+                          className="w-full px-4 py-3 border border-primary-200 rounded-lg" 
+                          placeholder="Tipping customs, greetings" />
                       </div>
                     </div>
                     <div className="mt-4">
-                      <label className="block text-sm font-semibold text-primary-900 mb-2">Local Customs & Etiquette</label>
+                      <label className="block text-sm font-semibold text-primary-900 mb-2">Local Customs</label>
                       <textarea {...form.register('customs')} rows={3} 
                         className="w-full px-4 py-3 border border-primary-200 rounded-lg" 
                         placeholder="Dress modestly at religious sites, remove shoes before entering temples..." />
+                    </div>
+                  </div>
+
+                  {/* Packing List */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-primary-900 mb-3">Packing List</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-primary-900 mb-2">Essentials</label>
+                        <input {...form.register('packingEssentials')} 
+                          className="w-full px-4 py-3 border border-primary-200 rounded-lg" 
+                          placeholder="Passport, tickets, insurance" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-primary-900 mb-2">Clothing</label>
+                        <input {...form.register('packingClothing')} 
+                          className="w-full px-4 py-3 border border-primary-200 rounded-lg" 
+                          placeholder="Light clothing, swimwear, jacket" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-primary-900 mb-2">Equipment</label>
+                        <input {...form.register('packingEquipment')} 
+                          className="w-full px-4 py-3 border border-primary-200 rounded-lg" 
+                          placeholder="Camera, chargers, adapters" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-primary-900 mb-2">Optional Items</label>
+                        <input {...form.register('packingOptional')} 
+                          className="w-full px-4 py-3 border border-primary-200 rounded-lg" 
+                          placeholder="Books, games, snacks" />
+                      </div>
                     </div>
                   </div>
 
@@ -1317,23 +1565,23 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
                     <p className="text-sm text-primary-600 mb-3">Allow customers to customize these aspects of the trip</p>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       <label className="flex items-center">
-                        <input type="checkbox" defaultChecked className="mr-2" />
+                        <input type="checkbox" {...form.register('customizableDuration')} defaultChecked className="mr-2" />
                         <span className="text-sm">📅 Duration</span>
                       </label>
                       <label className="flex items-center">
-                        <input type="checkbox" defaultChecked className="mr-2" />
+                        <input type="checkbox" {...form.register('customizableActivities')} defaultChecked className="mr-2" />
                         <span className="text-sm">🎭 Activities</span>
                       </label>
                       <label className="flex items-center">
-                        <input type="checkbox" defaultChecked className="mr-2" />
+                        <input type="checkbox" {...form.register('customizableAccommodation')} defaultChecked className="mr-2" />
                         <span className="text-sm">🏨 Hotels</span>
                       </label>
                       <label className="flex items-center">
-                        <input type="checkbox" defaultChecked className="mr-2" />
+                        <input type="checkbox" {...form.register('customizableDates')} defaultChecked className="mr-2" />
                         <span className="text-sm">📅 Dates</span>
                       </label>
                       <label className="flex items-center">
-                        <input type="checkbox" defaultChecked className="mr-2" />
+                        <input type="checkbox" {...form.register('customizableGroupSize')} defaultChecked className="mr-2" />
                         <span className="text-sm">👥 Group Size</span>
                       </label>
                     </div>

@@ -20,6 +20,7 @@ interface TripFormData {
   difficulty: string;
   travelStyle: string;
   featured: boolean;
+  quickAccess: boolean;
 }
 
 interface TripFormProps {
@@ -43,7 +44,8 @@ const TripForm: React.FC<TripFormProps> = ({ trip, onSubmit, onCancel }) => {
       pricing: { currency: 'USD', estimated: 1000, priceRange: 'mid-range' },
       difficulty: 'moderate',
       travelStyle: 'adventure',
-      featured: false
+      featured: false,
+      quickAccess: false
     }
   });
 
@@ -217,13 +219,24 @@ const TripForm: React.FC<TripFormProps> = ({ trip, onSubmit, onCancel }) => {
         </div>
       </div>
 
-      <div className="flex items-center">
-        <input
-          {...form.register('featured')}
-          type="checkbox"
-          className="h-4 w-4 text-blue-ocean focus:ring-blue-ocean border-primary-300 rounded"
-        />
-        <label className="ml-2 block text-sm text-primary-700">Featured Trip</label>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="flex items-center">
+          <input
+            {...form.register('featured')}
+            type="checkbox"
+            className="h-4 w-4 text-blue-ocean focus:ring-blue-ocean border-primary-300 rounded"
+          />
+          <label className="ml-2 block text-sm text-primary-700">Featured Trip</label>
+        </div>
+        
+        <div className="flex items-center">
+          <input
+            {...form.register('quickAccess')}
+            type="checkbox"
+            className="h-4 w-4 text-blue-ocean focus:ring-blue-ocean border-primary-300 rounded"
+          />
+          <label className="ml-2 block text-sm text-primary-700">Quick Access</label>
+        </div>
       </div>
 
       <div className="flex justify-end space-x-3 pt-6 border-t">

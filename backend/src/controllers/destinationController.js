@@ -117,9 +117,21 @@ const getDestinationDetails = async (req, res) => {
   try {
     const { id } = req.params;
     
-    const destination = await City.findById(id)
-      .populate('country', 'name flag currency')
-      .populate('state', 'name');
+    let destination;
+    
+    // Check if id is a valid ObjectId
+    if (id.match(/^[0-9a-fA-F]{24}$/)) {
+      // It's an ObjectId
+      destination = await City.findById(id)
+        .populate('country', 'name flag currency')
+        .populate('state', 'name');
+    } else {
+      // It might be a trip slug, redirect to trip API
+      return res.status(404).json({
+        success: false,
+        error: { message: 'Invalid destination ID. Use /api/trips/{slug} for trip details.' }
+      });
+    }
 
     if (!destination) {
       return res.status(404).json({

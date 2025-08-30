@@ -6,10 +6,20 @@ router.get('/featured', async (req, res) => {
   try {
     const { Trip } = require('../models');
     const trips = await Trip.find({ featured: true, status: 'published' })
-      .populate('category', 'name icon color')
-      .populate('primaryDestination', 'name')
       .sort({ priority: -1, createdAt: -1 })
       .limit(6);
+    
+    // Safely populate each trip
+    for (const trip of trips) {
+      try {
+        await trip.populate([
+          { path: 'category', select: 'name icon color' },
+          { path: 'primaryDestination', select: 'name' }
+        ]);
+      } catch (populateError) {
+        console.warn('Populate error for featured trip:', trip._id, populateError.message);
+      }
+    }
     
     res.json({ success: true, data: { trips } });
   } catch (error) {
@@ -69,11 +79,21 @@ router.get('/', async (req, res) => {
     const skip = (page - 1) * limit;
     
     const trips = await Trip.find(query)
-      .populate('category', 'name icon color')
-      .populate('primaryDestination', 'name')
       .sort({ featured: -1, createdAt: -1 })
       .limit(limit)
       .skip(skip);
+    
+    // Safely populate each trip
+    for (const trip of trips) {
+      try {
+        await trip.populate([
+          { path: 'category', select: 'name icon color' },
+          { path: 'primaryDestination', select: 'name' }
+        ]);
+      } catch (populateError) {
+        console.warn('Populate error for trip:', trip._id, populateError.message);
+      }
+    }
     
     const total = await Trip.countDocuments(query);
     
@@ -120,14 +140,22 @@ router.get('/slugs', async (req, res) => {
 router.get('/slug/:slug', async (req, res) => {
   try {
     const { Trip } = require('../models');
-    const trip = await Trip.findOne({ slug: req.params.slug, status: 'published' })
-      .populate('category', 'name icon color')
-      .populate('primaryDestination', 'name')
-      .populate('destinations', 'name')
-      .populate('countries', 'name');
+    const trip = await Trip.findOne({ slug: req.params.slug, status: 'published' });
     
     if (!trip) {
       return res.status(404).json({ success: false, error: { message: 'Trip not found' } });
+    }
+    
+    // Safely populate fields
+    try {
+      await trip.populate([
+        { path: 'category', select: 'name icon color' },
+        { path: 'primaryDestination', select: 'name' },
+        { path: 'destinations', select: 'name' },
+        { path: 'countries', select: 'name' }
+      ]);
+    } catch (populateError) {
+      console.warn('Populate error for trip:', trip._id, populateError.message);
     }
     
     // Increment view count
@@ -139,19 +167,42 @@ router.get('/slug/:slug', async (req, res) => {
   }
 });
 
-// Get single trip by ID
-router.get('/:id', async (req, res) => {
+// Get single trip by ID or slug
+router.get('/:identifier', async (req, res) => {
   try {
     const { Trip } = require('../models');
-    const trip = await Trip.findById(req.params.id)
-      .populate('category', 'name icon color')
-      .populate('primaryDestination', 'name')
-      .populate('destinations', 'name')
-      .populate('countries', 'name');
+    const { identifier } = req.params;
+    
+    let trip;
+    
+    // Check if identifier is a valid ObjectId
+    if (identifier.match(/^[0-9a-fA-F]{24}$/)) {
+      // It's an ObjectId
+      trip = await Trip.findById(identifier);
+    } else {
+      // It's a slug
+      trip = await Trip.findOne({ slug: identifier, status: 'published' });
+    }
     
     if (!trip) {
       return res.status(404).json({ success: false, error: { message: 'Trip not found' } });
     }
+    
+    // Safely populate fields with error handling
+    try {
+      await trip.populate([
+        { path: 'category', select: 'name icon color' },
+        { path: 'primaryDestination', select: 'name' },
+        { path: 'destinations', select: 'name' },
+        { path: 'countries', select: 'name' }
+      ]);
+    } catch (populateError) {
+      console.warn('Populate error for trip:', trip._id, populateError.message);
+      // Continue without populate if there are invalid references
+    }
+    
+    // Increment view count
+    await Trip.findByIdAndUpdate(trip._id, { $inc: { 'stats.views': 1 } });
     
     res.json({ success: true, data: { trip } });
   } catch (error) {

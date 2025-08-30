@@ -46,15 +46,15 @@ const getFeaturedContent = async (req, res) => {
         `Explore ${featuredDestinations[0]?.popularFor?.[0] || 'amazing destinations'} in ${featuredDestinations[0]?.country?.name || 'beautiful places'}` :
         'Explore amazing destinations worldwide',
       subtitle: 'Discover breathtaking places and unique experiences',
-      destinations: featuredDestinations.map((dest, index) => ({
+      destinations: featuredDestinations.map((dest) => ({
         id: dest._id,
         name: dest.name,
         location: dest.country?.name || 'Beautiful Location',
-        price: dest.pricing?.averagePrice || (200 + index * 50),
-        image: dest.images?.[0] || `https://images.unsplash.com/photo-${index % 2 === 0 ? '1506905925346-21bda4d32df4' : '1464822759844-d150baec3e5e'}?w=400&h=400&fit=crop`,
-        discount: index % 3 === 0 ? `${15 + index * 5}% off` : null,
-        rating: dest.stats?.rating || (4.5 + Math.random() * 0.4),
-        reviewCount: dest.stats?.reviewCount || Math.floor(Math.random() * 3000) + 1000
+        price: dest.pricing?.averagePrice || 299,
+        image: dest.images?.[0] || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
+        discount: dest.pricing?.discount || null,
+        rating: dest.stats?.rating || 4.8,
+        reviewCount: dest.stats?.reviewCount || 1250
       }))
     };
 
@@ -67,32 +67,21 @@ const getFeaturedContent = async (req, res) => {
       .limit(3)
       .select('name icon slug');
     
-    const adventureCategories = adventureCategoriesData.length > 0 ? 
-      adventureCategoriesData.map(cat => ({
-        icon: cat.icon || '🎯',
-        title: cat.name,
-        places: '50+ Places', // Default places count
-        type: cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-')
-      })) : [
-        {
-          icon: '🏔️',
-          title: 'Adventure Trips',
-          places: '50+ Places',
-          type: 'adventure-trips'
-        },
-        {
-          icon: '🏛️',
-          title: 'Cultural Trips',
-          places: '40+ Places',
-          type: 'cultural-trips'
-        },
-        {
-          icon: '🏖️',
-          title: 'Beach Trips',
-          places: '30+ Places',
-          type: 'beach-trips'
-        }
-      ];
+    const adventureCategories = adventureCategoriesData.map(cat => ({
+      icon: cat.icon || '🎯',
+      title: cat.name,
+      places: cat.tripCount ? `${cat.tripCount}+ Places` : 'Available',
+      type: cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-')
+    }));
+
+    // Quick Access Trips - published trips with quickAccess enabled
+    const quickAccessTrips = await Trip.find({ 
+      status: 'published',
+      quickAccess: true
+    })
+      .sort({ priority: -1, createdAt: -1 })
+      .limit(8)
+      .select('title slug');
 
     // Blog posts
     const blogPosts = [
@@ -141,6 +130,7 @@ const getFeaturedContent = async (req, res) => {
         adventureCategories,
         adventureSection,
         blogPosts,
+        quickAccessTrips,
         // Hero content from database or defaults
         heroTitle: heroSettings?.value?.heroTitle || 'Discover Your Dream Journey',
         heroSubtitle: heroSettings?.value?.heroSubtitle || 'AI-powered travel planning made simple and magical',
