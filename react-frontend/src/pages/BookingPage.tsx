@@ -9,7 +9,10 @@ import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { useAuthStore } from '@/store/authStore';
 import { paymentService } from '@/services/payment.service';
 import { notificationService } from '@/services/notification.service';
-import { unifiedBookingService, UnifiedBookingData } from '@/services/unified-booking.service';
+import { tripService } from '@/services/trip.service';
+import { bookingService } from '@/services/booking.service';
+import { hotelService } from '@/services/hotel.service';
+import { flightService } from '@/services/flight.service';
 
 const bookingSchema = z.object({
   firstName: z.string().min(2, 'First name required'),
@@ -24,6 +27,8 @@ const BookingPage: React.FC = () => {
   const { type, id } = useParams<{ type: string; id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+  const customizations = location.state?.customizations;
+  const quote = location.state?.quote;
   const { user, isAuthenticated } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [bookingData, setBookingData] = useState(null);
@@ -47,48 +52,88 @@ const BookingPage: React.FC = () => {
     { id: 3, title: 'Confirmation', icon: '✅' }
   ];
 
-  // Sample booking data
-  const sampleBooking = {
-    flight: {
-      title: 'NYC → Paris',
-      airline: 'Delta Airlines',
-      date: 'Dec 15, 2024',
-      passengers: 2,
-      price: 599,
-      total: 1198
-    },
-    hotel: {
-      title: 'Spectacular views of Queenstown',
-      location: 'Queenstown, New Zealand',
-      dates: 'May 15-22, 2024',
-      guests: 2,
-      nights: 7,
-      price: 109,
-      total: 763
-    },
-    package: {
-      title: '7-Day Queenstown Adventure Package',
-      location: 'Queenstown, New Zealand',
-      dates: 'May 15-22, 2024',
-      travelers: 2,
-      price: 999,
-      total: 1797
-    }
-  };
+
 
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/auth', { state: { returnTo: location.pathname } });
       return;
     }
-    setBookingData(sampleBooking[type as keyof typeof sampleBooking]);
-  }, [type, id, isAuthenticated]);
+    
+    // Handle customized trip booking
+    if (quote && customizations) {
+      setBookingData({
+        title: 'Customized Trip',
+        location: customizations.destination || 'Custom Destination',
+        dates: `${customizations.travelDates?.departure} - ${customizations.travelDates?.return}`,
+        travelers: customizations.travelers?.adults + customizations.travelers?.children || 2,
+        price: quote.subtotal || 0,
+        total: quote.total || 0
+      });
+      setCurrentStep(1);
+    } else if (type === 'trip' && id) {
+      loadTripData();
+    } else {
+      // Load data based on booking type
+      loadBookingData();
+    }
+  }, [type, id, isAuthenticated, quote, customizations]);
+
+  const loadTripData = async () => {
+    try {
+      const response = await tripService.getTripDetails(id!);
+      const trip = response.trip;
+      setBookingData({
+        title: trip.title,
+        location: trip.destination,
+        dates: 'Select dates',
+        travelers: 2,
+        price: trip.pricing.estimated || 0,
+        total: trip.pricing.estimated || 0
+      });
+    } catch (error) {
+      console.error('Failed to load trip data:', error);
+      navigate('/trips');
+    }
+  };
+
+  const loadBookingData = async () => {
+    try {
+      if (type === 'hotel' && id) {
+        const response = await hotelService.getHotelDetails(id);
+        const hotel = response.data.hotel;
+        setBookingData({
+          title: hotel.name,
+          location: `${hotel.location?.city?.name}, ${hotel.location?.country?.name}`,
+          dates: 'Select dates',
+          guests: 2,
+          price: hotel.pricing?.priceRange?.min || 0,
+          total: hotel.pricing?.priceRange?.min || 0
+        });
+      } else if (type === 'flight' && id) {
+        const response = await flightService.getFlightDetails(id);
+        const flight = response.data.flight;
+        setBookingData({
+          title: `${flight.route.departure.airport?.city} → ${flight.route.arrival.airport?.city}`,
+          airline: flight.airline?.name,
+          date: new Date(flight.route.departure.scheduledTime).toLocaleDateString(),
+          passengers: 1,
+          price: flight.pricing.economy?.totalPrice || 0,
+          total: flight.pricing.economy?.totalPrice || 0
+        });
+      }
+    } catch (error) {
+      console.error('Failed to load booking data:', error);
+      navigate(-1);
+    }
+  };
 
   const handleSubmit = async (data: z.infer<typeof bookingSchema>) => {
     setLoading(true);
     try {
-      const bookingData: UnifiedBookingData = {
-        type: type as 'flight' | 'hotel' | 'itinerary' | 'package',
+      // Validate booking data
+      const bookingPayload = {
+        type: type as 'flight' | 'hotel' | 'trip',
         itemId: id!,
         personalInfo: {
           firstName: data.firstName,
@@ -97,18 +142,16 @@ const BookingPage: React.FC = () => {
           phone: data.phone
         },
         bookingDetails: bookingData || {},
-        addOns: [],
-        paymentInfo: {
-          cardNumber: '',
-          expiryDate: '',
-          cvv: '',
-          cardName: ''
-        },
+        customizations: customizations || {},
         specialRequests: data.specialRequests,
-        totalPrice: calculateTotal().total
+        totalPrice: bookingData?.total || 0
       };
       
-      await unifiedBookingService.validateBooking(bookingData);
+      // For trip bookings, include customization data
+      if (type === 'trip' && customizations) {
+        bookingPayload.customizations = customizations;
+      }
+      
       setCurrentStep(2);
     } catch (error) {
       console.error('Booking validation failed:', error);
@@ -121,21 +164,23 @@ const BookingPage: React.FC = () => {
     setLoading(true);
     try {
       // Create payment intent
-      const paymentIntent = await paymentService.createPaymentIntent(calculateTotal().total * 100);
+      const paymentIntent = await paymentService.createPaymentIntent((bookingData?.total || 0) * 100);
       
       // Simulate payment confirmation
       await paymentService.confirmPayment(paymentIntent.data.paymentIntent.id, 'pm_card_visa');
       
-      // Send booking confirmation email
-      const result = await unifiedBookingService.createBooking({
-        type: type as 'flight' | 'hotel' | 'itinerary' | 'package',
+      // Create booking
+      const bookingPayload = {
+        type: type as 'flight' | 'hotel' | 'trip',
         itemId: id!,
         personalInfo: form.getValues(),
         bookingDetails: bookingData || {},
-        addOns: [],
+        customizations: customizations || {},
         paymentInfo: { cardNumber: '', expiryDate: '', cvv: '', cardName: '' },
-        totalPrice: calculateTotal().total
-      });
+        totalPrice: bookingData?.total || 0
+      };
+      
+      const result = await bookingService.createBooking(bookingPayload);
       
       await notificationService.sendBookingConfirmation(result.data.booking.id, user?.email || '');
       

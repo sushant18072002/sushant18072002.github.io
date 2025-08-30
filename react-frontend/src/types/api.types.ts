@@ -154,69 +154,184 @@ export interface Airport {
 export interface Hotel {
   _id: string;
   name: string;
-  description?: string;
-  images: string[];
-  location: {
-    address: {
-      street?: string;
-      city: string;
-      state?: string;
-      country: string;
-      zipCode?: string;
-      area?: string;
-    };
-    coordinates?: {
-      lat: number;
-      lng: number;
-    };
-  };
+  chain?: string;
+  category?: string;
+  hotelCategory?: string;
+  description: string;
+  shortDescription?: string;
   starRating: number;
-  amenities: {
-    general: string[];
-    room?: string[];
-    business?: string[];
-    recreation?: string[];
+  location: {
+    destination?: string;
+    city?: any;
+    country?: any;
+    cityName?: string;
+    countryName?: string;
+    address: {
+      street: string;
+      area?: string;
+      landmark?: string;
+      zipCode?: string;
+    };
+    coordinates: {
+      type: string;
+      coordinates: [number, number];
+    };
+    distanceFromCenter?: number;
+    nearbyAttractions?: (string | {
+      name: string;
+      distance?: number;
+      type?: string;
+    })[];
+  };
+  contact?: {
+    phone?: string;
+    email?: string;
+    website?: string;
+    checkIn?: string;
+    checkOut?: string;
   };
   rooms: HotelRoom[];
+  amenities: {
+    general?: (string | {
+      name: string;
+      category?: string;
+      available?: boolean;
+      fee?: number;
+    })[];
+    business?: any[];
+    recreation?: any[];
+    food?: any[];
+    connectivity?: any[];
+    services?: any[];
+    accessibility?: any[];
+  };
+  policies?: {
+    checkIn?: {
+      from?: string;
+      to?: string;
+      minAge?: number;
+    };
+    checkOut?: {
+      from?: string;
+      to?: string;
+    };
+    cancellation?: string | {
+      type?: string;
+      description?: string;
+    };
+    children?: {
+      allowed?: boolean;
+      freeAge?: number;
+      extraBedFee?: number;
+    };
+    pets?: {
+      allowed?: boolean;
+      fee?: number;
+      restrictions?: string;
+    };
+    smoking?: {
+      allowed?: boolean;
+      areas?: string[];
+    };
+  };
+  images: {
+    url: string;
+    alt?: string;
+    category?: string;
+    isPrimary?: boolean;
+    order?: number;
+  }[];
+  rating: {
+    overall: number;
+    breakdown?: {
+      cleanliness?: number;
+      comfort?: number;
+      location?: number;
+      service?: number;
+      value?: number;
+      facilities?: number;
+    };
+    reviewCount: number;
+    totalReviews?: number;
+  };
   pricing: {
     priceRange: {
       min: number;
       max: number;
+      currency?: string;
     };
-    currency?: string;
+    averageNightlyRate?: number;
+    ratePlans?: any[];
   };
-  rating: {
-    overall: number;
-    totalReviews: number;
-    breakdown?: {
-      cleanliness: number;
-      service: number;
-      location: number;
-      value: number;
-    };
+  tags?: string[];
+  featured?: boolean;
+  verified?: boolean;
+  stats?: {
+    views?: number;
+    bookings?: number;
+    favorites?: number;
   };
   status?: string;
-  featured?: boolean;
+  seo?: {
+    slug?: string;
+    metaTitle?: string;
+    metaDescription?: string;
+    keywords?: string[];
+  };
+  createdAt?: string;
+  updatedAt?: string;
   popular?: boolean;
   luxury?: boolean;
+  deal?: {
+    originalPrice: number;
+    dealPrice: number;
+    discount: number;
+    validUntil: string;
+  };
 }
 
 export interface HotelRoom {
   id: string;
+  name: string;
   type: string;
-  description: string;
-  images: string[];
-  capacity: {
+  size?: number;
+  maxOccupancy: number;
+  bedConfiguration?: {
+    singleBeds?: number;
+    doubleBeds?: number;
+    queenBeds?: number;
+    kingBeds?: number;
+  };
+  amenities: string[];
+  images?: {
+    url: string;
+    alt?: string;
+    isPrimary?: boolean;
+    order?: number;
+  }[];
+  pricing: {
+    baseRate: number;
+    currency?: string;
+    taxes?: number;
+    fees?: number;
+    totalRate: number;
+    cancellationPolicy?: {
+      type: string;
+      deadline?: number;
+      fee?: number;
+    };
+  };
+  availability?: {
+    date: Date;
+    available: number;
+    rate: number;
+  }[];
+  totalRooms: number;
+  description?: string;
+  capacity?: {
     adults: number;
     children: number;
   };
-  amenities: string[];
-  pricing: {
-    basePrice: number;
-    taxes: number;
-    totalPrice: number;
-  };
-  availability: boolean;
 }
 
 // Package Types

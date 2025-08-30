@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 
@@ -13,11 +13,11 @@ import FlightsPage from '@/pages/FlightsPage';
 import FlightDetailsPage from '@/pages/FlightDetailsPage';
 import HotelsPage from '@/pages/HotelsPage';
 import HotelDetailsPage from '@/pages/HotelDetailsPage';
-import ItineraryHubPage from '@/pages/ItineraryHubPage';
-import ItineraryDetailsPage from '@/pages/ItineraryDetailsPage';
+import TripsHubPage from '@/pages/TripsHubPage';
+import TripDetailsPage from '@/pages/TripDetailsPage';
+import TripCustomizationPage from '@/pages/TripCustomizationPage';
 import AIItineraryPage from '@/pages/AIItineraryPage';
 import CustomBuilderPage from '@/pages/CustomBuilderPage';
-import PackageDetailsPage from '@/pages/PackageDetailsPage';
 import SearchResultsPage from '@/pages/SearchResultsPage';
 import AdminPage from '@/pages/AdminPage';
 import BlogPage from '@/pages/BlogPage';
@@ -27,7 +27,6 @@ import ContactPage from '@/pages/ContactPage';
 import LegalPage from '@/pages/LegalPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
-import PackagesPage from '@/pages/PackagesPage';
 import AuthPage from '@/pages/AuthPage';
 import DashboardPage from '@/pages/DashboardPage';
 import BookingPage from '@/pages/BookingPage';
@@ -70,10 +69,18 @@ function App() {
               <Route path="/flights/:id" element={<FlightDetailsPage />} />
               <Route path="/hotels" element={<HotelsPage />} />
               <Route path="/hotels/:id" element={<HotelDetailsPage />} />
-              <Route path="/itinerary-hub" element={<ItineraryHubPage />} />
-              <Route path="/itinerary-hub/:id" element={<ItineraryDetailsPage />} />
+              <Route path="/trips" element={<TripsHubPage />} />
+              <Route path="/trips/:id" element={<TripDetailsPage />} />
+              <Route path="/trips/:id/customize" element={<TripCustomizationPage />} />
               <Route path="/ai-itinerary" element={<AIItineraryPage />} />
+              <Route path="/itineraries/ai" element={<AIItineraryPage />} />
               <Route path="/custom-builder" element={<CustomBuilderPage />} />
+              
+              {/* Legacy redirects */}
+              <Route path="/itinerary-hub" element={<Navigate to="/trips" replace />} />
+              <Route path="/itinerary-hub/:id" element={<Navigate to="/trips" replace />} />
+              <Route path="/packages" element={<Navigate to="/trips" replace />} />
+              <Route path="/packages/:id" element={<Navigate to="/trips" replace />} />
               <Route path="/booking/:type/:id" element={
                 <ProtectedRoute>
                   <BookingPage />
@@ -91,8 +98,7 @@ function App() {
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/legal" element={<LegalPage />} />
               <Route path="*" element={<NotFoundPage />} />
-              <Route path="/packages" element={<PackagesPage />} />
-              <Route path="/packages/:id" element={<PackageDetailsPage />} />
+
               <Route path="/auth" element={<AuthPage />} />
               
               {/* Protected Routes */}

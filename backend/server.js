@@ -13,8 +13,15 @@ app.use(cors({
   origin: ['http://localhost:3001', 'http://localhost:3000'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
+
+// Additional CORS headers for file uploads
+app.use((req, res, next) => {
+  res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+  res.header('Cross-Origin-Embedder-Policy', 'unsafe-none');
+  next();
+});
 
 // Rate limiting
 const limiter = rateLimit({
@@ -35,36 +42,41 @@ mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err));
 
-// Routes
+// Core Routes
 app.use('/api/auth', require('./src/routes/auth.routes'));
-app.use('/api/v1/users', require('./src/routes/users.routes'));
-app.use('/api/flights', require('./src/routes/flights.routes'));
+app.use('/api/users', require('./src/routes/users.routes'));
+// app.use('/api/flights', require('./src/routes/flights.routes')); // Will be replaced with new implementation
 app.use('/api/hotels', require('./src/routes/hotels.routes'));
-app.use('/api/v1/bookings', require('./src/routes/bookings.routes'));
-app.use('/api/v1/itineraries', require('./src/routes/itineraries.routes'));
-app.use('/api/v1/destinations', require('./src/routes/destinations.routes'));
-app.use('/api/packages', require('./src/routes/packages.routes'));
-app.use('/api/v1/packages', require('./src/routes/packages.routes')); // Add versioned route
-app.use('/api/v1/reviews', require('./src/routes/reviews.routes'));
-app.use('/api/v1/tags', require('./src/routes/tags.routes'));
-app.use('/api/v1/search', require('./src/routes/search.routes'));
-app.use('/api/v1/notifications', require('./src/routes/notifications.routes'));
-app.use('/api/v1/dashboard', require('./src/routes/dashboard.routes'));
-app.use('/api/v1/ai', require('./src/routes/ai.routes'));
+app.use('/api/bookings', require('./src/routes/bookings.routes'));
+app.use('/api/reviews', require('./src/routes/reviews.routes'));
+app.use('/api/search', require('./src/routes/search.routes'));
+app.use('/api/notifications', require('./src/routes/notifications.routes'));
+app.use('/api/dashboard', require('./src/routes/dashboard.routes'));
+app.use('/api/ai', require('./src/routes/ai.routes'));
+app.use('/api/blog', require('./src/routes/blog.routes'));
+app.use('/api/support', require('./src/routes/support.routes'));
+
+// New Unified Routes
+app.use('/api/trips', require('./src/routes/trips.routes'));
+app.use('/api/flights', require('./src/routes/flights.routes'));
+app.use('/api/airports', require('./src/routes/airports.routes'));
+app.use('/api/locations', require('./src/routes/locations.routes'));
+app.use('/api/master', require('./src/routes/master.routes'));
+app.use('/api/home', require('./src/routes/home.routes'));
+
+// Public routes
+app.use('/api', require('./src/routes/public.routes'));
+app.use('/api/upload', require('./src/routes/upload.routes'));
 
 // Admin routes
 console.log('Loading admin routes...');
 app.use('/api/admin', require('./src/routes/admin.routes'));
 console.log('✅ Admin routes loaded successfully');
+console.log('✅ Trip routes loaded successfully');
+console.log('✅ Master data routes loaded successfully');
 
-app.use('/api/v1/content', require('./src/routes/content.routes'));
-app.use('/api/v1/support', require('./src/routes/support.routes'));
-app.use('/api/v1/blog', require('./src/routes/blog.routes'));
-app.use('/api/v1/master-data', require('./src/routes/masterData.routes'));
-app.use('/api/v1/analytics', require('./src/routes/analytics.routes'));
-app.use('/api/v1/airlines', require('./src/routes/airlines.routes'));
-app.use('/api/v1/airports', require('./src/routes/airports.routes'));
-app.use('/api/v1/locations', require('./src/routes/locations.routes'));
+// Legacy routes (remove deprecated ones)
+// Removed: content, analytics, airlines, airports, locations, master-data
 
 // Health check
 app.get('/health', (req, res) => {
@@ -93,10 +105,18 @@ app.use('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📡 API Base URL: http://localhost:${PORT}/api`);
   console.log(`🔗 Health Check: http://localhost:${PORT}/health`);
+  
+  // Seed master data on startup
+  if (process.env.NODE_ENV === 'development') {
+    const { seedMasterData } = require('./src/seeders/masterData');
+    const { seedCities } = require('./src/seeders/cities');
+    await seedMasterData();
+    await seedCities();
+  }
 });
 
 module.exports = app;

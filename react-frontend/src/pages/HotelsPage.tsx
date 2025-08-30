@@ -37,6 +37,8 @@ const HotelsPage: React.FC = () => {
   });
   const [popularDestinations, setPopularDestinations] = useState([]);
   const [hotelDeals, setHotelDeals] = useState([]);
+  const [locationSuggestions, setLocationSuggestions] = useState([]);
+  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
 
   useEffect(() => {
     loadInitialData();
@@ -48,38 +50,81 @@ const HotelsPage: React.FC = () => {
   const loadInitialData = async () => {
     try {
       const [destinationsRes, dealsRes] = await Promise.all([
-        hotelService.getPopularDestinations(),
-        hotelService.getHotelDeals()
+        fetch('http://localhost:3000/api/hotels/popular-destinations').then(r => r.json()),
+        fetch('http://localhost:3000/api/hotels/deals').then(r => r.json())
       ]);
-      setPopularDestinations(destinationsRes.data.destinations || []);
-      setHotelDeals(dealsRes.data.deals || []);
+      
+      console.log('📊 Destinations response:', destinationsRes);
+      console.log('🔥 Deals response:', dealsRes);
+      
+      setPopularDestinations(destinationsRes.data?.destinations || []);
+      setHotelDeals(dealsRes.data?.deals || []);
     } catch (error) {
       console.error('Error loading initial data:', error);
     }
   };
 
   const handleSearch = async () => {
-    if (!searchForm.location || !searchForm.checkIn || !searchForm.checkOut) {
-      alert('Please fill in all required fields');
+    if (!searchForm.location?.trim()) {
+      alert('Please enter a destination');
+      return;
+    }
+    
+    if (!searchForm.checkIn) {
+      alert('Please select check-in date');
+      return;
+    }
+    
+    if (!searchForm.checkOut) {
+      alert('Please select check-out date');
+      return;
+    }
+    
+    if (new Date(searchForm.checkIn) >= new Date(searchForm.checkOut)) {
+      alert('Check-out date must be after check-in date');
       return;
     }
 
     setLoading(true);
     try {
-      const searchParams = {
-        location: searchForm.location,
+      // Clean and normalize destination search
+      let destination = searchForm.location.trim();
+      // Extract city name from "City, Country" format
+      if (destination.includes(',')) {
+        const parts = destination.split(',');
+        destination = parts[0].trim(); // Use just the city name
+      }
+      
+      const queryParams = new URLSearchParams({
+        destination: destination,
         checkIn: searchForm.checkIn,
         checkOut: searchForm.checkOut,
-        guests: searchForm.guests,
-        rooms: searchForm.rooms,
-        maxPrice: filters.maxPrice,
-        starRating: filters.starRating,
-        amenities: filters.amenities
-      };
-
-      const response = await hotelService.searchHotels(searchParams);
-      setHotels(response.data.hotels || []);
-      setSearched(true);
+        guests: searchForm.guests.toString(),
+        priceRange: filters.maxPrice < 100 ? 'budget' : filters.maxPrice < 300 ? 'mid' : 'luxury'
+      });
+      
+      if (filters.starRating.length > 0) {
+        queryParams.append('starRating', Math.min(...filters.starRating).toString());
+      }
+      
+      console.log('🔍 Searching hotels with params:', queryParams.toString());
+      const response = await fetch(`http://localhost:3000/api/hotels?${queryParams}`);
+      const data = await response.json();
+      console.log('📊 Search response:', data);
+      
+      if (data.success) {
+        const hotels = data.data?.hotels || [];
+        console.log('🏨 Found hotels:', hotels.length);
+        setHotels(hotels);
+        setSearched(true);
+        
+        if (hotels.length === 0) {
+          console.log('⚠️ No hotels found for:', destination);
+        }
+      } else {
+        console.error('❌ Search failed:', data.error);
+        throw new Error(data.error?.message || 'Search failed');
+      }
     } catch (error) {
       console.error('Error searching hotels:', error);
       alert('Error searching hotels. Please try again.');
@@ -94,6 +139,45 @@ const HotelsPage: React.FC = () => {
         searchParams: searchForm
       }
     });
+  };
+
+  const searchLocations = async (query: string) => {
+    if (query.length < 2) {
+      setLocationSuggestions([]);
+      return;
+    }
+    
+    const sampleLocations = [
+      { _id: '1', name: 'Paris', country: 'France', type: 'city' },
+      { _id: '2', name: 'New York', country: 'USA', type: 'city' },
+      { _id: '3', name: 'Dubai', country: 'UAE', type: 'city' },
+      { _id: '4', name: 'Tokyo', country: 'Japan', type: 'city' },
+      { _id: '5', name: 'London', country: 'UK', type: 'city' },
+      { _id: '6', name: 'Los Angeles', country: 'USA', type: 'city' },
+      { _id: '7', name: 'Rome', country: 'Italy', type: 'city' },
+      { _id: '8', name: 'Barcelona', country: 'Spain', type: 'city' }
+    ];
+    
+    try {
+      const response = await fetch(`http://localhost:3000/api/locations/search?q=${encodeURIComponent(query)}`);
+      if (!response.ok) {
+        const filtered = sampleLocations.filter(location => 
+          location.name.toLowerCase().includes(query.toLowerCase()) ||
+          location.country.toLowerCase().includes(query.toLowerCase())
+        );
+        setLocationSuggestions(filtered);
+        return;
+      }
+      const data = await response.json();
+      setLocationSuggestions(data.data?.locations || []);
+    } catch (error) {
+      console.error('Error searching locations:', error);
+      const filtered = sampleLocations.filter(location => 
+        location.name.toLowerCase().includes(query.toLowerCase()) ||
+        location.country.toLowerCase().includes(query.toLowerCase())
+      );
+      setLocationSuggestions(filtered);
+    }
   };
 
   const selectDestination = (destination: string) => {
@@ -112,73 +196,7 @@ const HotelsPage: React.FC = () => {
     return '★'.repeat(Math.floor(rating)) + '☆'.repeat(5 - Math.floor(rating));
   };
 
-  const sampleHotels = [
-    {
-      _id: '1',
-      name: 'Hotel Le Grand Paris',
-      images: ['https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=300&h=200&fit=crop'],
-      rating: { overall: 4.8, totalReviews: 1247 },
-      location: { address: { city: 'Paris', area: 'Champs-Élysées' } },
-      amenities: { general: ['WiFi', 'Pool', 'Spa'] },
-      pricing: { priceRange: { min: 245, max: 334 } },
-      starRating: 5,
-      featured: true
-    },
-    {
-      _id: '2',
-      name: 'Paris Central Hotel',
-      images: ['https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=300&h=200&fit=crop'],
-      rating: { overall: 4.6, totalReviews: 892 },
-      location: { address: { city: 'Paris', area: 'Marais District' } },
-      amenities: { general: ['WiFi', 'Restaurant', 'Bar'] },
-      pricing: { priceRange: { min: 180, max: 220 } },
-      starRating: 4
-    },
-    {
-      _id: '3',
-      name: 'Boutique Seine Hotel',
-      images: ['https://images.unsplash.com/photo-1566073771259-6a8506099945?w=300&h=200&fit=crop'],
-      rating: { overall: 4.9, totalReviews: 654 },
-      location: { address: { city: 'Paris', area: 'Saint-Germain' } },
-      amenities: { general: ['WiFi', 'Breakfast', 'Gym'] },
-      pricing: { priceRange: { min: 220, max: 280 } },
-      starRating: 4,
-      popular: true
-    },
-    {
-      _id: '4',
-      name: 'Hotel Montmartre',
-      images: ['https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=300&h=200&fit=crop'],
-      rating: { overall: 4.7, totalReviews: 456 },
-      location: { address: { city: 'Paris', area: 'Montmartre' } },
-      amenities: { general: ['WiFi', 'Terrace', 'Bar'] },
-      pricing: { priceRange: { min: 210, max: 280 } },
-      starRating: 4
-    },
-    {
-      _id: '5',
-      name: 'Luxury Palace Hotel',
-      images: ['https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=300&h=200&fit=crop'],
-      rating: { overall: 4.9, totalReviews: 2156 },
-      location: { address: { city: 'Paris', area: 'Opera District' } },
-      amenities: { general: ['WiFi', 'Spa', 'Concierge'] },
-      pricing: { priceRange: { min: 420, max: 600 } },
-      starRating: 5,
-      luxury: true
-    },
-    {
-      _id: '6',
-      name: 'Budget Friendly Inn',
-      images: ['https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=300&h=200&fit=crop'],
-      rating: { overall: 4.2, totalReviews: 789 },
-      location: { address: { city: 'Paris', area: 'Latin Quarter' } },
-      amenities: { general: ['WiFi', 'Breakfast'] },
-      pricing: { priceRange: { min: 95, max: 120 } },
-      starRating: 3
-    }
-  ];
-
-  const displayHotels = hotels.length > 0 ? hotels : (searched ? [] : sampleHotels);
+  const displayHotels = hotels;
 
   return (
     <div className="min-h-screen bg-white">
@@ -200,13 +218,43 @@ const HotelsPage: React.FC = () => {
                   <input
                     type="text"
                     value={searchForm.location}
-                    onChange={(e) => setSearchForm(prev => ({ ...prev, location: e.target.value }))}
+                    onChange={(e) => {
+                      setSearchForm(prev => ({ ...prev, location: e.target.value }));
+                      searchLocations(e.target.value);
+                      setShowLocationSuggestions(true);
+                    }}
+                    onFocus={() => {
+                      setShowLocationSuggestions(true);
+                      if (searchForm.location.length >= 2) {
+                        searchLocations(searchForm.location);
+                      }
+                    }}
                     className="w-full pl-10 pr-4 py-3 border border-primary-200 rounded-lg focus:ring-2 focus:ring-blue-ocean focus:border-transparent"
                     placeholder="Destination"
                   />
                   <div className="absolute left-3 top-3 text-primary-400">
                     📍
                   </div>
+                  {showLocationSuggestions && locationSuggestions.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-primary-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      {locationSuggestions.map((location) => (
+                        <div
+                          key={location._id}
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            setSearchForm(prev => ({ ...prev, location: `${location.name}, ${location.country}` }));
+                            setShowLocationSuggestions(false);
+                          }}
+                          className="w-full px-4 py-2 text-left hover:bg-primary-50 flex items-center justify-between cursor-pointer"
+                        >
+                          <div>
+                            <div className="font-medium">{location.name}</div>
+                            <div className="text-sm text-primary-500">{location.country}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -494,8 +542,29 @@ const HotelsPage: React.FC = () => {
                 ) : displayHotels.length === 0 ? (
                   <Card className="text-center py-12">
                     <div className="text-6xl mb-4">🏨</div>
-                    <h3 className="text-xl font-semibold text-primary-900 mb-2">No hotels found</h3>
-                    <p className="text-primary-600">Try adjusting your search criteria or dates</p>
+                    <h3 className="text-xl font-bold text-primary-900 mb-2">No hotels found</h3>
+                    <p className="text-primary-600 mb-6">Try adjusting your search criteria or create sample data</p>
+                    <div className="space-y-2">
+                      <Button onClick={() => setSearched(false)}>Clear Search</Button>
+                      <Button variant="outline" onClick={async () => {
+                        try {
+                          await fetch('http://localhost:3000/api/hotels/create-samples', { method: 'POST' });
+                          handleSearch();
+                        } catch (error) {
+                          console.error('Failed to create samples:', error);
+                        }
+                      }}>Create Sample Hotels</Button>
+                      <Button variant="outline" onClick={async () => {
+                        try {
+                          const response = await fetch('http://localhost:3000/api/hotels/cleanup-data', { method: 'POST' });
+                          const result = await response.json();
+                          alert(result.message);
+                          handleSearch();
+                        } catch (error) {
+                          console.error('Failed to cleanup data:', error);
+                        }
+                      }}>Fix All Data Issues</Button>
+                    </div>
                   </Card>
                 ) : (
                   <div className={viewType === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}>
@@ -513,9 +582,16 @@ const HotelsPage: React.FC = () => {
                           viewType === 'list' ? 'w-48 h-36 flex-shrink-0' : 'w-full h-48'
                         }`}>
                           <img
-                            src={hotel.images?.[0] || '/api/placeholder/300/200'}
+                            src={hotel.images && hotel.images.length > 0 && hotel.images[0]?.url
+                              ? (hotel.images[0].url.startsWith('http') 
+                                  ? hotel.images[0].url 
+                                  : `http://localhost:3000${hotel.images[0].url}`)
+                              : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop'}
                             alt={hotel.name}
                             className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                            onError={(e) => {
+                              e.currentTarget.src = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop';
+                            }}
                           />
                           {hotel.featured && (
                             <div className="absolute top-3 left-3 bg-blue-ocean text-white px-2 py-1 rounded-xl text-xs font-bold">
@@ -539,11 +615,18 @@ const HotelsPage: React.FC = () => {
                           viewType === 'list' ? 'flex-1' : 'flex-1'
                         }`}>
                           <div>
-                            <h3 className="text-lg font-bold text-primary-900 mb-2 line-clamp-1">
-                              {hotel.name}
-                            </h3>
+                            <div className="flex items-center justify-between mb-2">
+                              <h3 className="text-lg font-bold text-primary-900 line-clamp-1">
+                                {hotel.name}
+                              </h3>
+                              {hotel.chain && (
+                                <span className="text-xs text-primary-500 bg-primary-100 px-2 py-1 rounded">
+                                  {hotel.chain}
+                                </span>
+                              )}
+                            </div>
                             
-                            {/* Rating */}
+                            {/* Category & Rating */}
                             <div className="flex items-center gap-2 mb-2">
                               <span className="text-amber-premium text-sm">
                                 {renderStars(hotel.starRating)}
@@ -552,8 +635,13 @@ const HotelsPage: React.FC = () => {
                                 {hotel.rating?.overall || 4.5}
                               </span>
                               <span className="text-xs text-primary-400">
-                                ({hotel.rating?.totalReviews || 0})
+                                ({hotel.rating?.reviewCount || hotel.rating?.totalReviews || 0})
                               </span>
+                              {(hotel.category || hotel.hotelCategory) && (
+                                <span className="text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded capitalize">
+                                  {hotel.category || hotel.hotelCategory}
+                                </span>
+                              )}
                             </div>
 
                             {/* Location */}
@@ -564,7 +652,15 @@ const HotelsPage: React.FC = () => {
 
                             {/* Amenities */}
                             <div className="text-xs text-primary-400 mb-3">
-                              {hotel.amenities?.general?.slice(0, 3).join(' • ') || 'WiFi • Restaurant • Pool'}
+                              {hotel.amenities?.general?.length > 0 
+                                ? hotel.amenities.general.slice(0, 3).map(a => {
+                                    if (typeof a === 'string') return a;
+                                    if (typeof a === 'object' && a.name) {
+                                      return a.fee ? `${a.name} (€${a.fee})` : a.name;
+                                    }
+                                    return String(a);
+                                  }).join(' • ')
+                                : 'Standard amenities available'}
                             </div>
                           </div>
 
@@ -577,7 +673,7 @@ const HotelsPage: React.FC = () => {
                                 </div>
                               )}
                               <div className="text-xl font-bold text-blue-ocean">
-                                {formatPrice(hotel.pricing?.priceRange?.min || 150)}
+                                {formatPrice(hotel.pricing?.averageNightlyRate || hotel.pricing?.priceRange?.min || 150)}
                               </div>
                               <div className="text-xs text-primary-400">per night</div>
                             </div>
@@ -611,46 +707,109 @@ const HotelsPage: React.FC = () => {
                 Popular destinations worldwide
               </h2>
               <p className="text-lg text-primary-600">
-                Discover amazing places with great hotel deals
+                Discover amazing places with great hotels
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {[
-                { name: 'Paris, France', image: 'https://images.unsplash.com/photo-1502602898536-47ad22581b52?w=400&h=250&fit=crop', price: 89, hotels: 2847, rating: 4.2 },
-                { name: 'Tokyo, Japan', image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=400&h=250&fit=crop', price: 75, hotels: 3156, rating: 4.4 },
-                { name: 'London, UK', image: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&h=250&fit=crop', price: 95, hotels: 4231, rating: 4.1 },
-                { name: 'Bali, Indonesia', image: 'https://images.unsplash.com/photo-1537953773345-d172ccf13cf1?w=400&h=250&fit=crop', price: 45, hotels: 1923, rating: 4.5 }
-              ].map((destination, index) => (
+              {popularDestinations.map((destination, index) => (
                 <Card
                   key={index}
                   hover
                   className="cursor-pointer overflow-hidden p-0"
-                  onClick={() => selectDestination(destination.name)}
+                  onClick={() => selectDestination(destination._id || destination.name || 'Unknown')}
                 >
                   <div className="relative">
                     <img
-                      src={destination.image}
-                      alt={destination.name}
+                      src={destination.image || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop'}
+                      alt={destination._id || destination.name || 'Destination'}
                       className="w-full h-48 object-cover transition-transform duration-300 hover:scale-105"
+                      onError={(e) => {
+                        e.currentTarget.src = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop';
+                      }}
                     />
                     <div className="absolute top-4 right-4 bg-emerald text-white px-3 py-1 rounded-2xl text-xs font-bold">
-                      From ${destination.price}/night
+                      From ${Math.round(destination.minPrice || destination.avgPrice || 150)}/night
                     </div>
                   </div>
                   <div className="p-4">
                     <h3 className="text-xl font-bold text-primary-900 mb-1">
-                      {destination.name}
+                      {destination._id || 'Amazing Destination'}
                     </h3>
                     <p className="text-sm text-primary-600 mb-3">
-                      {destination.name.includes('Paris') ? 'City of Light & Romance' :
-                       destination.name.includes('Tokyo') ? 'Modern Metropolis & Tradition' :
-                       destination.name.includes('London') ? 'Royal Heritage & Culture' :
-                       'Tropical Paradise & Temples'}
+                      Discover amazing hotels and experiences
                     </p>
                     <div className="flex justify-between text-xs text-primary-400">
-                      <span>🏨 {destination.hotels.toLocaleString()} hotels</span>
-                      <span>⭐ {destination.rating} avg rating</span>
+                      <span>🏨 {destination.count || 0} hotels</span>
+                      <span>⭐ {destination.avgRating || '4.5'} avg rating</span>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Hotel Deals Section */}
+      {!searched && (
+        <section className="py-20 bg-primary-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold text-primary-900 mb-4">
+                🔥 Hot Hotel Deals
+              </h2>
+              <p className="text-lg text-primary-600">
+                Limited time offers on amazing hotels
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {hotelDeals.map((deal, index) => (
+                <Card
+                  key={index}
+                  hover
+                  className="cursor-pointer overflow-hidden p-0"
+                  onClick={() => handleHotelSelect(deal)}
+                >
+                  <div className="relative">
+                    <img
+                      src={deal.images?.[0]?.url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop'}
+                      alt={deal.name}
+                      className="w-full h-48 object-cover transition-transform duration-300 hover:scale-105"
+                      onError={(e) => {
+                        e.currentTarget.src = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop';
+                      }}
+                    />
+                    {deal.deal && (
+                      <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-2xl text-xs font-bold">
+                        {deal.deal.discount}% OFF
+                      </div>
+                    )}
+                    <div className="absolute top-4 right-4 bg-emerald text-white px-3 py-1 rounded-2xl text-xs font-bold">
+                      {renderStars(deal.starRating)}
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <h3 className="text-lg font-bold text-primary-900 mb-1">
+                      {deal.name}
+                    </h3>
+                    <p className="text-sm text-primary-600 mb-3">
+                      📍 {deal.location?.address?.area || deal.location?.cityName}
+                    </p>
+                    <div className="flex justify-between items-end">
+                      <div>
+                        {deal.deal && (
+                          <div className="text-sm text-primary-400 line-through">
+                            ${deal.deal.originalPrice}
+                          </div>
+                        )}
+                        <div className="text-xl font-bold text-emerald">
+                          ${deal.deal?.dealPrice || deal.pricing?.averageNightlyRate || 150}
+                        </div>
+                        <div className="text-xs text-primary-400">per night</div>
+                      </div>
+                      <Button size="sm">Book Deal</Button>
                     </div>
                   </div>
                 </Card>

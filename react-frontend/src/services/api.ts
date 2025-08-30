@@ -3,7 +3,7 @@ import { ApiResponse, PaginatedResponse } from '@/types/api.types';
 
 class ApiService {
   private api: AxiosInstance;
-  private baseURL = 'http://localhost:3000/api/v1';
+  private baseURL = 'http://localhost:3000/api';
 
   constructor() {
     this.api = axios.create({
@@ -45,75 +45,22 @@ class ApiService {
   }
 
   async get<T>(endpoint: string, params?: any): Promise<ApiResponse<T>> {
-    // Handle admin routes differently
-    const url = endpoint.startsWith('/admin') ? 
-      `http://localhost:3000/api${endpoint}` : 
-      endpoint;
-    
-    const response = endpoint.startsWith('/admin') ?
-      await axios.get(url, { 
-        params, 
-        headers: { 
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
-      }) :
-      await this.api.get(endpoint, { params });
-    
+    const response = await this.api.get(endpoint, { params });
     return response.data;
   }
 
   async post<T>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
-    // Handle admin routes differently
-    const url = endpoint.startsWith('/admin') ? 
-      `http://localhost:3000/api${endpoint}` : 
-      endpoint;
-    
-    const response = endpoint.startsWith('/admin') ?
-      await axios.post(url, data, { 
-        headers: { 
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
-      }) :
-      await this.api.post(endpoint, data);
-    
+    const response = await this.api.post(endpoint, data);
     return response.data;
   }
 
   async put<T>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
-    // Handle admin routes differently
-    const url = endpoint.startsWith('/admin') ? 
-      `http://localhost:3000/api${endpoint}` : 
-      endpoint;
-    
-    const response = endpoint.startsWith('/admin') ?
-      await axios.put(url, data, { 
-        headers: { 
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
-      }) :
-      await this.api.put(endpoint, data);
-    
+    const response = await this.api.put(endpoint, data);
     return response.data;
   }
 
   async delete<T>(endpoint: string): Promise<ApiResponse<T>> {
-    // Handle admin routes differently
-    const url = endpoint.startsWith('/admin') ? 
-      `http://localhost:3000/api${endpoint}` : 
-      endpoint;
-    
-    const response = endpoint.startsWith('/admin') ?
-      await axios.delete(url, { 
-        headers: { 
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
-      }) :
-      await this.api.delete(endpoint);
-    
+    const response = await this.api.delete(endpoint);
     return response.data;
   }
 

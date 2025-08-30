@@ -21,8 +21,7 @@ const Header: React.FC = () => {
     { href: '/', label: 'Home' },
     { href: '/flights', label: 'Flights' },
     { href: '/hotels', label: 'Hotels' },
-    { href: '/itinerary-hub', label: 'Itineraries' },
-    { href: '/packages', label: 'Packages' },
+    { href: '/trips', label: 'Trips' },
     { href: '/blog', label: 'Blog' },
   ];
 

@@ -2,14 +2,19 @@ const mongoose = require('mongoose');
 
 const hotelSchema = new mongoose.Schema({
   name: { type: String, required: true, index: true },
+  chain: { type: String }, // Hotel chain/brand
+  category: { type: String, enum: ['luxury', 'business', 'boutique', 'resort', 'budget', 'extended-stay'] },
+  hotelCategory: { type: String, enum: ['luxury', 'business', 'boutique', 'resort', 'budget', 'extended-stay'] },
   description: { type: String, required: true },
   shortDescription: { type: String, maxlength: 300 },
   starRating: { type: Number, min: 1, max: 5, required: true },
   
   location: {
     destination: { type: mongoose.Schema.Types.ObjectId, ref: 'Destination' },
-    city: { type: mongoose.Schema.Types.ObjectId, ref: 'City', required: true },
-    country: { type: mongoose.Schema.Types.ObjectId, ref: 'Country', required: true },
+    city: { type: mongoose.Schema.Types.ObjectId, ref: 'City' },
+    country: { type: mongoose.Schema.Types.ObjectId, ref: 'Country' },
+    cityName: String,
+    countryName: String,
     address: {
       street: { type: String, required: true },
       area: String,
@@ -21,11 +26,9 @@ const hotelSchema = new mongoose.Schema({
       coordinates: { type: [Number], required: true } // [longitude, latitude]
     },
     distanceFromCenter: Number, // km
-    nearbyAttractions: [{
-      name: String,
-      distance: Number,
-      type: String
-    }]
+    nearbyAttractions: [
+      mongoose.Schema.Types.Mixed // Allow both strings and objects
+    ]
   },
   
   contact: {
@@ -49,7 +52,12 @@ const hotelSchema = new mongoose.Schema({
       kingBeds: { type: Number, default: 0 }
     },
     amenities: [String],
-    images: [String],
+    images: [{
+      url: String,
+      alt: String,
+      isPrimary: { type: Boolean, default: false },
+      order: { type: Number, default: 0 }
+    }],
     pricing: {
       baseRate: { type: Number, required: true },
       currency: { type: String, default: 'USD' },
@@ -62,18 +70,22 @@ const hotelSchema = new mongoose.Schema({
         fee: Number
       }
     },
-    availability: { type: Number, default: 0 },
+    availability: [{
+      date: Date,
+      available: Number,
+      rate: Number
+    }],
     totalRooms: { type: Number, required: true }
   }],
   
   amenities: {
-    general: [String],
-    business: [String],
-    connectivity: [String],
-    food: [String],
-    recreation: [String],
-    services: [String],
-    accessibility: [String]
+    general: [mongoose.Schema.Types.Mixed], // Allow both strings and objects
+    business: [mongoose.Schema.Types.Mixed],
+    recreation: [mongoose.Schema.Types.Mixed],
+    food: [mongoose.Schema.Types.Mixed],
+    connectivity: [mongoose.Schema.Types.Mixed],
+    services: [mongoose.Schema.Types.Mixed],
+    accessibility: [mongoose.Schema.Types.Mixed]
   },
   
   policies: {
@@ -106,14 +118,13 @@ const hotelSchema = new mongoose.Schema({
     }
   },
   
-  images: {
-    hero: String,
-    gallery: [String],
-    roomImages: [{
-      roomType: String,
-      images: [String]
-    }]
-  },
+  images: [{
+    url: String,
+    alt: String,
+    category: { type: String, enum: ['exterior', 'lobby', 'room', 'amenity', 'dining', 'other'], default: 'other' },
+    isPrimary: { type: Boolean, default: false },
+    order: { type: Number, default: 0 }
+  }],
   
   rating: {
     overall: { type: Number, default: 0, min: 0, max: 5 },
@@ -132,9 +143,17 @@ const hotelSchema = new mongoose.Schema({
     priceRange: {
       min: Number,
       max: Number,
-      currency: String
+      currency: { type: String, default: 'USD' }
     },
-    averageNightlyRate: Number
+    averageNightlyRate: Number,
+    ratePlans: [{
+      name: String,
+      description: String,
+      baseRate: Number,
+      inclusions: [String],
+      cancellationPolicy: String,
+      prepayment: { type: Boolean, default: false }
+    }]
   },
   
   tags: [String],
@@ -162,8 +181,14 @@ const hotelSchema = new mongoose.Schema({
 
 // Generate slug from name
 hotelSchema.pre('save', function(next) {
-  if (this.isModified('name') && !this.seo.slug) {
-    this.seo.slug = this.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  if (this.isModified('name')) {
+    // Initialize seo object if it doesn't exist
+    if (!this.seo) {
+      this.seo = {};
+    }
+    if (!this.seo.slug) {
+      this.seo.slug = this.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    }
   }
   next();
 });

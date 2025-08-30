@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { masterDataService } from '@/services/masterData.service';
 import Button from '@/components/common/Button';
 import Card from '@/components/common/Card';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 const CustomBuilderPage: React.FC = () => {
   const navigate = useNavigate();
@@ -17,6 +19,10 @@ const CustomBuilderPage: React.FC = () => {
     groupSize: 1,
     specialRequests: ''
   });
+  const [countries, setCountries] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const steps = [
     { id: 1, title: 'Destination', icon: '🌍' },
@@ -27,13 +33,31 @@ const CustomBuilderPage: React.FC = () => {
     { id: 6, title: 'Review', icon: '📋' }
   ];
 
-  const destinations = [
-    { id: 'europe', name: 'Europe', countries: ['France', 'Italy', 'Spain', 'Greece', 'Germany'] },
-    { id: 'asia', name: 'Asia', countries: ['Japan', 'Thailand', 'Indonesia', 'Vietnam', 'India'] },
-    { id: 'americas', name: 'Americas', countries: ['USA', 'Canada', 'Mexico', 'Brazil', 'Peru'] },
-    { id: 'oceania', name: 'Oceania', countries: ['Australia', 'New Zealand', 'Fiji'] },
-    { id: 'africa', name: 'Africa', countries: ['South Africa', 'Kenya', 'Morocco', 'Egypt'] }
-  ];
+  useEffect(() => {
+    loadMasterData();
+  }, []);
+
+  const loadMasterData = async () => {
+    try {
+      const [countriesResponse, categoriesResponse] = await Promise.all([
+        masterDataService.getCountries(),
+        masterDataService.getCategories('trip')
+      ]);
+      setCountries(countriesResponse.countries || []);
+      setCategories(categoriesResponse.categories || []);
+    } catch (error) {
+      console.error('Failed to load master data:', error);
+    }
+  };
+
+  const loadCitiesByCountry = async (countryId: string) => {
+    try {
+      const response = await masterDataService.getCities({ countryId });
+      setCities(response.cities || []);
+    } catch (error) {
+      console.error('Failed to load cities:', error);
+    }
+  };
 
   const travelStyles = [
     { id: 'luxury', name: 'Luxury', desc: 'Premium experiences, 5-star hotels', icon: '💎' },
@@ -75,9 +99,32 @@ const CustomBuilderPage: React.FC = () => {
     }));
   };
 
-  const generateItinerary = () => {
-    // Navigate to results with form data
-    navigate('/custom-builder/results', { state: { formData } });
+  const generateTrip = async () => {
+    setLoading(true);
+    try {
+      // Create trip from form data (simulate for now)
+      const tripData = {
+        title: `Custom Trip`,
+        description: `A personalized ${formData.duration} trip`,
+        destination: formData.destination,
+        duration: {
+          days: parseInt(formData.duration.split(' ')[0]) || 7,
+          nights: (parseInt(formData.duration.split(' ')[0]) || 7) - 1
+        },
+        travelStyle: formData.travelStyle,
+        interests: formData.interests,
+        budget: formData.budget,
+        groupSize: formData.groupSize,
+        specialRequests: formData.specialRequests
+      };
+      
+      // Navigate to trips page
+      navigate('/trips', { state: { customTrip: tripData } });
+    } catch (error) {
+      console.error('Failed to generate trip:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const renderStep = () => {
@@ -91,22 +138,23 @@ const CustomBuilderPage: React.FC = () => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {destinations.map(region => (
+              {countries.map(country => (
                 <Card
-                  key={region.id}
-                  className={`p-6 cursor-pointer transition-all hover:shadow-lg ${
-                    formData.destination === region.id ? 'ring-2 ring-blue-ocean bg-blue-50' : ''
+                  key={country._id}
+                  className={`p-4 cursor-pointer transition-all hover:shadow-lg ${
+                    formData.destination === country._id ? 'ring-2 ring-blue-ocean bg-blue-50' : ''
                   }`}
-                  onClick={() => setFormData(prev => ({ ...prev, destination: region.id }))}
+                  onClick={() => {
+                    setFormData(prev => ({ ...prev, destination: country._id }));
+                    loadCitiesByCountry(country._id);
+                  }}
                 >
-                  <h3 className="text-xl font-bold text-primary-900 mb-3">{region.name}</h3>
-                  <div className="space-y-1">
-                    {region.countries.slice(0, 3).map(country => (
-                      <div key={country} className="text-sm text-primary-600">{country}</div>
-                    ))}
-                    {region.countries.length > 3 && (
-                      <div className="text-sm text-primary-500">+{region.countries.length - 3} more</div>
-                    )}
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{country.flag || '🌍'}</span>
+                    <div>
+                      <h3 className="font-bold text-primary-900">{country.name}</h3>
+                      <p className="text-sm text-primary-600">{country.continent}</p>
+                    </div>
                   </div>
                 </Card>
               ))}
@@ -189,17 +237,17 @@ const CustomBuilderPage: React.FC = () => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {travelStyles.map(style => (
+              {categories.map(category => (
                 <Card
-                  key={style.id}
+                  key={category._id}
                   className={`p-6 cursor-pointer transition-all hover:shadow-lg ${
-                    formData.travelStyle === style.id ? 'ring-2 ring-blue-ocean bg-blue-50' : ''
+                    formData.travelStyle === category._id ? 'ring-2 ring-blue-ocean bg-blue-50' : ''
                   }`}
-                  onClick={() => setFormData(prev => ({ ...prev, travelStyle: style.id }))}
+                  onClick={() => setFormData(prev => ({ ...prev, travelStyle: category._id }))}
                 >
-                  <div className="text-4xl mb-3">{style.icon}</div>
-                  <h3 className="text-xl font-bold text-primary-900 mb-2">{style.name}</h3>
-                  <p className="text-primary-600">{style.desc}</p>
+                  <div className="text-4xl mb-3">{category.icon}</div>
+                  <h3 className="text-xl font-bold text-primary-900 mb-2">{category.name}</h3>
+                  <p className="text-primary-600">{category.description}</p>
                 </Card>
               ))}
             </div>
@@ -311,7 +359,7 @@ const CustomBuilderPage: React.FC = () => {
                   <p className="text-primary-600 mb-4">
                     {formData.destination.startsWith('custom:') 
                       ? formData.destination.slice(7)
-                      : destinations.find(d => d.id === formData.destination)?.name || 'Not selected'
+                      : countries.find(d => d._id === formData.destination)?.name || 'Not selected'
                     }
                   </p>
                   
@@ -356,8 +404,13 @@ const CustomBuilderPage: React.FC = () => {
             </Card>
             
             <div className="text-center">
-              <Button size="lg" onClick={generateItinerary} className="px-8">
-                🎯 Generate My Perfect Itinerary
+              <Button 
+                size="lg" 
+                onClick={generateTrip} 
+                className="px-8"
+                disabled={loading}
+              >
+                {loading ? <LoadingSpinner size="sm" /> : '🎯 Generate My Perfect Trip'}
               </Button>
               <p className="text-sm text-primary-600 mt-2">
                 This will take 30-60 seconds to create your custom itinerary
@@ -377,11 +430,11 @@ const CustomBuilderPage: React.FC = () => {
       <section className="bg-primary-50 py-6 border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <button
-            onClick={() => navigate('/itineraries')}
+            onClick={() => navigate('/trips')}
             className="flex items-center gap-2 text-primary-600 hover:text-primary-900 transition-colors mb-4"
           >
             <span>←</span>
-            <span>Back to Itineraries</span>
+            <span>Back to Trips</span>
           </button>
           
           <div className="flex gap-4">
@@ -392,10 +445,10 @@ const CustomBuilderPage: React.FC = () => {
               🤖 AI Builder
             </button>
             <button 
-              onClick={() => navigate('/packages')}
+              onClick={() => navigate('/trips')}
               className="px-4 py-2 bg-primary-100 text-primary-700 rounded-lg font-semibold hover:bg-primary-200"
             >
-              📦 Packages
+              🧳 Trips
             </button>
             <button className="px-4 py-2 bg-blue-ocean text-white rounded-lg font-semibold">
               🛠️ Custom

@@ -1,0 +1,1238 @@
+[{
+  "_id": {
+    "$oid": "68ab6f7e267048960e730b85"
+  },
+  "name": "Grand Bali Resort & Spa",
+  "chain": "Grand Hotels",
+  "hotelCategory": "resort",
+  "description": "Luxury beachfront resort with world-class amenities and stunning ocean views",
+  "shortDescription": "Luxury beachfront resort with spa and multiple dining options",
+  "starRating": 5,
+  "location": {
+    "city": {
+      "$oid": "68ab6f7e267048960e730b68"
+    },
+    "country": {
+      "$oid": "68ab6f7e267048960e730b1a"
+    },
+    "address": {
+      "street": "Jl. Pantai Kuta No. 1",
+      "area": "Kuta Beach",
+      "landmark": "Near Kuta Beach",
+      "zipCode": "80361"
+    },
+    "coordinates": {
+      "type": "Point",
+      "coordinates": [
+        115.092,
+        -8.3405
+      ]
+    },
+    "distanceFromCenter": 5.2,
+    "nearbyAttractions": [
+      "Kuta Beach",
+      "Waterbom Bali",
+      "Bali Airport"
+    ]
+  },
+  "contact": {
+    "phone": "+62-361-123456",
+    "email": "info@grandbali.com",
+    "website": "https://grandbali.com",
+    "checkIn": "15:00",
+    "checkOut": "11:00"
+  },
+  "rooms": [
+    {
+      "id": "deluxe-ocean",
+      "name": "Deluxe Ocean View",
+      "type": "deluxe",
+      "size": 45,
+      "maxOccupancy": 2,
+      "bedConfiguration": {
+        "kingBeds": 1,
+        "singleBeds": 0,
+        "doubleBeds": 0,
+        "queenBeds": 0
+      },
+      "amenities": [
+        "Ocean View",
+        "Balcony",
+        "Mini Bar",
+        "WiFi",
+        "AC"
+      ],
+      "pricing": {
+        "baseRate": 350,
+        "currency": "USD",
+        "taxes": 50,
+        "totalRate": 400,
+        "cancellationPolicy": {
+          "type": "free",
+          "deadline": 24
+        },
+        "fees": 0
+      },
+      "totalRooms": 50,
+      "_id": {
+        "$oid": "68ab6f7e267048960e730b86"
+      },
+      "images": [],
+      "availability": []
+    }
+  ],
+  "amenities": {
+    "general": [
+      {
+        "name": "WiFi",
+        "category": "connectivity",
+        "available": true,
+        "_id": {
+          "$oid": "68ab6f7e267048960e730b87"
+        }
+      },
+      {
+        "name": "Pool",
+        "category": "recreation",
+        "available": true,
+        "_id": {
+          "$oid": "68ab6f7e267048960e730b88"
+        }
+      },
+      {
+        "name": "Spa",
+        "category": "services",
+        "available": true,
+        "fee": 50,
+        "_id": {
+          "$oid": "68ab6f7e267048960e730b89"
+        }
+      },
+      {
+        "name": "Restaurant",
+        "category": "food",
+        "available": true,
+        "_id": {
+          "$oid": "68ab6f7e267048960e730b8a"
+        }
+      },
+      {
+        "name": "Bar",
+        "category": "food",
+        "available": true,
+        "_id": {
+          "$oid": "68ab6f7e267048960e730b8b"
+        }
+      },
+      {
+        "name": "Gym",
+        "category": "recreation",
+        "available": true,
+        "_id": {
+          "$oid": "68ab6f7e267048960e730b8c"
+        }
+      },
+      {
+        "name": "Beach Access",
+        "category": "recreation",
+        "available": true,
+        "_id": {
+          "$oid": "68ab6f7e267048960e730b8d"
+        }
+      }
+    ]
+  },
+  "policies": {
+    "checkIn": {
+      "from": "15:00",
+      "to": "23:00",
+      "minAge": 18
+    },
+    "checkOut": {
+      "from": "06:00",
+      "to": "11:00"
+    },
+    "cancellation": "Free cancellation up to 24 hours before check-in",
+    "children": {
+      "allowed": true,
+      "freeAge": 12,
+      "extraBedFee": 50
+    },
+    "pets": {
+      "allowed": false
+    },
+    "smoking": {
+      "areas": []
+    }
+  },
+  "images": [
+    {
+      "url": "https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800",
+      "alt": "Grand Bali Resort",
+      "category": "exterior",
+      "isPrimary": true,
+      "order": 1,
+      "_id": {
+        "$oid": "68ab6f7e267048960e730b8e"
+      }
+    }
+  ],
+  "rating": {
+    "overall": 4.8,
+    "breakdown": {
+      "cleanliness": 4.9,
+      "comfort": 4.8,
+      "location": 4.7,
+      "service": 4.8,
+      "value": 4.6,
+      "facilities": 4.9
+    },
+    "reviewCount": 1247
+  },
+  "pricing": {
+    "priceRange": {
+      "min": 250,
+      "max": 800,
+      "currency": "USD"
+    },
+    "averageNightlyRate": 450,
+    "ratePlans": []
+  },
+  "tags": [
+    "beachfront",
+    "luxury",
+    "spa",
+    "family-friendly"
+  ],
+  "featured": true,
+  "verified": true,
+  "stats": {
+    "views": 0,
+    "bookings": 0,
+    "favorites": 0
+  },
+  "status": "active",
+  "seo": {
+    "keywords": []
+  },
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-08-24T20:01:02.678Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-24T20:01:02.678Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68ab6f7e267048960e730b8f"
+  },
+  "name": "Hotel Le Meurice Paris",
+  "chain": "Dorchester Collection",
+  "hotelCategory": "luxury",
+  "description": "Iconic luxury hotel in the heart of Paris with palace-level service",
+  "shortDescription": "Luxury palace hotel near Louvre with Michelin-starred dining",
+  "starRating": 5,
+  "location": {
+    "address": {
+      "street": "228 Rue de Rivoli",
+      "area": "1st Arrondissement",
+      "landmark": "Near Louvre Museum",
+      "zipCode": "75001"
+    },
+    "cityName": "Paris",
+    "countryName": "France",
+    "coordinates": {
+      "type": "Point",
+      "coordinates": [
+        2.3276,
+        48.8656
+      ]
+    },
+    "distanceFromCenter": 1.2
+  },
+  "contact": {
+    "phone": "+33-1-44-58-10-10",
+    "email": "info@lemeurice.com",
+    "website": "https://lemeurice.com",
+    "checkIn": "15:00",
+    "checkOut": "12:00"
+  },
+  "rooms": [
+    {
+      "id": "classic-room",
+      "name": "Classic Room",
+      "type": "standard",
+      "size": 35,
+      "maxOccupancy": 2,
+      "bedConfiguration": {
+        "kingBeds": 1,
+        "singleBeds": 0,
+        "doubleBeds": 0,
+        "queenBeds": 0
+      },
+      "amenities": [
+        "City View",
+        "Marble Bathroom",
+        "Mini Bar",
+        "WiFi",
+        "AC"
+      ],
+      "pricing": {
+        "baseRate": 800,
+        "currency": "EUR",
+        "taxes": 150,
+        "totalRate": 950,
+        "cancellationPolicy": {
+          "type": "partial",
+          "deadline": 48,
+          "fee": 100
+        },
+        "fees": 0
+      },
+      "totalRooms": 80,
+      "_id": {
+        "$oid": "68ab6f7e267048960e730b90"
+      },
+      "images": [],
+      "availability": []
+    }
+  ],
+  "amenities": {
+    "general": [
+      "Free Wifi",
+      "Airport shuttle",
+      "Room service",
+      "Restaurant",
+      "Free parking"
+    ],
+    "business": [
+      "Non-smoking rooms",
+      "Family rooms"
+    ],
+    "recreation": [],
+    "food": [
+      "Breakfast",
+      "food"
+    ]
+  },
+  "policies": {
+    "checkIn": {
+      "from": "15:00",
+      "to": "24:00",
+      "minAge": 18
+    },
+    "checkOut": {
+      "from": "07:00",
+      "to": "12:00"
+    },
+    "cancellation": "Partial refund with 48h notice",
+    "children": {
+      "allowed": true,
+      "freeAge": 12,
+      "extraBedFee": 80
+    },
+    "pets": {
+      "allowed": true,
+      "fee": 50
+    },
+    "smoking": {
+      "areas": []
+    }
+  },
+  "rating": {
+    "overall": 4.9,
+    "breakdown": {
+      "cleanliness": 5,
+      "comfort": 4.9,
+      "location": 5,
+      "service": 4.9,
+      "value": 4.5,
+      "facilities": 4.8
+    },
+    "reviewCount": 892
+  },
+  "pricing": {
+    "priceRange": {
+      "min": 500,
+      "max": 2000,
+      "currency": "EUR"
+    },
+    "averageNightlyRate": 950
+  },
+  "tags": [
+    "luxury",
+    "palace",
+    "michelin",
+    "historic"
+  ],
+  "featured": true,
+  "verified": true,
+  "stats": {
+    "views": 0,
+    "bookings": 0,
+    "favorites": 0
+  },
+  "status": "active",
+  "seo": {
+    "keywords": []
+  },
+  "images": [
+    {
+      "url": "blob:http://localhost:3001/1f8c8bc6-94e7-4103-975c-8302a518018a",
+      "alt": "Hotel image 1",
+      "category": "exterior",
+      "isPrimary": true,
+      "order": 0,
+      "_id": {
+        "$oid": "68adecc3cef413f648ec3cc1"
+      }
+    },
+    {
+      "url": "blob:http://localhost:3001/d6ab7fec-5429-49a1-952d-f5f85d9af870",
+      "alt": "Hotel image 2",
+      "category": "exterior",
+      "isPrimary": false,
+      "order": 1,
+      "_id": {
+        "$oid": "68adecc3cef413f648ec3cc2"
+      }
+    }
+  ],
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-08-24T20:01:02.678Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-26T17:20:03.148Z"
+  },
+  "category": "luxury"
+},
+{
+  "_id": {
+    "$oid": "68ab6f7e267048960e730b97"
+  },
+  "name": "Park Hyatt Tokyo",
+  "chain": "Hyatt Hotels",
+  "hotelCategory": "luxury",
+  "description": "Contemporary luxury hotel in the heart of Shinjuku with panoramic city views",
+  "shortDescription": "Luxury hotel with city views and world-class dining",
+  "starRating": 5,
+  "location": {
+    "city": {
+      "$oid": "68ab6f7e267048960e730b67"
+    },
+    "country": {
+      "$oid": "68ab6f7e267048960e730b19"
+    },
+    "address": {
+      "street": "3-7-1-2 Nishi Shinjuku",
+      "area": "Shinjuku",
+      "landmark": "Shinjuku Park Tower",
+      "zipCode": "163-1055"
+    },
+    "coordinates": {
+      "type": "Point",
+      "coordinates": [
+        139.6917,
+        35.6938
+      ]
+    },
+    "distanceFromCenter": 2.1,
+    "nearbyAttractions": [
+      "Tokyo Metropolitan Government Building",
+      "Meiji Shrine",
+      "Shinjuku Park"
+    ]
+  },
+  "contact": {
+    "phone": "+81-3-5322-1234",
+    "email": "tokyo.park@hyatt.com",
+    "website": "https://tokyo.park.hyatt.com",
+    "checkIn": "15:00",
+    "checkOut": "12:00"
+  },
+  "rooms": [
+    {
+      "id": "park-deluxe",
+      "name": "Park Deluxe Room",
+      "type": "deluxe",
+      "size": 45,
+      "maxOccupancy": 2,
+      "bedConfiguration": {
+        "kingBeds": 1,
+        "singleBeds": 0,
+        "doubleBeds": 0,
+        "queenBeds": 0
+      },
+      "amenities": [
+        "City View",
+        "Marble Bathroom",
+        "Mini Bar",
+        "WiFi",
+        "AC"
+      ],
+      "pricing": {
+        "baseRate": 550,
+        "currency": "USD",
+        "taxes": 100,
+        "totalRate": 650,
+        "cancellationPolicy": {
+          "type": "free",
+          "deadline": 24
+        },
+        "fees": 0
+      },
+      "totalRooms": 60,
+      "_id": {
+        "$oid": "68ab6f7e267048960e730b98"
+      },
+      "images": [],
+      "availability": []
+    }
+  ],
+  "amenities": {
+    "general": [
+      {
+        "name": "WiFi",
+        "category": "connectivity",
+        "available": true,
+        "_id": {
+          "$oid": "68ab6f7e267048960e730b99"
+        }
+      },
+      {
+        "name": "Spa",
+        "category": "services",
+        "available": true,
+        "fee": 80,
+        "_id": {
+          "$oid": "68ab6f7e267048960e730b9a"
+        }
+      },
+      {
+        "name": "Pool",
+        "category": "recreation",
+        "available": true,
+        "_id": {
+          "$oid": "68ab6f7e267048960e730b9b"
+        }
+      },
+      {
+        "name": "Restaurant",
+        "category": "food",
+        "available": true,
+        "_id": {
+          "$oid": "68ab6f7e267048960e730b9c"
+        }
+      },
+      {
+        "name": "Bar",
+        "category": "food",
+        "available": true,
+        "_id": {
+          "$oid": "68ab6f7e267048960e730b9d"
+        }
+      },
+      {
+        "name": "Gym",
+        "category": "recreation",
+        "available": true,
+        "_id": {
+          "$oid": "68ab6f7e267048960e730b9e"
+        }
+      }
+    ]
+  },
+  "policies": {
+    "checkIn": {
+      "from": "15:00",
+      "to": "24:00",
+      "minAge": 18
+    },
+    "checkOut": {
+      "from": "06:00",
+      "to": "12:00"
+    },
+    "cancellation": "Free cancellation up to 24 hours",
+    "children": {
+      "allowed": true,
+      "freeAge": 12,
+      "extraBedFee": 60
+    },
+    "pets": {
+      "allowed": false
+    },
+    "smoking": {
+      "areas": []
+    }
+  },
+  "rating": {
+    "overall": 4.7,
+    "breakdown": {
+      "cleanliness": 4.8,
+      "comfort": 4.7,
+      "location": 4.6,
+      "service": 4.8,
+      "value": 4.5,
+      "facilities": 4.7
+    },
+    "reviewCount": 654
+  },
+  "pricing": {
+    "priceRange": {
+      "min": 400,
+      "max": 1200,
+      "currency": "USD"
+    },
+    "averageNightlyRate": 650,
+    "ratePlans": []
+  },
+  "tags": [
+    "luxury",
+    "business",
+    "city-view",
+    "spa"
+  ],
+  "featured": true,
+  "verified": true,
+  "stats": {
+    "views": 0,
+    "bookings": 0,
+    "favorites": 0
+  },
+  "status": "active",
+  "seo": {
+    "keywords": []
+  },
+  "images": [],
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-08-24T20:01:02.678Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-24T20:01:02.678Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68ab6f7e267048960e730b9f"
+  },
+  "name": "The Plaza New York",
+  "chain": "Fairmont Hotels",
+  "hotelCategory": "luxury",
+  "description": "Iconic luxury hotel overlooking Central Park with timeless elegance",
+  "shortDescription": "Legendary luxury hotel at Fifth Avenue and Central Park",
+  "starRating": 5,
+  "location": {
+    "city": {
+      "$oid": "68ab6f7e267048960e730b65"
+    },
+    "country": {
+      "$oid": "68ab6f7e267048960e730b17"
+    },
+    "address": {
+      "street": "768 5th Ave",
+      "area": "Midtown Manhattan",
+      "landmark": "Central Park South",
+      "zipCode": "10019"
+    },
+    "coordinates": {
+      "type": "Point",
+      "coordinates": [
+        -73.9759,
+        40.7648
+      ]
+    },
+    "distanceFromCenter": 1.5,
+    "nearbyAttractions": [
+      "Central Park",
+      "Times Square",
+      "Fifth Avenue"
+    ]
+  },
+  "contact": {
+    "phone": "+1-212-759-3000",
+    "email": "info@theplaza.com",
+    "website": "https://theplaza.com",
+    "checkIn": "16:00",
+    "checkOut": "12:00"
+  },
+  "rooms": [
+    {
+      "id": "plaza-room",
+      "name": "Plaza Room",
+      "type": "standard",
+      "size": 40,
+      "maxOccupancy": 2,
+      "bedConfiguration": {
+        "kingBeds": 1,
+        "singleBeds": 0,
+        "doubleBeds": 0,
+        "queenBeds": 0
+      },
+      "amenities": [
+        "City View",
+        "Marble Bathroom",
+        "Mini Bar",
+        "WiFi",
+        "AC"
+      ],
+      "pricing": {
+        "baseRate": 700,
+        "currency": "USD",
+        "taxes": 150,
+        "totalRate": 850,
+        "cancellationPolicy": {
+          "type": "partial",
+          "deadline": 48,
+          "fee": 150
+        },
+        "fees": 0
+      },
+      "totalRooms": 100,
+      "_id": {
+        "$oid": "68ab6f7e267048960e730ba0"
+      },
+      "images": [],
+      "availability": []
+    }
+  ],
+  "amenities": {
+    "general": [
+      {
+        "name": "WiFi",
+        "category": "connectivity",
+        "available": true,
+        "_id": {
+          "$oid": "68ab6f7e267048960e730ba1"
+        }
+      },
+      {
+        "name": "Spa",
+        "category": "services",
+        "available": true,
+        "fee": 150,
+        "_id": {
+          "$oid": "68ab6f7e267048960e730ba2"
+        }
+      },
+      {
+        "name": "Restaurant",
+        "category": "food",
+        "available": true,
+        "_id": {
+          "$oid": "68ab6f7e267048960e730ba3"
+        }
+      },
+      {
+        "name": "Bar",
+        "category": "food",
+        "available": true,
+        "_id": {
+          "$oid": "68ab6f7e267048960e730ba4"
+        }
+      },
+      {
+        "name": "Gym",
+        "category": "recreation",
+        "available": true,
+        "_id": {
+          "$oid": "68ab6f7e267048960e730ba5"
+        }
+      },
+      {
+        "name": "Concierge",
+        "category": "services",
+        "available": true,
+        "_id": {
+          "$oid": "68ab6f7e267048960e730ba6"
+        }
+      },
+      {
+        "name": "Room Service",
+        "category": "services",
+        "available": true,
+        "_id": {
+          "$oid": "68ab6f7e267048960e730ba7"
+        }
+      }
+    ]
+  },
+  "policies": {
+    "checkIn": {
+      "from": "16:00",
+      "to": "24:00",
+      "minAge": 21
+    },
+    "checkOut": {
+      "from": "07:00",
+      "to": "12:00"
+    },
+    "cancellation": "Partial refund with 48h notice",
+    "children": {
+      "allowed": true,
+      "freeAge": 12,
+      "extraBedFee": 75
+    },
+    "pets": {
+      "allowed": true,
+      "fee": 75
+    },
+    "smoking": {
+      "areas": []
+    }
+  },
+  "rating": {
+    "overall": 4.6,
+    "breakdown": {
+      "cleanliness": 4.7,
+      "comfort": 4.6,
+      "location": 4.9,
+      "service": 4.5,
+      "value": 4.2,
+      "facilities": 4.6
+    },
+    "reviewCount": 2156
+  },
+  "pricing": {
+    "priceRange": {
+      "min": 600,
+      "max": 1500,
+      "currency": "USD"
+    },
+    "averageNightlyRate": 850,
+    "ratePlans": []
+  },
+  "tags": [
+    "luxury",
+    "historic",
+    "central-park",
+    "iconic"
+  ],
+  "featured": false,
+  "verified": true,
+  "stats": {
+    "views": 0,
+    "bookings": 0,
+    "favorites": 0
+  },
+  "status": "active",
+  "seo": {
+    "keywords": []
+  },
+  "images": [],
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-08-24T20:01:02.679Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-24T20:01:02.679Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68ab6f7e267048960e730ba8"
+  },
+  "name": "The Savoy London",
+  "chain": "Fairmont Hotels",
+  "hotelCategory": "luxury",
+  "description": "Legendary luxury hotel on the Strand with Art Deco elegance",
+  "shortDescription": "Historic luxury hotel in Covent Garden with Thames views",
+  "starRating": 5,
+  "location": {
+    "city": {
+      "$oid": "68ab6f7e267048960e730b69"
+    },
+    "country": {
+      "$oid": "68ab6f7e267048960e730b1b"
+    },
+    "address": {
+      "street": "Strand",
+      "area": "Covent Garden",
+      "landmark": "Thames Embankment",
+      "zipCode": "WC2R 0EZ"
+    },
+    "coordinates": {
+      "type": "Point",
+      "coordinates": [
+        -0.1205,
+        51.5101
+      ]
+    },
+    "distanceFromCenter": 0.8,
+    "nearbyAttractions": [
+      "Covent Garden",
+      "Thames River",
+      "Somerset House"
+    ]
+  },
+  "contact": {
+    "phone": "+44-20-7836-4343",
+    "email": "info@thesavoy.com",
+    "website": "https://thesavoy.com",
+    "checkIn": "15:00",
+    "checkOut": "12:00"
+  },
+  "rooms": [
+    {
+      "id": "superior-room",
+      "name": "Superior Room",
+      "type": "standard",
+      "size": 35,
+      "maxOccupancy": 2,
+      "bedConfiguration": {
+        "kingBeds": 1,
+        "singleBeds": 0,
+        "doubleBeds": 0,
+        "queenBeds": 0
+      },
+      "amenities": [
+        "River View",
+        "Marble Bathroom",
+        "Mini Bar",
+        "WiFi",
+        "AC"
+      ],
+      "pricing": {
+        "baseRate": 600,
+        "currency": "GBP",
+        "taxes": 150,
+        "totalRate": 750,
+        "cancellationPolicy": {
+          "type": "free",
+          "deadline": 24
+        },
+        "fees": 0
+      },
+      "totalRooms": 70,
+      "_id": {
+        "$oid": "68ab6f7e267048960e730ba9"
+      },
+      "images": [],
+      "availability": []
+    }
+  ],
+  "amenities": {
+    "general": [
+      {
+        "name": "WiFi",
+        "category": "connectivity",
+        "available": true,
+        "_id": {
+          "$oid": "68ab6f7e267048960e730baa"
+        }
+      },
+      {
+        "name": "Spa",
+        "category": "services",
+        "available": true,
+        "fee": 100,
+        "_id": {
+          "$oid": "68ab6f7e267048960e730bab"
+        }
+      },
+      {
+        "name": "Restaurant",
+        "category": "food",
+        "available": true,
+        "_id": {
+          "$oid": "68ab6f7e267048960e730bac"
+        }
+      },
+      {
+        "name": "Bar",
+        "category": "food",
+        "available": true,
+        "_id": {
+          "$oid": "68ab6f7e267048960e730bad"
+        }
+      },
+      {
+        "name": "Gym",
+        "category": "recreation",
+        "available": true,
+        "_id": {
+          "$oid": "68ab6f7e267048960e730bae"
+        }
+      },
+      {
+        "name": "Butler Service",
+        "category": "services",
+        "available": true,
+        "fee": 200,
+        "_id": {
+          "$oid": "68ab6f7e267048960e730baf"
+        }
+      }
+    ]
+  },
+  "policies": {
+    "checkIn": {
+      "from": "15:00",
+      "to": "24:00",
+      "minAge": 18
+    },
+    "checkOut": {
+      "from": "07:00",
+      "to": "12:00"
+    },
+    "cancellation": "Free cancellation up to 24 hours",
+    "children": {
+      "allowed": true,
+      "freeAge": 12,
+      "extraBedFee": 80
+    },
+    "pets": {
+      "allowed": true,
+      "fee": 50
+    },
+    "smoking": {
+      "areas": []
+    }
+  },
+  "rating": {
+    "overall": 4.8,
+    "breakdown": {
+      "cleanliness": 4.9,
+      "comfort": 4.8,
+      "location": 4.9,
+      "service": 4.8,
+      "value": 4.5,
+      "facilities": 4.7
+    },
+    "reviewCount": 1543
+  },
+  "pricing": {
+    "priceRange": {
+      "min": 450,
+      "max": 1800,
+      "currency": "GBP"
+    },
+    "averageNightlyRate": 750,
+    "ratePlans": []
+  },
+  "tags": [
+    "luxury",
+    "historic",
+    "art-deco",
+    "thames-view"
+  ],
+  "featured": false,
+  "verified": true,
+  "stats": {
+    "views": 0,
+    "bookings": 0,
+    "favorites": 0
+  },
+  "status": "active",
+  "seo": {
+    "keywords": []
+  },
+  "images": [],
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-08-24T20:01:02.680Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-24T20:01:02.680Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68ab6f7e267048960e730bb0"
+  },
+  "name": "Bali Eco Lodge",
+  "chain": "Independent",
+  "hotelCategory": "boutique",
+  "description": "Sustainable eco-friendly accommodation surrounded by nature in Ubud",
+  "shortDescription": "Eco-lodge with yoga studio and organic gardens",
+  "starRating": 4,
+  "location": {
+    "city": {
+      "$oid": "68ab6f7e267048960e730b68"
+    },
+    "country": {
+      "$oid": "68ab6f7e267048960e730b1a"
+    },
+    "address": {
+      "street": "Jl. Raya Ubud",
+      "area": "Ubud",
+      "landmark": "Monkey Forest Road",
+      "zipCode": "80571"
+    },
+    "coordinates": {
+      "type": "Point",
+      "coordinates": [
+        115.2624,
+        -8.5069
+      ]
+    },
+    "distanceFromCenter": 8.5,
+    "nearbyAttractions": [
+      "Monkey Forest Sanctuary",
+      "Ubud Market",
+      "Rice Terraces"
+    ]
+  },
+  "contact": {
+    "phone": "+62-361-975-123",
+    "email": "info@baliecco.com",
+    "website": "https://baliecco.com",
+    "checkIn": "14:00",
+    "checkOut": "11:00"
+  },
+  "rooms": [
+    {
+      "id": "garden-villa",
+      "name": "Garden Villa",
+      "type": "villa",
+      "size": 50,
+      "maxOccupancy": 2,
+      "bedConfiguration": {
+        "kingBeds": 1,
+        "singleBeds": 0,
+        "doubleBeds": 0,
+        "queenBeds": 0
+      },
+      "amenities": [
+        "Garden View",
+        "Private Terrace",
+        "Mini Bar",
+        "WiFi",
+        "Fan"
+      ],
+      "pricing": {
+        "baseRate": 100,
+        "currency": "USD",
+        "taxes": 20,
+        "totalRate": 120,
+        "cancellationPolicy": {
+          "type": "free",
+          "deadline": 24
+        },
+        "fees": 0
+      },
+      "totalRooms": 20,
+      "_id": {
+        "$oid": "68ab6f7e267048960e730bb1"
+      },
+      "images": [],
+      "availability": []
+    }
+  ],
+  "amenities": {
+    "general": [
+      {
+        "name": "WiFi",
+        "category": "connectivity",
+        "available": true,
+        "_id": {
+          "$oid": "68ab6f7e267048960e730bb2"
+        }
+      },
+      {
+        "name": "Restaurant",
+        "category": "food",
+        "available": true,
+        "_id": {
+          "$oid": "68ab6f7e267048960e730bb3"
+        }
+      },
+      {
+        "name": "Yoga Studio",
+        "category": "recreation",
+        "available": true,
+        "_id": {
+          "$oid": "68ab6f7e267048960e730bb4"
+        }
+      },
+      {
+        "name": "Garden",
+        "category": "recreation",
+        "available": true,
+        "_id": {
+          "$oid": "68ab6f7e267048960e730bb5"
+        }
+      },
+      {
+        "name": "Spa",
+        "category": "services",
+        "available": true,
+        "fee": 40,
+        "_id": {
+          "$oid": "68ab6f7e267048960e730bb6"
+        }
+      }
+    ]
+  },
+  "policies": {
+    "checkIn": {
+      "from": "14:00",
+      "to": "22:00",
+      "minAge": 18
+    },
+    "checkOut": {
+      "from": "07:00",
+      "to": "11:00"
+    },
+    "cancellation": "Free cancellation up to 24 hours",
+    "children": {
+      "allowed": true,
+      "freeAge": 12,
+      "extraBedFee": 25
+    },
+    "pets": {
+      "allowed": false
+    },
+    "smoking": {
+      "areas": []
+    }
+  },
+  "rating": {
+    "overall": 4.6,
+    "breakdown": {
+      "cleanliness": 4.7,
+      "comfort": 4.5,
+      "location": 4.8,
+      "service": 4.6,
+      "value": 4.8,
+      "facilities": 4.4
+    },
+    "reviewCount": 432
+  },
+  "pricing": {
+    "priceRange": {
+      "min": 80,
+      "max": 200,
+      "currency": "USD"
+    },
+    "averageNightlyRate": 120,
+    "ratePlans": []
+  },
+  "tags": [
+    "eco-friendly",
+    "yoga",
+    "nature",
+    "sustainable"
+  ],
+  "featured": false,
+  "verified": true,
+  "stats": {
+    "views": 0,
+    "bookings": 0,
+    "favorites": 0
+  },
+  "status": "active",
+  "seo": {
+    "keywords": []
+  },
+  "images": [],
+  "__v": 0,
+  "createdAt": {
+    "$date": "2025-08-24T20:01:02.681Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-24T20:01:02.681Z"
+  }
+}]

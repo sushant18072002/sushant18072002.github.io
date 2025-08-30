@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { tripService } from '@/services/trip.service';
 import { searchService, SearchResult } from '@/services/search.service';
 import Button from '@/components/common/Button';
 import Card from '@/components/common/Card';
@@ -100,10 +101,11 @@ const SearchResultsPage: React.FC = () => {
         navigate(`/hotels/${result.id}`);
         break;
       case 'package':
-        navigate(`/packages/${result.id}`);
+      case 'trip':
+        navigate(`/trips/${result.id}`);
         break;
       case 'itinerary':
-        navigate(`/itineraries/${result.id}`);
+        navigate(`/trips/${result.id}`);
         break;
     }
   };
@@ -157,8 +159,7 @@ const SearchResultsPage: React.FC = () => {
                       { id: 'all', label: 'All Results' },
                       { id: 'flight', label: 'Flights' },
                       { id: 'hotel', label: 'Hotels' },
-                      { id: 'package', label: 'Packages' },
-                      { id: 'itinerary', label: 'Itineraries' }
+                      { id: 'trip', label: 'Trips' }
                     ].map(type => (
                       <label key={type.id} className="flex items-center gap-2 cursor-pointer">
                         <input

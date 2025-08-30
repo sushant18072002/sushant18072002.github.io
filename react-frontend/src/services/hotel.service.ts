@@ -3,7 +3,7 @@ import { Hotel, HotelSearchParams, Review } from '@/types/api.types';
 
 class HotelService {
   async searchHotels(params: HotelSearchParams) {
-    return apiService.getPaginated<Hotel>('/hotels/search', params);
+    return apiService.getPaginated<Hotel>('/hotels', params);
   }
 
   async getHotelDetails(id: string) {
@@ -64,7 +64,8 @@ class HotelService {
   }
 
   async getHotelDeals() {
-    return apiService.get<any[]>('/hotels/deals');
+    const response = await fetch('https://localhost:3000/api/hotels/deals');
+    return response.json();
   }
 
   async createPriceAlert(alertData: {
@@ -87,7 +88,8 @@ class HotelService {
   }
 
   async getPopularDestinations() {
-    return apiService.get<any[]>('/hotels/popular-destinations');
+    const response = await fetch('https://localhost:3000/api/hotels/popular-destinations');
+    return response.json();
   }
 
   async getHotelFilters(params: {

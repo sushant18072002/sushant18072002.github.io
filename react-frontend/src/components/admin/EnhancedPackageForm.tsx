@@ -26,11 +26,10 @@ interface EnhancedPackageFormProps {
 
 const EnhancedPackageForm: React.FC<EnhancedPackageFormProps> = ({ packageId, onSubmit, onClose }) => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [createdPackageId, setCreatedPackageId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [currentPackageId, setCurrentPackageId] = useState<string | null>(packageId || null);
   
   const isEditMode = !!packageId;
-  const [itinerary, setItinerary] = useState({ overview: '', days: [] });
+  const [itinerary, setItinerary] = useState<{ overview: string; days: any[] }>({ overview: '', days: [] });
   const [uploadedImages, setUploadedImages] = useState<any[]>([]);
   
   const form = useForm<PackageFormData>();
@@ -66,10 +65,11 @@ const EnhancedPackageForm: React.FC<EnhancedPackageFormProps> = ({ packageId, on
       const response = await apiService.post('/admin/packages', transformedData);
       
       if (response.success) {
-        setPackageId(response.data.package._id || response.data.package.id);
+        const newPackageId = (response.data as any)?.package?._id || (response.data as any)?.package?.id;
+        setCurrentPackageId(newPackageId);
         setCurrentStep(2);
       } else {
-        alert('Failed to create package: ' + (response.error?.message || 'Unknown error'));
+        alert('Failed to create package: ' + ((response as any).errors?.message || 'Unknown error'));
       }
     } catch (error) {
       console.error('Create error:', error);
@@ -78,11 +78,11 @@ const EnhancedPackageForm: React.FC<EnhancedPackageFormProps> = ({ packageId, on
   };
 
   const handleItinerarySave = async (itineraryData: any) => {
-    if (!packageId) return;
+    if (!currentPackageId) return;
     
     try {
       const { apiService } = await import('@/services/api');
-      await apiService.put(`/admin/packages/${packageId}`, { itinerary: itineraryData });
+      await apiService.put(`/admin/packages/${currentPackageId}`, { itinerary: itineraryData });
       setItinerary(itineraryData);
       setCurrentStep(3);
     } catch (error) {
@@ -96,7 +96,7 @@ const EnhancedPackageForm: React.FC<EnhancedPackageFormProps> = ({ packageId, on
 
   const handleFinalSubmit = () => {
     onSubmit({
-      packageId,
+      packageId: currentPackageId,
       itinerary,
       images: uploadedImages
     });
@@ -238,14 +238,18 @@ const EnhancedPackageForm: React.FC<EnhancedPackageFormProps> = ({ packageId, on
           )}
 
           {currentStep === 2 && (
-            <ItineraryBuilder onSave={handleItinerarySave} />
+            <ItineraryBuilder 
+              initialItinerary={itinerary}
+              tripDuration={form.watch('duration') || 7}
+              onSave={handleItinerarySave} 
+            />
           )}
 
-          {currentStep === 3 && packageId && (
+          {currentStep === 3 && currentPackageId && (
             <div>
               <h3 className="text-lg font-semibold text-primary-900 mb-4">Upload Package Images</h3>
               <ImageUpload 
-                packageId={packageId} 
+                packageId={currentPackageId} 
                 onImagesUploaded={handleImagesUploaded}
               />
               

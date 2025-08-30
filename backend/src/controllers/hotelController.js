@@ -101,13 +101,69 @@ const getNearbyHotels = async (req, res) => {
   }
 };
 
-// Admin only
+// Admin methods
+const getAdminHotels = async (req, res) => {
+  try {
+    const { page = 1, limit = 20, search, city, starRating } = req.query;
+    
+    const query = {};
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } }
+      ];
+    }
+    if (city) query['location.city'] = city;
+    if (starRating) query.starRating = parseInt(starRating);
+    
+    const hotels = await Hotel.find(query)
+      .populate('location.city', 'name')
+      .populate('location.country', 'name')
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+    
+    const total = await Hotel.countDocuments(query);
+    
+    res.json({
+      success: true,
+      data: {
+        hotels,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { message: error.message }
+    });
+  }
+};
+
 const createHotel = async (req, res) => {
   try {
-    const hotel = await Hotel.create(req.body);
-    res.status(201).json({ success: true, data: { hotel } });
+    const hotel = new Hotel(req.body);
+    await hotel.save();
+    
+    await hotel.populate([
+      { path: 'location.city', select: 'name' },
+      { path: 'location.country', select: 'name' }
+    ]);
+    
+    res.status(201).json({
+      success: true,
+      data: { hotel }
+    });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    res.status(400).json({
+      success: false,
+      error: { message: error.message }
+    });
   }
 };
 
@@ -117,29 +173,54 @@ const updateHotel = async (req, res) => {
       req.params.id,
       req.body,
       { new: true, runValidators: true }
-    );
+    ).populate([
+      { path: 'location.city', select: 'name' },
+      { path: 'location.country', select: 'name' }
+    ]);
     
     if (!hotel) {
-      return res.status(404).json({ success: false, error: 'Hotel not found' });
+      return res.status(404).json({
+        success: false,
+        error: { message: 'Hotel not found' }
+      });
     }
-
-    res.json({ success: true, data: { hotel } });
+    
+    res.json({
+      success: true,
+      data: { hotel }
+    });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    res.status(400).json({
+      success: false,
+      error: { message: error.message }
+    });
   }
 };
 
 const deleteHotel = async (req, res) => {
   try {
-    const hotel = await Hotel.findByIdAndDelete(req.params.id);
+    const hotel = await Hotel.findByIdAndUpdate(
+      req.params.id,
+      { status: 'inactive' },
+      { new: true }
+    );
     
     if (!hotel) {
-      return res.status(404).json({ success: false, error: 'Hotel not found' });
+      return res.status(404).json({
+        success: false,
+        error: { message: 'Hotel not found' }
+      });
     }
-
-    res.json({ success: true, message: 'Hotel deleted successfully' });
+    
+    res.json({
+      success: true,
+      data: { message: 'Hotel deactivated successfully' }
+    });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({
+      success: false,
+      error: { message: error.message }
+    });
   }
 };
 
@@ -383,9 +464,6 @@ module.exports = {
   getHotelDetails,
   getAvailability,
   getNearbyHotels,
-  createHotel,
-  updateHotel,
-  deleteHotel,
   getHotelAmenities,
   getHotelPhotos,
   getHotelDeals,
@@ -397,5 +475,10 @@ module.exports = {
   addHotelReview,
   getHotelReviews,
   createPriceAlert,
-  deletePriceAlert
+  deletePriceAlert,
+  // Admin methods
+  getAdminHotels,
+  createHotel,
+  updateHotel,
+  deleteHotel
 };

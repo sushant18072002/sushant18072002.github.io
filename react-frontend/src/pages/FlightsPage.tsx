@@ -6,6 +6,7 @@ import Button from '@/components/common/Button';
 import Card from '@/components/common/Card';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import useApi from '@/hooks/useApi';
+import { PopularRoutesCards, FlightDealsCards } from '@/components/FlightCards';
 
 interface FlightSearchForm {
   from: string;
@@ -40,7 +41,8 @@ const FlightsPage: React.FC = () => {
     stops: 'any',
     sort: 'price'
   });
-  const [airports, setAirports] = useState<Airport[]>([]);
+  const [fromAirports, setFromAirports] = useState<Airport[]>([]);
+  const [toAirports, setToAirports] = useState<Airport[]>([]);
   const [showFromSuggestions, setShowFromSuggestions] = useState(false);
   const [showToSuggestions, setShowToSuggestions] = useState(false);
   const [popularRoutes, setPopularRoutes] = useState([]);
@@ -48,58 +50,119 @@ const FlightsPage: React.FC = () => {
 
   useEffect(() => {
     loadInitialData();
-    if (searchParams.get('autoSearch') === 'true') {
-      handleSearch();
-    }
   }, []);
 
-  const loadInitialData = async () => {
-    try {
-      const [routesRes, dealsRes] = await Promise.all([
-        flightService.getPopularRoutes(),
-        flightService.getFlightDeals()
-      ]);
-      setPopularRoutes(routesRes.data.routes || []);
-      setFlightDeals(dealsRes.data.deals || []);
-    } catch (error) {
-      console.error('Error loading initial data:', error);
+  useEffect(() => {
+    loadUrlParameters();
+  }, [searchParams]);
+
+  const loadUrlParameters = () => {
+    const autoSearch = searchParams.get('autoSearch') === 'true';
+    const fromParam = searchParams.get('from');
+    const toParam = searchParams.get('to');
+    const dateParam = searchParams.get('departDate');
+    
+    console.log('URL Parameters:', { fromParam, toParam, dateParam, autoSearch });
+    
+    if (fromParam || toParam || dateParam) {
+      // Convert codes to city names for display
+      const getCodeToCityMap = () => {
+        const sampleAirports = [
+          { code: 'JFK', city: 'New York' },
+          { code: 'CDG', city: 'Paris' },
+          { code: 'DXB', city: 'Dubai' },
+          { code: 'NRT', city: 'Tokyo' },
+          { code: 'LHR', city: 'London' },
+          { code: 'LAX', city: 'Los Angeles' }
+        ];
+        return sampleAirports.reduce((map, airport) => {
+          map[airport.code] = airport.city;
+          return map;
+        }, {});
+      };
+      
+      const codeToCity = getCodeToCityMap();
+      const fromCity = codeToCity[fromParam] || fromParam;
+      const toCity = codeToCity[toParam] || toParam;
+      
+      // Create new form data with URL parameters
+      const newFormData = {
+        ...searchForm,
+        from: fromCity || searchForm.from,
+        to: toCity || searchForm.to,
+        departDate: dateParam || searchForm.departDate,
+        passengers: parseInt(searchParams.get('passengers')) || searchForm.passengers,
+        class: searchParams.get('class') || searchForm.class
+      };
+      
+      console.log('New form data:', newFormData);
+      setSearchForm(newFormData);
+      
+      if (autoSearch) {
+        console.log('Triggering auto search with params:', { from: fromParam, to: toParam });
+        // Use the URL parameters directly for search instead of waiting for state update
+        performSearch(newFormData);
+      }
     }
   };
 
-  const searchAirports = async (query: string) => {
-    if (query.length < 2) return;
-    try {
-      const response = await flightService.searchAirports(query);
-      setAirports(response.data.airports || []);
-    } catch (error) {
-      console.error('Error searching airports:', error);
-    }
+  const getCityToCodeMap = () => {
+    const sampleAirports = [
+      { code: 'JFK', city: 'New York' },
+      { code: 'CDG', city: 'Paris' },
+      { code: 'DXB', city: 'Dubai' },
+      { code: 'NRT', city: 'Tokyo' },
+      { code: 'LHR', city: 'London' },
+      { code: 'LAX', city: 'Los Angeles' }
+    ];
+    return sampleAirports.reduce((map, airport) => {
+      map[airport.city] = airport.code;
+      return map;
+    }, {});
   };
 
-  const handleSearch = async () => {
-    if (!searchForm.from || !searchForm.to || !searchForm.departDate) {
-      alert('Please fill in all required fields');
+  const performSearch = async (formData = searchForm) => {
+    console.log('performSearch called with:', formData);
+    
+    if (!formData.from && !formData.to) {
+      alert('Please select departure and arrival cities');
       return;
     }
 
     setLoading(true);
     setError(null);
     try {
-      const searchParams = {
-        from: searchForm.from,
-        to: searchForm.to,
-        departDate: searchForm.departDate,
-        returnDate: searchForm.tripType === 'roundtrip' ? searchForm.returnDate : undefined,
-        passengers: searchForm.passengers,
-        class: searchForm.class,
+      const cityToCode = getCityToCodeMap();
+      const fromCode = cityToCode[formData.from] || formData.from;
+      const toCode = cityToCode[formData.to] || formData.to;
+      
+      const searchData = {
+        from: fromCode,
+        to: toCode,
+        departDate: formData.departDate || undefined,
+        returnDate: formData.tripType === 'roundtrip' ? formData.returnDate : undefined,
+        passengers: formData.passengers,
+        class: formData.class,
         maxPrice: filters.maxPrice,
         airlines: filters.airlines.join(','),
         stops: filters.stops === 'any' ? undefined : filters.stops,
         sort: filters.sort
       };
 
-      const response = await flightService.searchFlights(searchParams);
-      setFlights(response.data?.flights || []);
+      console.log('Search data:', searchData);
+
+      const queryParams = new URLSearchParams();
+      Object.entries(searchData).forEach(([key, value]) => {
+        if (value !== undefined && value !== '' && value !== null) {
+          queryParams.append(key, value.toString());
+        }
+      });
+      
+      console.log('Final search query:', queryParams.toString());
+      
+      const response = await fetch(`http://localhost:3000/api/flights?${queryParams}`);
+      const data = await response.json();
+      setFlights(data.data?.flights || []);
       setSearched(true);
     } catch (error: any) {
       console.error('Error searching flights:', error);
@@ -108,6 +171,64 @@ const FlightsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+
+
+  const loadInitialData = async () => {
+    try {
+      const [routesRes, dealsRes] = await Promise.all([
+        fetch('http://localhost:3000/api/flights/popular-routes').then(r => r.json()),
+        fetch('http://localhost:3000/api/flights/deals').then(r => r.json())
+      ]);
+      setPopularRoutes(routesRes.data?.routes || []);
+      setFlightDeals(dealsRes.data?.deals || []);
+    } catch (error) {
+      console.error('Error loading initial data:', error);
+    }
+  };
+
+  const searchAirports = async (query: string, setAirportsFunc: any) => {
+    if (query.length < 2) {
+      setAirportsFunc([]);
+      return;
+    }
+    
+    const sampleAirports = [
+      { _id: '1', code: 'JFK', name: 'John F. Kennedy International Airport', city: 'New York', country: 'USA' },
+      { _id: '2', code: 'CDG', name: 'Charles de Gaulle Airport', city: 'Paris', country: 'France' },
+      { _id: '3', code: 'DXB', name: 'Dubai International Airport', city: 'Dubai', country: 'UAE' },
+      { _id: '4', code: 'NRT', name: 'Narita International Airport', city: 'Tokyo', country: 'Japan' },
+      { _id: '5', code: 'LHR', name: 'London Heathrow Airport', city: 'London', country: 'UK' },
+      { _id: '6', code: 'LAX', name: 'Los Angeles International Airport', city: 'Los Angeles', country: 'USA' }
+    ];
+    
+    try {
+      const response = await fetch(`http://localhost:3000/api/airports/search?q=${encodeURIComponent(query)}`);
+      if (!response.ok) {
+        const filtered = sampleAirports.filter(airport => 
+          airport.code.toLowerCase().includes(query.toLowerCase()) ||
+          airport.name.toLowerCase().includes(query.toLowerCase()) ||
+          airport.city.toLowerCase().includes(query.toLowerCase())
+        );
+        setAirportsFunc(filtered);
+        return;
+      }
+      const data = await response.json();
+      setAirportsFunc(data.data?.airports || []);
+    } catch (error) {
+      console.error('Error searching airports:', error);
+      const filtered = sampleAirports.filter(airport => 
+        airport.code.toLowerCase().includes(query.toLowerCase()) ||
+        airport.name.toLowerCase().includes(query.toLowerCase()) ||
+        airport.city.toLowerCase().includes(query.toLowerCase())
+      );
+      setAirportsFunc(filtered);
+    }
+  };
+
+  const handleSearch = async () => {
+    performSearch();
   };
 
   const handleFlightSelect = (flight: Flight) => {
@@ -138,8 +259,8 @@ const FlightsPage: React.FC = () => {
       <section className="bg-gradient-to-br from-blue-ocean to-emerald py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-white mb-4">Find Your Perfect Flight</h1>
-            <p className="text-xl text-white/90">Compare prices from hundreds of airlines</p>
+            <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">Find Your Perfect Flight</h1>
+            <p className="text-lg text-white/90">Compare prices from hundreds of airlines</p>
           </div>
 
           {/* Search Form */}
@@ -180,7 +301,7 @@ const FlightsPage: React.FC = () => {
                     value={searchForm.from}
                     onChange={(e) => {
                       setSearchForm(prev => ({ ...prev, from: e.target.value }));
-                      searchAirports(e.target.value);
+                      searchAirports(e.target.value, setFromAirports);
                       setShowFromSuggestions(true);
                     }}
                     onFocus={() => setShowFromSuggestions(true)}
@@ -191,23 +312,24 @@ const FlightsPage: React.FC = () => {
                     ✈️
                   </div>
                 </div>
-                {showFromSuggestions && airports.length > 0 && (
+                {showFromSuggestions && fromAirports.length > 0 && (
                   <div className="absolute z-10 w-full mt-1 bg-white border border-primary-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                    {airports.map((airport) => (
-                      <button
+                    {fromAirports.map((airport) => (
+                      <div
                         key={airport._id}
-                        onClick={() => {
-                          setSearchForm(prev => ({ ...prev, from: airport.code }));
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          setSearchForm(prev => ({ ...prev, from: airport.city }));
                           setShowFromSuggestions(false);
                         }}
-                        className="w-full px-4 py-2 text-left hover:bg-primary-50 flex items-center justify-between"
+                        className="w-full px-4 py-2 text-left hover:bg-primary-50 flex items-center justify-between cursor-pointer"
                       >
                         <div>
                           <div className="font-medium">{airport.name}</div>
                           <div className="text-sm text-primary-500">{airport.city}, {airport.country}</div>
                         </div>
                         <div className="text-sm font-mono text-primary-400">{airport.code}</div>
-                      </button>
+                      </div>
                     ))}
                   </div>
                 )}
@@ -222,7 +344,7 @@ const FlightsPage: React.FC = () => {
                     value={searchForm.to}
                     onChange={(e) => {
                       setSearchForm(prev => ({ ...prev, to: e.target.value }));
-                      searchAirports(e.target.value);
+                      searchAirports(e.target.value, setToAirports);
                       setShowToSuggestions(true);
                     }}
                     onFocus={() => setShowToSuggestions(true)}
@@ -233,23 +355,24 @@ const FlightsPage: React.FC = () => {
                     🏁
                   </div>
                 </div>
-                {showToSuggestions && airports.length > 0 && (
+                {showToSuggestions && toAirports.length > 0 && (
                   <div className="absolute z-10 w-full mt-1 bg-white border border-primary-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                    {airports.map((airport) => (
-                      <button
+                    {toAirports.map((airport) => (
+                      <div
                         key={airport._id}
-                        onClick={() => {
-                          setSearchForm(prev => ({ ...prev, to: airport.code }));
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          setSearchForm(prev => ({ ...prev, to: airport.city }));
                           setShowToSuggestions(false);
                         }}
-                        className="w-full px-4 py-2 text-left hover:bg-primary-50 flex items-center justify-between"
+                        className="w-full px-4 py-2 text-left hover:bg-primary-50 flex items-center justify-between cursor-pointer"
                       >
                         <div>
                           <div className="font-medium">{airport.name}</div>
                           <div className="text-sm text-primary-500">{airport.city}, {airport.country}</div>
                         </div>
                         <div className="text-sm font-mono text-primary-400">{airport.code}</div>
-                      </button>
+                      </div>
                     ))}
                   </div>
                 )}
@@ -393,8 +516,30 @@ const FlightsPage: React.FC = () => {
                     variant="outline"
                     size="sm"
                     fullWidth
+                    className="mb-2"
                   >
                     Apply Filters
+                  </Button>
+                  
+                  <Button
+                    onClick={() => {
+                      setSearchForm({
+                        from: '',
+                        to: '',
+                        departDate: new Date().toISOString().split('T')[0],
+                        returnDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        passengers: 1,
+                        class: 'economy',
+                        tripType: 'roundtrip'
+                      });
+                      setSearched(false);
+                      setFlights([]);
+                    }}
+                    variant="outline"
+                    size="sm"
+                    fullWidth
+                  >
+                    Clear Search
                   </Button>
                 </Card>
               </div>
@@ -430,92 +575,117 @@ const FlightsPage: React.FC = () => {
                       <Card
                         key={flight._id}
                         hover
-                        className="cursor-pointer"
+                        className="mb-4 p-4 hover:shadow-lg transition-all duration-300 cursor-pointer border border-gray-200 rounded-lg"
                         onClick={() => handleFlightSelect(flight)}
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-6">
-                            {/* Airline Logo */}
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                          {/* Left: Airline & Flight Info */}
+                          <div className="flex items-center gap-3 lg:w-1/4">
                             <div className="flex-shrink-0">
                               <img
-                                src={flight.airline?.logo || '/api/placeholder/60/40'}
+                                src={flight.airline?.logo || 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=80&h=60&fit=crop&auto=format'}
                                 alt={flight.airline?.name}
-                                className="w-15 h-10 object-contain"
+                                className="w-20 h-16 object-contain rounded-lg border shadow-sm"
+                                onError={(e) => {
+                                  e.currentTarget.src = 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=80&h=60&fit=crop&auto=format';
+                                }}
                               />
                             </div>
-
-                            {/* Flight Details */}
-                            <div className="flex-1">
-                              <div className="flex items-center space-x-8">
-                                {/* Departure */}
-                                <div className="text-center">
-                                  <div className="text-xl font-bold text-primary-900">
-                                    {new Date(flight.route.departure.scheduledTime).toLocaleTimeString('en-US', {
-                                      hour: '2-digit',
-                                      minute: '2-digit',
-                                      hour12: false
-                                    })}
-                                  </div>
-                                  <div className="text-sm text-primary-600">
-                                    {flight.route.departure.airport?.code}
-                                  </div>
-                                </div>
-
-                                {/* Flight Path */}
-                                <div className="flex-1 flex items-center">
-                                  <div className="flex-1 border-t-2 border-primary-200 relative">
-                                    <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-white px-2">
-                                      <span className="text-xs text-primary-500">
-                                        {formatDuration(flight.duration?.scheduled || 0)}
-                                      </span>
-                                    </div>
-                                    {flight.stops > 0 && (
-                                      <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-primary-400 rounded-full"></div>
-                                    )}
-                                  </div>
-                                </div>
-
-                                {/* Arrival */}
-                                <div className="text-center">
-                                  <div className="text-xl font-bold text-primary-900">
-                                    {new Date(flight.route.arrival.scheduledTime).toLocaleTimeString('en-US', {
-                                      hour: '2-digit',
-                                      minute: '2-digit',
-                                      hour12: false
-                                    })}
-                                  </div>
-                                  <div className="text-sm text-primary-600">
-                                    {flight.route.arrival.airport?.code}
-                                  </div>
-                                </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="font-bold text-primary-900 text-lg mb-1 leading-tight">{flight.airline?.name}</div>
+                              <div className="text-sm text-primary-600 mb-1">{flight.flightNumber}</div>
+                              <div className="text-sm text-primary-500 mb-1">
+                                {flight.aircraft?.type || flight.aircraft?.model || 'Aircraft'} • {flight.distance || 0} km
                               </div>
-
-                              {/* Additional Info */}
-                              <div className="flex items-center space-x-4 mt-2 text-sm text-primary-500">
-                                <span>{flight.airline?.name}</span>
-                                <span>•</span>
-                                <span>{flight.aircraft?.model}</span>
-                                {flight.stops > 0 && (
-                                  <>
-                                    <span>•</span>
-                                    <span>{flight.stops} stop{flight.stops > 1 ? 's' : ''}</span>
-                                  </>
-                                )}
+                              <div className="text-sm text-green-600 font-semibold">
+                                {flight.flightType || 'Direct'} Flight
                               </div>
                             </div>
                           </div>
 
-                          {/* Price */}
-                          <div className="text-right">
-                            <div className="text-2xl font-bold text-primary-900">
+                          {/* Center: Route & Time */}
+                          <div className="flex items-center justify-center gap-4 lg:w-2/4">
+                            {/* Departure */}
+                            <div className="text-center">
+                              <div className="text-2xl font-bold text-primary-900 mb-1">
+                                {new Date(flight.route.departure.scheduledTime).toLocaleTimeString('en-US', {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                  hour12: false
+                                })}
+                              </div>
+                              <div className="text-lg font-bold text-primary-700 mb-1">{flight.route.departure.airport?.code}</div>
+                              <div className="text-sm text-primary-600">{flight.route.departure.airport?.city}</div>
+                              <div className="text-sm text-primary-400 mt-1">
+                                {new Date(flight.route.departure.scheduledTime).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric'
+                                })}
+                              </div>
+                            </div>
+                            
+                            {/* Flight Path */}
+                            <div className="flex-1 max-w-40 text-center">
+                              <div className="text-base text-primary-600 font-bold mb-3">
+                                {formatDuration(flight.duration?.scheduled || 0)}
+                              </div>
+                              <div className="relative">
+                                <div className="border-t-2 border-primary-300"></div>
+                                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-white px-2">
+                                  <span className="text-2xl text-primary-400">✈️</span>
+                                </div>
+                              </div>
+                              <div className="text-sm text-primary-500 mt-3 font-medium">Direct</div>
+                            </div>
+                            
+                            {/* Arrival */}
+                            <div className="text-center">
+                              <div className="text-2xl font-bold text-primary-900 mb-1">
+                                {new Date(flight.route.arrival.scheduledTime).toLocaleTimeString('en-US', {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                  hour12: false
+                                })}
+                              </div>
+                              <div className="text-lg font-bold text-primary-700 mb-1">{flight.route.arrival.airport?.code}</div>
+                              <div className="text-sm text-primary-600">{flight.route.arrival.airport?.city}</div>
+                              <div className="text-sm text-primary-400 mt-1">
+                                {new Date(flight.route.arrival.scheduledTime).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric'
+                                })}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Right: Price & Action */}
+                          <div className="text-center lg:text-right lg:w-1/4">
+                            <div className="text-3xl font-bold text-emerald-600 mb-3">
                               {formatPrice(flight.pricing[searchForm.class]?.totalPrice || 0)}
                             </div>
-                            <div className="text-sm text-primary-600">
-                              per person
+                            <div className="text-base text-primary-600 mb-2">per person</div>
+                            <div className="text-sm text-primary-500 mb-4">
+                              {flight.pricing[searchForm.class]?.availability || 0} seats available
                             </div>
-                            <Button size="sm" className="mt-2">
-                              Select
+                            
+                            <Button 
+                              size="lg" 
+                              className="w-full lg:w-auto px-10 py-4 text-lg font-semibold mb-3"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleFlightSelect(flight);
+                              }}
+                            >
+                              Select Flight
                             </Button>
+                            
+                            <div className="flex flex-col gap-1 text-sm">
+                              <div className="text-green-600 font-semibold">Status: {flight.status || 'Scheduled'}</div>
+                              {flight.pricing.business && (
+                                <div className="text-primary-500">Business: {formatPrice(flight.pricing.business.totalPrice)}</div>
+                              )}
+                              <div className="text-primary-400">Class: {searchForm.class}</div>
+                            </div>
                           </div>
                         </div>
                       </Card>
@@ -532,63 +702,8 @@ const FlightsPage: React.FC = () => {
       {!searched && (
         <section className="py-12 bg-primary-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            {/* Popular Routes */}
-            {popularRoutes.length > 0 && (
-              <div className="mb-12">
-                <h2 className="text-2xl font-bold text-primary-900 mb-6">Popular Routes</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {popularRoutes.slice(0, 6).map((route: any, index) => (
-                    <Card key={index} hover className="cursor-pointer">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <div className="font-semibold text-primary-900">
-                            {route.fromAirport?.[0]?.city} → {route.toAirport?.[0]?.city}
-                          </div>
-                          <div className="text-sm text-primary-600">
-                            {route.fromAirport?.[0]?.code} - {route.toAirport?.[0]?.code}
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-bold text-primary-900">
-                            {formatPrice(route.avgPrice)}
-                          </div>
-                          <div className="text-xs text-primary-500">
-                            avg price
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Flight Deals */}
-            {flightDeals.length > 0 && (
-              <div>
-                <h2 className="text-2xl font-bold text-primary-900 mb-6">Today's Best Deals</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {flightDeals.slice(0, 8).map((deal: any) => (
-                    <Card key={deal._id} hover className="cursor-pointer">
-                      <div className="text-center">
-                        <div className="text-lg font-semibold text-primary-900 mb-1">
-                          {deal.route.departure.airport?.city} → {deal.route.arrival.airport?.city}
-                        </div>
-                        <div className="text-sm text-primary-600 mb-2">
-                          {deal.airline?.name}
-                        </div>
-                        <div className="text-xl font-bold text-emerald mb-2">
-                          {formatPrice(deal.pricing.economy.totalPrice)}
-                        </div>
-                        <div className="text-xs text-primary-500">
-                          {new Date(deal.route.departure.scheduledTime).toLocaleDateString()}
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            )}
+            <PopularRoutesCards />
+            <FlightDealsCards />
           </div>
         </section>
       )}

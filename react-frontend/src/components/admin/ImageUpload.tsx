@@ -1,131 +1,217 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import Button from '@/components/common/Button';
 
 interface ImageUploadProps {
-  packageId: string;
-  onImagesUploaded: (images: any[]) => void;
+  images?: any[];
+  onImagesChange?: (images: any[]) => void;
+  onImagesUploaded?: (images: any[]) => void;
   maxImages?: number;
+  category?: string;
+  packageId?: string;
 }
 
 const ImageUpload: React.FC<ImageUploadProps> = ({ 
-  packageId, 
-  onImagesUploaded, 
-  maxImages = 10 
+  images = [], 
+  onImagesChange, 
+  onImagesUploaded,
+  maxImages = 10, 
+  category = 'general',
+  packageId
 }) => {
   const [uploading, setUploading] = useState(false);
-  const [dragActive, setDragActive] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFiles = async (files: FileList) => {
-    if (files.length === 0) return;
-
-    const formData = new FormData();
-    Array.from(files).forEach(file => {
-      formData.append('images', file);
-    });
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    
+    if (images.length + e.target.files.length > maxImages) {
+      alert(`Maximum ${maxImages} images allowed`);
+      return;
+    }
 
     setUploading(true);
+    
+    const formData = new FormData();
+    Array.from(e.target.files).forEach((file, index) => {
+      formData.append('images', file);
+      formData.append(`alt_${index}`, `${category} image ${images.length + index + 1}`);
+      formData.append(`category_${index}`, category);
+    });
+    
     try {
-      const response = await fetch(`http://localhost:3000/api/admin/packages/${packageId}/images`, {
+      const response = await fetch('http://localhost:3000/api/upload/multiple', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
         body: formData
       });
-
-      const result = await response.json();
       
-      if (result.success) {
-        onImagesUploaded(result.data.images);
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && result.data.images) {
+          const newImages = [...images, ...result.data.images];
+          onImagesChange?.(newImages);
+          onImagesUploaded?.(result.data.images);
+        }
       } else {
-        alert('Failed to upload images: ' + (result.error?.message || 'Unknown error'));
+        throw new Error('Upload failed');
       }
     } catch (error) {
-      console.error('Upload error:', error);
+      console.error('Upload failed:', error);
       alert('Failed to upload images. Please try again.');
     } finally {
       setUploading(false);
     }
   };
 
-  const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragActive(true);
-    } else if (e.type === 'dragleave') {
-      setDragActive(false);
-    }
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
+  const removeImage = async (index: number) => {
+    const imageToRemove = images[index];
     
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      handleFiles(e.dataTransfer.files);
+    try {
+      // Delete from server
+      await fetch(`http://localhost:3000/api/upload/${imageToRemove.filename}`, {
+        method: 'DELETE'
+      });
+      
+      // Remove from state
+      const newImages = images.filter((_, i) => i !== index);
+      onImagesChange?.(newImages);
+    } catch (error) {
+      console.error('Failed to delete image:', error);
     }
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      handleFiles(e.target.files);
-    }
+  const updateImageDetails = (index: number, field: string, value: any) => {
+    const newImages = [...images];
+    newImages[index] = { ...newImages[index], [field]: value };
+    onImagesChange?.(newImages);
+  };
+
+  const setPrimaryImage = (index: number) => {
+    const newImages = images.map((img, i) => ({
+      ...img,
+      isPrimary: i === index
+    }));
+    onImagesChange?.(newImages);
   };
 
   return (
     <div className="space-y-4">
-      <div
-        className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-          dragActive 
-            ? 'border-blue-ocean bg-blue-50' 
-            : 'border-primary-300 hover:border-primary-400'
-        }`}
-        onDragEnter={handleDrag}
-        onDragLeave={handleDrag}
-        onDragOver={handleDrag}
-        onDrop={handleDrop}
-      >
+      {/* Upload Area */}
+      <div className="border-2 border-dashed border-primary-300 rounded-lg p-6 text-center">
         <input
-          ref={fileInputRef}
           type="file"
           multiple
           accept="image/*"
-          onChange={handleFileSelect}
+          onChange={handleFileUpload}
+          disabled={uploading || images.length >= maxImages}
           className="hidden"
+          id="image-upload"
         />
-        
-        <div className="space-y-4">
-          <div className="text-4xl">📸</div>
-          <div>
-            <h3 className="text-lg font-semibold text-primary-900 mb-2">
-              Upload Package Images
-            </h3>
-            <p className="text-primary-600 mb-4">
-              Drag and drop images here, or click to select files
-            </p>
-            <p className="text-sm text-primary-500">
-              Supports: JPG, PNG, WebP • Max {maxImages} images • Max 5MB each
-            </p>
+        <label 
+          htmlFor="image-upload" 
+          className={`cursor-pointer ${uploading || images.length >= maxImages ? 'opacity-50 cursor-not-allowed' : ''}`}
+        >
+          <div className="text-4xl mb-2">📸</div>
+          <div className="text-lg font-medium text-primary-900 mb-2">
+            {uploading ? 'Uploading...' : 'Upload Images'}
           </div>
-          
-          <Button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            variant="outline"
-          >
-            {uploading ? 'Uploading...' : 'Select Images'}
-          </Button>
-        </div>
+          <div className="text-sm text-primary-600">
+            Click to select images or drag and drop
+          </div>
+          <div className="text-xs text-primary-500 mt-1">
+            {images.length}/{maxImages} images • Max 5MB per image
+          </div>
+        </label>
       </div>
 
-      {uploading && (
-        <div className="flex items-center justify-center py-4">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-ocean"></div>
-          <span className="ml-2 text-primary-600">Uploading images...</span>
+      {/* Image Grid */}
+      {images.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {images.map((image, index) => (
+            <div key={index} className="relative border border-primary-200 rounded-lg overflow-hidden">
+              {/* Image */}
+              <div className="relative aspect-video">
+                <img
+                  src={image.url.startsWith('http') ? image.url : `http://localhost:3000${image.url}`}
+                  alt={image.alt}
+                  className="w-full h-full object-cover"
+                />
+                
+                {/* Primary Badge */}
+                {image.isPrimary && (
+                  <div className="absolute top-2 left-2 bg-blue-ocean text-white px-2 py-1 rounded text-xs font-bold">
+                    Primary
+                  </div>
+                )}
+                
+                {/* Actions */}
+                <div className="absolute top-2 right-2 flex gap-1">
+                  {!image.isPrimary && (
+                    <button
+                      onClick={() => setPrimaryImage(index)}
+                      className="bg-white bg-opacity-80 hover:bg-opacity-100 text-primary-700 p-1 rounded text-xs"
+                      title="Set as primary"
+                    >
+                      ⭐
+                    </button>
+                  )}
+                  <button
+                    onClick={() => removeImage(index)}
+                    className="bg-red-500 bg-opacity-80 hover:bg-opacity-100 text-white p-1 rounded text-xs"
+                    title="Remove image"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+              
+              {/* Image Details */}
+              <div className="p-3 space-y-2">
+                <div>
+                  <label className="block text-xs font-medium text-primary-700 mb-1">Alt Text</label>
+                  <input
+                    type="text"
+                    value={image.alt}
+                    onChange={(e) => updateImageDetails(index, 'alt', e.target.value)}
+                    className="w-full px-2 py-1 text-xs border border-primary-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-ocean"
+                    placeholder="Describe this image"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-xs font-medium text-primary-700 mb-1">Category</label>
+                  <select
+                    value={image.category || 'other'}
+                    onChange={(e) => updateImageDetails(index, 'category', e.target.value)}
+                    className="w-full px-2 py-1 text-xs border border-primary-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-ocean"
+                  >
+                    <option value="aircraft">Aircraft</option>
+                    <option value="cabin">Cabin</option>
+                    <option value="meal">Meal</option>
+                    <option value="seat-map">Seat Map</option>
+                    <option value="amenity">Amenity</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                
+                <div className="text-xs text-primary-500">
+                  Size: {(image.size / 1024).toFixed(1)} KB
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
+      )}
+      
+      {/* Upload Button */}
+      {images.length < maxImages && (
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => document.getElementById('image-upload')?.click()}
+          disabled={uploading}
+          className="w-full"
+        >
+          {uploading ? 'Uploading...' : `Add More Images (${images.length}/${maxImages})`}
+        </Button>
       )}
     </div>
   );

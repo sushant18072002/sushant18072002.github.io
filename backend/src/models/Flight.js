@@ -3,11 +3,17 @@ const mongoose = require('mongoose');
 const flightSchema = new mongoose.Schema({
   flightNumber: { type: String, required: true, index: true },
   airline: { type: mongoose.Schema.Types.ObjectId, ref: 'Airline', required: true },
+  category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
+  flightCategory: { type: String, enum: ['domestic', 'international', 'charter'], default: 'domestic' },
+  flightType: { type: String, enum: ['direct', 'connecting', 'codeshare'], default: 'direct' },
+  featured: { type: Boolean, default: false },
   aircraft: {
-    type: String,
-    model: String,
+    type: { type: String },
+    model: { type: String },
+    registration: { type: String },
     configuration: {
       economy: Number,
+      premiumEconomy: Number,
       business: Number,
       first: Number,
       total: Number
@@ -33,8 +39,22 @@ const flightSchema = new mongoose.Schema({
     scheduled: Number, // minutes
     actual: Number
   },
+  distance: { type: Number }, // kilometers
+  layovers: [{
+    airport: { type: mongoose.Schema.Types.ObjectId, ref: 'Airport' },
+    duration: Number, // minutes
+    terminal: String
+  }],
+  images: [{
+    url: String,
+    alt: String,
+    category: { type: String, enum: ['aircraft', 'cabin', 'meal', 'seat-map', 'amenity', 'other'], default: 'aircraft' },
+    isPrimary: { type: Boolean, default: false },
+    order: { type: Number, default: 0 }
+  }],
   pricing: {
     economy: {
+      fareClass: { type: String, default: 'Y' },
       basePrice: { type: Number, required: true },
       taxes: { type: Number, default: 0 },
       fees: { type: Number, default: 0 },
@@ -43,9 +63,15 @@ const flightSchema = new mongoose.Schema({
       baggage: {
         included: { type: Number, default: 0 },
         additional: { price: Number, weight: Number }
+      },
+      restrictions: {
+        refundable: { type: Boolean, default: false },
+        changeable: { type: Boolean, default: true },
+        changeFee: { type: Number, default: 0 }
       }
     },
-    business: {
+    premiumEconomy: {
+      fareClass: { type: String, default: 'W' },
       basePrice: Number,
       taxes: { type: Number, default: 0 },
       fees: { type: Number, default: 0 },
@@ -54,9 +80,15 @@ const flightSchema = new mongoose.Schema({
       baggage: {
         included: { type: Number, default: 1 },
         additional: { price: Number, weight: Number }
+      },
+      restrictions: {
+        refundable: { type: Boolean, default: true },
+        changeable: { type: Boolean, default: true },
+        changeFee: { type: Number, default: 0 }
       }
     },
-    first: {
+    business: {
+      fareClass: { type: String, default: 'C' },
       basePrice: Number,
       taxes: { type: Number, default: 0 },
       fees: { type: Number, default: 0 },
@@ -65,15 +97,72 @@ const flightSchema = new mongoose.Schema({
       baggage: {
         included: { type: Number, default: 2 },
         additional: { price: Number, weight: Number }
+      },
+      restrictions: {
+        refundable: { type: Boolean, default: true },
+        changeable: { type: Boolean, default: true },
+        changeFee: { type: Number, default: 0 }
+      }
+    },
+    first: {
+      fareClass: { type: String, default: 'F' },
+      basePrice: Number,
+      taxes: { type: Number, default: 0 },
+      fees: { type: Number, default: 0 },
+      totalPrice: Number,
+      availability: { type: Number, default: 0 },
+      baggage: {
+        included: { type: Number, default: 3 },
+        additional: { price: Number, weight: Number }
+      },
+      restrictions: {
+        refundable: { type: Boolean, default: true },
+        changeable: { type: Boolean, default: true },
+        changeFee: { type: Number, default: 0 }
       }
     }
   },
   services: {
-    meals: [{ class: String, type: String, description: String }],
-    entertainment: [String],
-    wifi: { available: Boolean, price: Number },
-    powerOutlets: Boolean,
-    seatSelection: { free: Boolean, price: Number }
+    meals: [{ 
+      class: { type: String, enum: ['economy', 'premium-economy', 'business', 'first'] },
+      type: String, 
+      description: String,
+      included: { type: Boolean, default: true },
+      price: Number
+    }],
+    entertainment: [{
+      type: { type: String, enum: ['movies', 'tv', 'music', 'games', 'reading'] },
+      description: String,
+      available: { type: Boolean, default: true }
+    }],
+    wifi: { 
+      available: Boolean, 
+      price: Number,
+      speed: String,
+      coverage: { type: String, enum: ['full', 'partial'] }
+    },
+    powerOutlets: {
+      available: Boolean,
+      type: { type: String, enum: ['AC', 'USB', 'both'] },
+      location: String
+    },
+    seatSelection: { 
+      free: Boolean, 
+      price: Number,
+      advanceBooking: { type: Boolean, default: true }
+    },
+    baggage: {
+      carryOn: {
+        included: { type: Boolean, default: true },
+        weight: Number,
+        dimensions: String
+      },
+      checked: {
+        included: Number,
+        additionalFee: Number,
+        maxWeight: Number
+      }
+    }
   },
   policies: {
     cancellation: {
@@ -101,6 +190,12 @@ const flightSchema = new mongoose.Schema({
   validFrom: Date,
   validTo: Date,
   tags: [String],
+  seo: {
+    slug: String,
+    metaTitle: String,
+    metaDescription: String,
+    keywords: [String]
+  },
   stats: {
     bookings: { type: Number, default: 0 },
     views: { type: Number, default: 0 },
