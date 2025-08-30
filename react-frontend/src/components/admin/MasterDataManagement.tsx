@@ -12,11 +12,12 @@ const MasterDataManagement: React.FC = () => {
 
   const tabs = [
     { id: 'countries', label: 'Countries', icon: '🌍' },
+    { id: 'states', label: 'States', icon: '🏛️' },
+    { id: 'cities', label: 'Cities/Destinations', icon: '🏙️' },
     { id: 'categories', label: 'Categories', icon: '🏷️' },
-    { id: 'cities', label: 'Cities', icon: '🏙️' },
+    { id: 'activities', label: 'Activities', icon: '🎯' },
     { id: 'airlines', label: 'Airlines', icon: '✈️' },
-    { id: 'airports', label: 'Airports', icon: '🛫' },
-    { id: 'activities', label: 'Activities', icon: '🎯' }
+    { id: 'airports', label: 'Airports', icon: '🛫' }
   ];
 
   return (
@@ -48,11 +49,18 @@ const MasterDataManagement: React.FC = () => {
       {/* Tab Content */}
       <div className="mt-6">
         {activeTab === 'countries' && <CountryManagement />}
-        {activeTab === 'categories' && <CategoryManagement />}
+        {activeTab === 'states' && (
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">🏛️</div>
+            <h3 className="text-xl font-semibold text-primary-900 mb-2">State Management</h3>
+            <p className="text-primary-600">State management component coming soon...</p>
+          </div>
+        )}
         {activeTab === 'cities' && <CityManagement />}
+        {activeTab === 'categories' && <CategoryManagement />}
+        {activeTab === 'activities' && <ActivityManagement />}
         {activeTab === 'airlines' && <AirlineManagement />}
         {activeTab === 'airports' && <AirportManagement />}
-        {activeTab === 'activities' && <ActivityManagement />}
       </div>
     </div>
   );

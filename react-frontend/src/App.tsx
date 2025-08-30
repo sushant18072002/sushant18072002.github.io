@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
@@ -81,6 +81,8 @@ function App() {
               <Route path="/itinerary-hub/:id" element={<Navigate to="/trips" replace />} />
               <Route path="/packages" element={<Navigate to="/trips" replace />} />
               <Route path="/packages/:id" element={<Navigate to="/trips" replace />} />
+              <Route path="/itinerary-details" element={<TripsHubPage />} />
+              <Route path="/destination/:id" element={<TripsHubPage />} />
               <Route path="/booking/:type/:id" element={
                 <ProtectedRoute>
                   <BookingPage />

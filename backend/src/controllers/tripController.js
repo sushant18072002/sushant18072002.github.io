@@ -18,7 +18,35 @@ const getTrips = async (req, res) => {
     const query = { status: 'published' };
     
     // Apply filters
-    if (category) query.category = category;
+    if (category) {
+      try {
+        // Look up category by slug or name to get ObjectId
+        const categoryDoc = await Category.findOne({
+          $or: [
+            { slug: category, type: 'trip' },
+            { slug: { $regex: new RegExp(category, 'i') }, type: 'trip' },
+            { name: { $regex: new RegExp(category, 'i') }, type: 'trip' }
+          ]
+        });
+        
+        if (categoryDoc) {
+          query.category = categoryDoc._id;
+        } else {
+          // If no category found, search by tags or travel style instead of category field
+          query.$or = [
+            { tags: { $in: [new RegExp(category, 'i')] } },
+            { travelStyle: { $regex: new RegExp(category, 'i') } }
+          ];
+        }
+      } catch (error) {
+        console.error('Category lookup error:', error);
+        // Fallback to tag/style search if category lookup fails
+        query.$or = [
+          { tags: { $in: [new RegExp(category, 'i')] } },
+          { travelStyle: { $regex: new RegExp(category, 'i') } }
+        ];
+      }
+    }
     if (destination) query.primaryDestination = destination;
     if (type) query.type = type;
     if (priceRange) query['pricing.priceRange'] = priceRange;
@@ -203,7 +231,24 @@ const searchTrips = async (req, res) => {
       query.$text = { $search: q };
     }
     
-    if (category) query.category = category;
+    if (category) {
+      try {
+        // Look up category by slug or name to get ObjectId
+        const categoryDoc = await Category.findOne({
+          $or: [
+            { slug: category, type: 'trip' },
+            { slug: { $regex: new RegExp(category, 'i') }, type: 'trip' },
+            { name: { $regex: new RegExp(category, 'i') }, type: 'trip' }
+          ]
+        });
+        if (categoryDoc) {
+          query.category = categoryDoc._id;
+        }
+      } catch (error) {
+        console.error('Category lookup error in search:', error);
+        // Skip category filter if lookup fails
+      }
+    }
     if (destination) query.primaryDestination = destination;
     if (priceRange) query['pricing.priceRange'] = priceRange;
 
@@ -238,9 +283,26 @@ const searchTrips = async (req, res) => {
   }
 };
 
+// Debug endpoint to check categories
+const getCategories = async (req, res) => {
+  try {
+    const categories = await Category.find({ type: 'adventure' }).select('name slug type');
+    res.json({
+      success: true,
+      data: { categories }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { message: error.message }
+    });
+  }
+};
+
 module.exports = {
   getTrips,
   getFeaturedTrips,
   getTripDetails,
-  searchTrips
+  searchTrips,
+  getCategories
 };

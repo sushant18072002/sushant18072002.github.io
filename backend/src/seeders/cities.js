@@ -39,13 +39,18 @@ const seedCities = async () => {
   try {
     console.log('🌍 Seeding cities...');
     
-    // Clear existing data
+    // Clear existing cities only
     await City.deleteMany({});
-    await Country.deleteMany({});
     
-    // Insert countries first
-    const countries = await Country.insertMany(sampleCountries);
-    console.log(`✅ Created ${countries.length} countries`);
+    // Check if countries exist, if not create them
+    const existingCountries = await Country.find();
+    if (existingCountries.length === 0) {
+      await Country.insertMany(sampleCountries);
+    }
+    
+    // Get all countries
+    const countries = await Country.find();
+    console.log(`📍 Found ${countries.length} countries`);
     
     // Create country name to ID mapping
     const countryMap = {};
@@ -54,11 +59,13 @@ const seedCities = async () => {
     });
     
     // Prepare cities with country references
-    const citiesWithRefs = sampleCitiesData.map(cityData => ({
-      name: cityData.name,
-      country: countryMap[cityData.countryName],
-      status: 'active'
-    }));
+    const citiesWithRefs = sampleCitiesData
+      .filter(cityData => countryMap[cityData.countryName]) // Only include cities with valid countries
+      .map(cityData => ({
+        name: cityData.name,
+        country: countryMap[cityData.countryName],
+        status: 'active'
+      }));
     
     // Insert cities
     const cities = await City.insertMany(citiesWithRefs);

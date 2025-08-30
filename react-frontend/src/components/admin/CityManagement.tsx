@@ -18,6 +18,8 @@ const CityManagement: React.FC = () => {
     description: '',
     popularFor: '',
     bestTimeToVisit: '',
+    images: '',
+    featured: false,
     status: 'active'
   });
 
@@ -47,7 +49,8 @@ const CityManagement: React.FC = () => {
       const cityData = {
         ...formData,
         popularFor: formData.popularFor.split(',').map(s => s.trim()).filter(s => s),
-        bestTimeToVisit: formData.bestTimeToVisit.split(',').map(s => s.trim()).filter(s => s)
+        bestTimeToVisit: formData.bestTimeToVisit.split(',').map(s => s.trim()).filter(s => s),
+        images: formData.images ? formData.images.split(',').map(s => s.trim()).filter(s => s) : []
       };
 
       if (editingCity) {
@@ -72,6 +75,8 @@ const CityManagement: React.FC = () => {
       description: '',
       popularFor: '',
       bestTimeToVisit: '',
+      images: '',
+      featured: false,
       status: 'active'
     });
     setEditingCity(null);
@@ -209,6 +214,29 @@ const CityManagement: React.FC = () => {
               />
             </div>
 
+            <div>
+              <label className="block text-sm font-semibold text-primary-900 mb-2">Images (comma separated URLs)</label>
+              <input
+                type="text"
+                value={formData.images || ''}
+                onChange={(e) => setFormData(prev => ({ ...prev, images: e.target.value }))}
+                className="w-full px-3 py-2 border border-primary-200 rounded-lg focus:ring-2 focus:ring-blue-ocean focus:border-transparent"
+                placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-primary-900 mb-2">Featured</label>
+              <select
+                value={formData.featured ? 'true' : 'false'}
+                onChange={(e) => setFormData(prev => ({ ...prev, featured: e.target.value === 'true' }))}
+                className="w-full px-3 py-2 border border-primary-200 rounded-lg focus:ring-2 focus:ring-blue-ocean focus:border-transparent"
+              >
+                <option value="false">No</option>
+                <option value="true">Yes</option>
+              </select>
+            </div>
+
             <div className="md:col-span-2">
               <Button type="submit" className="w-full">
                 {editingCity ? 'Update City' : 'Create City'}
@@ -230,8 +258,8 @@ const CityManagement: React.FC = () => {
                 <tr className="border-b border-primary-200">
                   <th className="text-left py-3 px-4">City</th>
                   <th className="text-left py-3 px-4">Country</th>
-                  <th className="text-left py-3 px-4">Coordinates</th>
                   <th className="text-left py-3 px-4">Popular For</th>
+                  <th className="text-left py-3 px-4">Featured</th>
                   <th className="text-left py-3 px-4">Status</th>
                   <th className="text-left py-3 px-4">Actions</th>
                 </tr>
@@ -242,11 +270,15 @@ const CityManagement: React.FC = () => {
                     <td className="py-3 px-4 font-semibold">{city.name}</td>
                     <td className="py-3 px-4">{city.country?.flag} {city.country?.name}</td>
                     <td className="py-3 px-4 text-sm">
-                      {city.coordinates?.latitude?.toFixed(2)}, {city.coordinates?.longitude?.toFixed(2)}
-                    </td>
-                    <td className="py-3 px-4 text-sm">
                       {city.popularFor?.slice(0, 2).join(', ')}
                       {city.popularFor?.length > 2 && '...'}
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className={`px-2 py-1 rounded text-xs font-bold ${
+                        city.featured ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600'
+                      }`}>
+                        {city.featured ? '⭐ FEATURED' : 'REGULAR'}
+                      </span>
                     </td>
                     <td className="py-3 px-4">
                       <span className={`px-2 py-1 rounded text-xs font-bold ${
@@ -267,6 +299,8 @@ const CityManagement: React.FC = () => {
                             description: city.description || '',
                             popularFor: city.popularFor?.join(', ') || '',
                             bestTimeToVisit: city.bestTimeToVisit?.join(', ') || '',
+                            images: city.images?.join(', ') || '',
+                            featured: city.featured || false,
                             status: city.status
                           });
                           setShowForm(true);

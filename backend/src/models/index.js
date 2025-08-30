@@ -8,6 +8,7 @@ const BlogPost = require('./BlogPost');
 const Notification = require('./Notification');
 const SupportTicket = require('./SupportTicket');
 const Setting = require('./Setting');
+const Settings = require('./Settings');
 const Airline = require('./Airline');
 const Airport = require('./Airport');
 const Currency = require('./Currency');
@@ -31,6 +32,7 @@ module.exports = {
   Notification,
   SupportTicket,
   Setting,
+  Settings,
   Airline,
   Airport,
   Currency,

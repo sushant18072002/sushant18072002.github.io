@@ -7,7 +7,31 @@ interface ApiResponse<T = any> {
   error?: {
     message: string;
     code?: string;
+    details?: any;
   };
+  meta?: {
+    total?: number;
+    page?: number;
+    limit?: number;
+  };
+}
+
+interface LocationSearchResponse {
+  locations: Array<{
+    _id: string;
+    name: string;
+    country: string;
+    type: string;
+  }>;
+}
+
+interface AirportSearchResponse {
+  airports: Array<{
+    _id: string;
+    code: string;
+    name: string;
+    city: string;
+  }>;
 }
 
 class ApiService {
@@ -94,13 +118,13 @@ class ApiService {
   }
 
   // Location API methods
-  async searchLocations(query: string) {
-    return this.get(API_ENDPOINTS.LOCATIONS_SEARCH, { q: query });
+  async searchLocations(query: string): Promise<ApiResponse<LocationSearchResponse>> {
+    return this.get<LocationSearchResponse>(API_ENDPOINTS.LOCATIONS_SEARCH, { q: query });
   }
 
   // Airport API methods
-  async searchAirports(query: string) {
-    return this.get(API_ENDPOINTS.AIRPORTS_SEARCH, { q: query });
+  async searchAirports(query: string): Promise<ApiResponse<AirportSearchResponse>> {
+    return this.get<AirportSearchResponse>(API_ENDPOINTS.AIRPORTS_SEARCH, { q: query });
   }
 
   // Trip API methods
@@ -110,6 +134,20 @@ class ApiService {
 
   async getTrips(params?: Record<string, string>) {
     return this.get(API_ENDPOINTS.TRIPS, params);
+  }
+
+  // Destination API methods
+  async getFeaturedDestinations() {
+    return this.get(API_ENDPOINTS.DESTINATIONS_FEATURED);
+  }
+
+  async getDestinationSpotlight() {
+    return this.get(API_ENDPOINTS.DESTINATIONS_SPOTLIGHT);
+  }
+
+  // Live stats API method
+  async getLiveStats() {
+    return this.get('/home/live-stats');
   }
 }
 

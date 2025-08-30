@@ -1,9 +1,9 @@
-const { Trip, Hotel, City, Country, Booking } = require('../models');
+const { Trip, Hotel, City, Country, Booking, Category, Settings } = require('../models');
 
 // Get homepage featured content
 const getFeaturedContent = async (req, res) => {
   try {
-    const [featuredTrips, featuredHotels, popularDestinations] = await Promise.all([
+    const [featuredTrips, featuredHotels, popularDestinations, heroSettings] = await Promise.all([
       // Featured trips
       Trip.find({ status: 'published', featured: true })
         .populate('primaryDestination', 'name')
@@ -25,46 +25,74 @@ const getFeaturedContent = async (req, res) => {
         .populate('country', 'name flag')
         .sort({ createdAt: -1 })
         .limit(8)
-        .select('name description images popularFor bestTimeToVisit coordinates')
+        .select('name description images popularFor bestTimeToVisit coordinates'),
+      
+      // Hero settings - with error handling
+      Settings.findOne({ key: 'hero_content', type: 'hero' }).catch(() => null)
     ]);
 
     // Dynamic destination spotlight
+    const featuredDestinations = await City.find({ 
+      status: 'active',
+      featured: true 
+    })
+      .populate('country', 'name flag')
+      .sort({ priority: -1 })
+      .limit(4)
+      .select('name description images popularFor country pricing stats');
+
     const destinationSpotlight = {
-      title: popularDestinations.length > 0 ? 
-        `Explore ${popularDestinations[0]?.popularFor?.[0] || 'amazing destinations'} in ${popularDestinations[0]?.country?.name || 'beautiful places'}` :
+      title: featuredDestinations.length > 0 ? 
+        `Explore ${featuredDestinations[0]?.popularFor?.[0] || 'amazing destinations'} in ${featuredDestinations[0]?.country?.name || 'beautiful places'}` :
         'Explore amazing destinations worldwide',
       subtitle: 'Discover breathtaking places and unique experiences',
-      destinations: popularDestinations.slice(0, 4).map((dest, index) => ({
+      destinations: featuredDestinations.map((dest, index) => ({
         id: dest._id,
         name: dest.name,
         location: dest.country?.name || 'Beautiful Location',
-        price: 190 + index * 40,
-        image: dest.images?.[0] || `photo-${index % 2 === 0 ? '1506905925346-21bda4d32df4' : '1464822759844-d150baec3e5e'}`,
-        discount: index % 3 === 0 ? `${15 + index * 5}% off` : null
+        price: dest.pricing?.averagePrice || (200 + index * 50),
+        image: dest.images?.[0] || `https://images.unsplash.com/photo-${index % 2 === 0 ? '1506905925346-21bda4d32df4' : '1464822759844-d150baec3e5e'}?w=400&h=400&fit=crop`,
+        discount: index % 3 === 0 ? `${15 + index * 5}% off` : null,
+        rating: dest.stats?.rating || (4.5 + Math.random() * 0.4),
+        reviewCount: dest.stats?.reviewCount || Math.floor(Math.random() * 3000) + 1000
       }))
     };
 
-    // Adventure categories
-    const adventureCategories = [
-      {
-        icon: '🏖️',
-        title: 'Luxury resort at the sea',
-        places: `${Math.floor(Math.random() * 5000) + 8000} places`,
-        type: 'luxury',
-      },
-      {
-        icon: '🏕️',
-        title: 'Camping amidst the wild',
-        places: `${Math.floor(Math.random() * 5000) + 10000} places`,
-        type: 'camping',
-      },
-      {
-        icon: '🏔️',
-        title: 'Mountain adventures',
-        places: `${Math.floor(Math.random() * 3000) + 7000} places`,
-        type: 'mountain',
-      },
-    ];
+    // Dynamic adventure categories from existing Category model - only type='trip', first 3
+    const adventureCategoriesData = await Category.find({ 
+      type: 'trip',
+      active: true 
+    })
+      .sort({ order: 1, createdAt: -1 })
+      .limit(3)
+      .select('name icon slug');
+    
+    const adventureCategories = adventureCategoriesData.length > 0 ? 
+      adventureCategoriesData.map(cat => ({
+        icon: cat.icon || '🎯',
+        title: cat.name,
+        places: '50+ Places', // Default places count
+        type: cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-')
+      })) : [
+        {
+          icon: '🏔️',
+          title: 'Adventure Trips',
+          places: '50+ Places',
+          type: 'adventure-trips'
+        },
+        {
+          icon: '🏛️',
+          title: 'Cultural Trips',
+          places: '40+ Places',
+          type: 'cultural-trips'
+        },
+        {
+          icon: '🏖️',
+          title: 'Beach Trips',
+          places: '30+ Places',
+          type: 'beach-trips'
+        }
+      ];
 
     // Blog posts
     const blogPosts = [
@@ -97,6 +125,12 @@ const getFeaturedContent = async (req, res) => {
       }
     ];
 
+    // Adventure section content
+    const adventureSection = {
+      title: heroSettings?.value?.adventureTitle || "Let's go on an adventure",
+      subtitle: heroSettings?.value?.adventureSubtitle || "Find and book a great experience."
+    };
+
     res.json({
       success: true,
       data: {
@@ -105,8 +139,20 @@ const getFeaturedContent = async (req, res) => {
         popularDestinations,
         destinationSpotlight,
         adventureCategories,
+        adventureSection,
         blogPosts,
-        heroImage: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1920&h=1080&fit=crop'
+        // Hero content from database or defaults
+        heroTitle: heroSettings?.value?.heroTitle || 'Discover Your Dream Journey',
+        heroSubtitle: heroSettings?.value?.heroSubtitle || 'AI-powered travel planning made simple and magical',
+        heroImages: heroSettings?.value?.heroImages || [
+          'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1920&h=1080&fit=crop',
+          'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1920&h=1080&fit=crop',
+          'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&h=1080&fit=crop'
+        ],
+        heroVideo: heroSettings?.value?.heroVideo || null,
+        heroVideoMuted: heroSettings?.value?.heroVideoMuted !== false,
+        // Backward compatibility
+        heroImage: heroSettings?.value?.heroImages?.[0] || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1920&h=1080&fit=crop'
       }
     });
   } catch (error) {
@@ -240,6 +286,25 @@ const getHomeContent = async (req, res) => {
 const updateHomeContent = async (req, res) => {
   try {
     const { featuredTrips, featuredHotels, featuredDestinations, hero } = req.body;
+    
+    // Update hero content in database
+    if (hero) {
+      await Settings.findOneAndUpdate(
+        { key: 'hero_content', type: 'hero' },
+        { 
+          key: 'hero_content',
+          type: 'hero',
+          value: {
+            ...hero,
+            adventureTitle: hero.adventureTitle || "Let's go on an adventure",
+            adventureSubtitle: hero.adventureSubtitle || "Find and book a great experience."
+          },
+          description: 'Homepage hero section content',
+          updatedBy: req.user?._id
+        },
+        { upsert: true, new: true }
+      );
+    }
 
     // Update featured trips
     if (featuredTrips) {
@@ -280,10 +345,41 @@ const updateHomeContent = async (req, res) => {
   }
 };
 
+// Get live statistics for homepage counter
+const getLiveStats = async (req, res) => {
+  try {
+    // Get real-time trip planning count
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const tripsPlannedToday = await Booking.countDocuments({
+      createdAt: { $gte: today },
+      status: { $in: ['pending', 'confirmed', 'completed'] }
+    });
+    
+    // Add some base number to make it more impressive
+    const baseCount = 2500;
+    const totalCount = baseCount + tripsPlannedToday;
+    
+    res.json({
+      success: true,
+      data: {
+        tripsPlannedToday: totalCount
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { message: error.message }
+    });
+  }
+};
+
 module.exports = {
   getFeaturedContent,
   getStats,
   getDeals,
   getHomeContent,
-  updateHomeContent
+  updateHomeContent,
+  getLiveStats
 };

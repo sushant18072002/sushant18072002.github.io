@@ -11,6 +11,7 @@ export const API_ENDPOINTS = {
   // Home
   HOME_FEATURED: '/home/featured',
   HOME_STATS: '/home/stats',
+  HOME_DESTINATIONS: '/home/destinations',
   
   // Locations
   LOCATIONS_SEARCH: '/locations/search',
@@ -26,6 +27,10 @@ export const API_ENDPOINTS = {
   // Trips
   TRIPS: '/trips',
   TRIPS_FEATURED: '/trips/featured',
+  
+  // Destinations
+  DESTINATIONS_FEATURED: '/destinations/featured',
+  DESTINATIONS_SPOTLIGHT: '/destinations/spotlight',
   
   // Auth
   AUTH_LOGIN: '/auth/login',

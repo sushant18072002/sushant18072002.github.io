@@ -35,12 +35,22 @@ const citySchema = new mongoose.Schema({
   images: [String],
   popularFor: [String], // ["beaches", "nightlife", "culture"]
   bestTimeToVisit: [String], // ["March", "April", "May"]
+  featured: { type: Boolean, default: false },
+  priority: { type: Number, default: 0 },
+  pricing: {
+    averagePrice: Number,
+    priceRange: {
+      min: Number,
+      max: Number
+    }
+  },
+  stats: {
+    visitorsPerYear: Number,
+    rating: { type: Number, min: 0, max: 5 },
+    reviewCount: { type: Number, default: 0 }
+  },
   status: { type: String, enum: ['active', 'inactive'], default: 'active' }
 }, { timestamps: true });
-
-// Categories are now handled by separate Category.js model
-
-// Activities are now handled by separate Activity.js model
 
 // Indexes
 countrySchema.index({ code: 1 });

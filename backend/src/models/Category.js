@@ -5,7 +5,7 @@ const categorySchema = new mongoose.Schema({
   slug: { type: String, unique: true },
   type: { 
     type: String, 
-    enum: ['flight', 'hotel', 'trip', 'activity', 'general'], 
+    enum: ['flight', 'hotel', 'trip', 'activity', 'general', 'adventure'], 
     required: true,
     index: true 
   },
@@ -22,6 +22,10 @@ const categorySchema = new mongoose.Schema({
     hotelSpecific: {
       starRating: { type: Number, min: 1, max: 5 },
       propertyType: { type: String, enum: ['hotel', 'resort', 'apartment', 'villa', 'hostel'] }
+    },
+    adventureSpecific: {
+      places: { type: String, default: '0 places' },
+      difficulty: { type: String, enum: ['easy', 'moderate', 'challenging', 'extreme'] }
     }
   },
   active: { type: Boolean, default: true },

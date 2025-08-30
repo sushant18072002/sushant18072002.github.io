@@ -1,56 +1,154 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import Button from '@/components/common/Button';
-import Card from '@/components/common/Card';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { apiService } from '@/services/api.service';
 import { APP_CONSTANTS, TRIP_CONSTANTS } from '@/constants/app.constants';
+import { handleApiError, getUserFriendlyMessage } from '@/utils/error-handler';
+import { debounce, performanceMonitor } from '@/utils/performance';
+import '@/styles/home-mobile.css';
+
+// Types
+interface Location {
+  _id: string;
+  name: string;
+  country: string;
+  type: string;
+}
+
+interface Airport {
+  _id: string;
+  code: string;
+  name: string;
+  city: string;
+}
+
+interface AdventureCategory {
+  icon: string;
+  title: string;
+  places: string;
+  type: string;
+}
+
+interface PlanningOption {
+  icon: string;
+  title: string;
+  description: string;
+  badge: string;
+  features: string[];
+  buttonText: string;
+  href: string;
+}
+
+interface BlogPost {
+  id: string;
+  title: string;
+  excerpt: string;
+  category: string;
+  date: string;
+  readTime: string;
+  image: string;
+  slug?: string;
+}
+
+interface Destination {
+  id: number | string;
+  name: string;
+  location: string;
+  price: number;
+  image: string;
+  discount?: string | null;
+  rating?: number;
+  reviewCount?: number;
+  popularFor?: string[];
+}
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('itinerary');
+  
+  // Initialize with packages selected when component mounts
+  useEffect(() => {
+    setSelectedOption('packages');
+  }, []);
   const [dreamInput, setDreamInput] = useState('');
-  const [liveCounter, setLiveCounter] = useState(2847);
-  const [selectedOption, setSelectedOption] = useState('ai-magic');
+  const [liveCounter, setLiveCounter] = useState(0);
+  const [currentHeroImage, setCurrentHeroImage] = useState(0);
+  const [selectedOption, setSelectedOption] = useState('packages');
   const [flightForm, setFlightForm] = useState({
     from: '',
     to: '',
-    departDate: '',
-    returnDate: '',
+    departDate: new Date(),
+    returnDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     passengers: 1,
     class: 'economy'
   });
   const [hotelForm, setHotelForm] = useState({
     location: '',
-    checkIn: '',
-    checkOut: '',
+    checkIn: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    checkOut: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
     guests: 2,
     rooms: 1
   });
-  const [locationSuggestions, setLocationSuggestions] = useState<any[]>([]);
+  const [locationSuggestions, setLocationSuggestions] = useState<Location[]>([]);
   const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
   const [showTripToSuggestions, setShowTripToSuggestions] = useState(false);
   const [tripForm, setTripForm] = useState({
     to: '',
     tripType: 'any',
-    departDate: '',
+    departDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     travelers: 'couple',
     budget: 'mid-range'
   });
-  const [fromAirports, setFromAirports] = useState<any[]>([]);
-  const [toAirports, setToAirports] = useState<any[]>([]);
+  const [fromAirports, setFromAirports] = useState<Airport[]>([]);
+  const [toAirports, setToAirports] = useState<Airport[]>([]);
   const [showFromSuggestions, setShowFromSuggestions] = useState(false);
   const [showToSuggestions, setShowToSuggestions] = useState(false);
-  
-  // Debounce search functions
-  const debounceTimeout = React.useRef<NodeJS.Timeout>();
+  const [featuredContent, setFeaturedContent] = useState<any>(null);
+  const [stats, setStats] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Load initial counter from API
+    const loadLiveStats = async () => {
+      try {
+        const response = await apiService.getLiveStats();
+        if (response.success && response.data?.tripsPlannedToday) {
+          setLiveCounter(response.data.tripsPlannedToday);
+        }
+      } catch (error) {
+        console.error('Live stats loading error:', error);
+        setLiveCounter(2847); // Fallback only if API fails
+      }
+    };
+    
+    loadLiveStats();
+    
     const interval = setInterval(() => {
       setLiveCounter(prev => prev + Math.floor(Math.random() * 5) + 1);
     }, 8000);
     return () => clearInterval(interval);
   }, []);
+
+  // Hero image slider with preloading
+  useEffect(() => {
+    if (featuredContent?.heroImages?.length > 1 && !featuredContent?.heroVideo) {
+      // Preload all hero images
+      featuredContent.heroImages.forEach((src: string) => {
+        const img = new Image();
+        img.src = src;
+      });
+      
+      const interval = setInterval(() => {
+        setCurrentHeroImage(prev => 
+          (prev + 1) % featuredContent.heroImages.length
+        );
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [featuredContent?.heroImages, featuredContent?.heroVideo]);
 
   const switchTab = (tabName: string) => {
     setActiveTab(tabName);
@@ -60,67 +158,74 @@ const HomePage: React.FC = () => {
     setSelectedOption(option);
   };
 
-  const searchLocations = React.useCallback(async (query: string) => {
-    if (query.length < APP_CONSTANTS.MIN_SEARCH_LENGTH) {
-      setLocationSuggestions([]);
-      return;
-    }
-    
-    // Clear previous timeout
-    if (debounceTimeout.current) {
-      clearTimeout(debounceTimeout.current);
-    }
-    
-    // Set new timeout
-    debounceTimeout.current = setTimeout(async () => {
+  const searchLocations = React.useCallback(
+    debounce(async (query: string) => {
+      if (query.length < APP_CONSTANTS.MIN_SEARCH_LENGTH) {
+        setLocationSuggestions([]);
+        return;
+      }
+      
       try {
-        const response = await apiService.searchLocations(query);
+        const response = await performanceMonitor.measureAsync(
+          'location-search',
+          () => apiService.searchLocations(query)
+        );
+        
         if (response.success && response.data?.locations) {
           setLocationSuggestions(response.data.locations);
         } else {
           setLocationSuggestions([]);
         }
       } catch (error) {
-        console.error('Error searching locations:', error);
+        const appError = handleApiError(error);
+        console.error('Location search error:', getUserFriendlyMessage(appError));
         setLocationSuggestions([]);
       }
-    }, APP_CONSTANTS.SEARCH_DEBOUNCE_MS);
-  }, []);
+    }, APP_CONSTANTS.SEARCH_DEBOUNCE_MS),
+    []
+  );
 
-  const searchAirports = async (query: string, setAirportsFunc: (airports: any[]) => void) => {
-    if (query.length < APP_CONSTANTS.MIN_SEARCH_LENGTH) {
-      setAirportsFunc([]);
-      return;
-    }
-    
-    try {
-      const response = await apiService.searchAirports(query);
-      if (response.success && response.data?.airports) {
-        setAirportsFunc(response.data.airports);
-      } else {
+  const searchAirports = React.useCallback(
+    debounce(async (query: string, setAirportsFunc: (airports: Airport[]) => void) => {
+      if (query.length < APP_CONSTANTS.MIN_SEARCH_LENGTH) {
+        setAirportsFunc([]);
+        return;
+      }
+      
+      try {
+        const response = await performanceMonitor.measureAsync(
+          'airport-search',
+          () => apiService.searchAirports(query)
+        );
+        
+        if (response.success && response.data?.airports) {
+          setAirportsFunc(response.data.airports);
+        } else {
+          setAirportsFunc([]);
+        }
+      } catch (error) {
+        const appError = handleApiError(error);
+        console.error('Airport search error:', getUserFriendlyMessage(appError));
         setAirportsFunc([]);
       }
+    }, APP_CONSTANTS.SEARCH_DEBOUNCE_MS),
+    []
+  );
+
+  const getAirportCodeFromCity = async (cityName: string): Promise<string> => {
+    try {
+      const response = await apiService.searchAirports(cityName);
+      if (response.success && response.data?.airports?.length > 0) {
+        return response.data.airports[0].code;
+      }
+      return cityName; // Fallback to city name if no airport found
     } catch (error) {
-      console.error('Error searching airports:', error);
-      setAirportsFunc([]);
+      console.error('Airport code lookup error:', error);
+      return cityName;
     }
   };
 
-  const getCityToCodeMap = () => {
-    // This should be replaced with actual airport data from API
-    // For now, using basic mapping for common cities
-    const commonCityToCode: Record<string, string> = {
-      'New York': 'JFK',
-      'Paris': 'CDG',
-      'Dubai': 'DXB',
-      'Tokyo': 'NRT',
-      'London': 'LHR',
-      'Los Angeles': 'LAX'
-    };
-    return commonCityToCode;
-  };
-
-  const performSearch = () => {
+  const performSearch = async () => {
     if (activeTab === 'itinerary') {
       if (!dreamInput.trim() && !tripForm.to) {
         alert('Please describe your dream trip or select a destination');
@@ -132,7 +237,7 @@ const HomePage: React.FC = () => {
         if (dreamInput.trim()) params.append('description', dreamInput);
         if (tripForm.to) params.append('destination', tripForm.to);
         if (tripForm.tripType && tripForm.tripType !== 'any') params.append('type', tripForm.tripType);
-        if (tripForm.departDate) params.append('date', tripForm.departDate);
+        if (tripForm.departDate) params.append('date', tripForm.departDate.toISOString().split('T')[0]);
         if (tripForm.travelers) params.append('travelers', tripForm.travelers);
         if (tripForm.budget) params.append('budget', tripForm.budget);
         navigate(`/itineraries/ai?${params}`);
@@ -151,15 +256,14 @@ const HomePage: React.FC = () => {
         return;
       }
       
-      const cityToCode = getCityToCodeMap();
-      const fromCode = cityToCode[flightForm.from] || flightForm.from;
-      const toCode = cityToCode[flightForm.to] || flightForm.to;
+      const fromCode = await getAirportCodeFromCity(flightForm.from);
+      const toCode = await getAirportCodeFromCity(flightForm.to);
       
       const params = new URLSearchParams({
         from: fromCode,
         to: toCode,
-        departDate: flightForm.departDate || new Date().toISOString().split('T')[0],
-        returnDate: flightForm.returnDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        departDate: flightForm.departDate.toISOString().split('T')[0],
+        returnDate: flightForm.returnDate.toISOString().split('T')[0],
         passengers: flightForm.passengers.toString(),
         class: flightForm.class,
         autoSearch: 'true'
@@ -172,8 +276,8 @@ const HomePage: React.FC = () => {
       }
       const params = new URLSearchParams({
         location: hotelForm.location,
-        checkIn: hotelForm.checkIn || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        checkOut: hotelForm.checkOut || new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        checkIn: hotelForm.checkIn.toISOString().split('T')[0],
+        checkOut: hotelForm.checkOut.toISOString().split('T')[0],
         guests: hotelForm.guests.toString(),
         rooms: hotelForm.rooms.toString(),
         autoSearch: 'true'
@@ -185,43 +289,65 @@ const HomePage: React.FC = () => {
   };
 
   const selectAdventure = (type: string) => {
-    navigate(`/packages?category=${type}`);
+    // Map trip category slugs to search terms
+    const categoryMap: Record<string, string> = {
+      'adventure-trips': 'adventure',
+      'cultural-trips': 'cultural', 
+      'beach-trips': 'beach'
+    };
+    const searchTerm = categoryMap[type] || type;
+    navigate(`/trips?category=${searchTerm}`);
   };
 
   const viewDestination = (id: string) => {
-    navigate(`/itinerary-details?destination=${id}`);
+    // Check if we have trips for this destination, otherwise show destination info
+    navigate(`/destination/${id}`);
   };
 
   const viewPackage = (id: string) => {
-    navigate(`/packages/${id}`);
+    navigate(`/trips/${id}`);
   };
 
-  const [featuredContent, setFeaturedContent] = useState<any>(null);
-  const [stats, setStats] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  const adventureCategories = featuredContent?.adventureCategories || [
-    {
-      icon: '🏖️',
-      title: 'Luxury resort at the sea',
-      places: '9,326 places',
-      type: 'luxury',
-    },
-    {
-      icon: '🏕️',
-      title: 'Camping amidst the wild',
-      places: '12,326 places',
-      type: 'camping',
-    },
+  const adventureCategories: AdventureCategory[] = featuredContent?.adventureCategories || [
     {
       icon: '🏔️',
-      title: 'Mountain house',
-      places: '8,945 places',
-      type: 'mountain',
+      title: 'Mountain Adventures',
+      places: '50+ Places',
+      type: 'adventure'
     },
+    {
+      icon: '🏖️',
+      title: 'Beach Escapes',
+      places: '30+ Places',
+      type: 'relaxation'
+    },
+    {
+      icon: '🏛️',
+      title: 'Cultural Tours',
+      places: '40+ Places',
+      type: 'cultural'
+    },
+    {
+      icon: '🌆',
+      title: 'City Breaks',
+      places: '25+ Places',
+      type: 'city'
+    },
+    {
+      icon: '🦁',
+      title: 'Wildlife Safari',
+      places: '15+ Places',
+      type: 'nature'
+    },
+    {
+      icon: '🍷',
+      title: 'Food & Wine',
+      places: '20+ Places',
+      type: 'food'
+    }
   ];
 
-  const planningOptions = [
+  const planningOptions: PlanningOption[] = featuredContent?.planningOptions || [
     {
       icon: '🧠',
       title: 'AI Dream Builder',
@@ -238,7 +364,7 @@ const HomePage: React.FC = () => {
       badge: '🌟 Ready',
       features: ['🏆 Expert curated', '⚡ Instant booking'],
       buttonText: 'Browse Packages',
-      href: '/packages',
+      href: '/trips',
     },
     {
       icon: '🛠️',
@@ -247,7 +373,7 @@ const HomePage: React.FC = () => {
       badge: '🎯 Pro',
       features: ['🎛️ Full control', '📋 5-step wizard'],
       buttonText: 'Start Building',
-      href: '/itineraries/custom',
+      href: '/custom-builder',
     },
   ];
 
@@ -255,22 +381,69 @@ const HomePage: React.FC = () => {
     loadHomeData();
   }, []);
 
+  // Load hero data immediately for faster rendering
+  useEffect(() => {
+    loadHeroData();
+  }, []);
+
+
+
+  const loadHeroData = async () => {
+    try {
+      // Check if hero data is cached
+      const cachedHero = sessionStorage.getItem('hero_data');
+      if (cachedHero) {
+        const parsed = JSON.parse(cachedHero);
+        if (Date.now() - parsed.timestamp < 300000) { // 5 minutes cache
+          setFeaturedContent(parsed.data);
+          return;
+        }
+      }
+      
+      const heroRes = await apiService.getHomeFeatured();
+      if (heroRes.success) {
+        setFeaturedContent(heroRes.data);
+        // Cache hero data
+        sessionStorage.setItem('hero_data', JSON.stringify({
+          data: heroRes.data,
+          timestamp: Date.now()
+        }));
+      }
+    } catch (error) {
+      console.error('Hero data loading error:', error);
+      // Fallback to default hero content
+      setFeaturedContent({
+        heroTitle: 'Air, sleep, dream',
+        heroSubtitle: 'Find and book a great experience.',
+        heroImage: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1920&h=1080&fit=crop'
+      });
+    }
+  };
+
   const loadHomeData = async () => {
     try {
-      const [contentRes, statsRes] = await Promise.all([
-        apiService.getHomeFeatured(),
-        apiService.getHomeStats()
-      ]);
+      const [contentRes, statsRes] = await performanceMonitor.measureAsync(
+        'home-data-load',
+        () => Promise.all([
+          apiService.getHomeFeatured(),
+          apiService.getHomeStats()
+        ])
+      );
       
       if (contentRes.success) {
         setFeaturedContent(contentRes.data);
+      } else {
+        console.warn('Failed to load featured content:', contentRes.error?.message);
       }
       
       if (statsRes.success) {
         setStats(statsRes.data);
+      } else {
+        console.warn('Failed to load stats:', statsRes.error?.message);
       }
     } catch (error) {
-      console.error('Error loading home data:', error);
+      const appError = handleApiError(error);
+      console.error('Home data loading error:', getUserFriendlyMessage(appError));
     } finally {
       setLoading(false);
     }
@@ -281,32 +454,62 @@ const HomePage: React.FC = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="hero relative min-h-[calc(100vh-88px)] flex items-center py-8 md:py-0">
-        <img 
-          className="hero-bg absolute top-0 left-0 w-full h-full object-cover z-[1]" 
-          src={featuredContent?.heroImage || "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1920&h=1080&fit=crop"} 
-          alt="Beautiful landscape"
-          onError={(e) => {
-            e.currentTarget.src = "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1920&h=1080&fit=crop";
-          }}
-        />
+      <section className="hero relative h-[calc(100vh-120px)] flex items-center overflow-visible">
+        {featuredContent?.heroVideo ? (
+          <video 
+            className="hero-bg absolute top-0 left-0 w-full h-full object-cover z-[1]" 
+            src={featuredContent.heroVideo}
+            autoPlay
+            muted={featuredContent.heroVideoMuted !== false}
+            loop
+            playsInline
+            preload="metadata"
+          />
+        ) : featuredContent?.heroImages?.length > 1 ? (
+          <div className="hero-slider absolute top-0 left-0 w-full h-full z-[1]">
+            {featuredContent.heroImages.map((image, index) => (
+              <img 
+                key={index}
+                className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-1000 ${
+                  index === currentHeroImage ? 'opacity-100' : 'opacity-0'
+                }`}
+                src={image}
+                alt={`Hero ${index + 1}`}
+                loading={index === 0 ? 'eager' : 'lazy'}
+                onError={(e) => {
+                  e.currentTarget.src = "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1920&h=1080&fit=crop";
+                }}
+              />
+            ))}
+          </div>
+        ) : (
+          <img 
+            className="hero-bg absolute top-0 left-0 w-full h-full object-cover z-[1]" 
+            src={featuredContent?.heroImage || featuredContent?.heroImages?.[0] || "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1920&h=1080&fit=crop"} 
+            alt="Beautiful landscape"
+            loading="eager"
+            onError={(e) => {
+              e.currentTarget.src = "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1920&h=1080&fit=crop";
+            }}
+          />
+        )}
         <div className="hero-overlay absolute top-0 left-0 w-full h-full bg-gradient-to-br from-[rgba(15,23,42,0.4)] via-[rgba(30,64,175,0.3)] to-[rgba(16,185,129,0.4)] z-[2]"></div>
         
-        <div className="hero-content relative z-10 max-w-[1280px] mx-auto px-4 md:px-8 lg:px-20 grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6 lg:gap-8 items-center w-full">
+        <div className="hero-content relative z-10 max-w-[1280px] mx-auto px-4 md:px-8 lg:px-12 grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-4 lg:gap-6 items-center w-full h-full">
           <div className="hero-text text-white text-center lg:text-left order-2 lg:order-1">
-            <div className="hero-badge inline-flex items-center gap-3 bg-white/20 backdrop-blur-[10px] border border-white/30 px-4 py-2 rounded-full text-sm mb-4">
-              <div className="live-dot w-2 h-2 bg-emerald rounded-full animate-pulse"></div>
+            <div className="hero-badge inline-flex items-center gap-2 bg-white/20 backdrop-blur-[10px] border border-white/30 px-3 py-1.5 rounded-full text-xs mb-3">
+              <div className="live-dot w-1.5 h-1.5 bg-emerald rounded-full animate-pulse"></div>
               <span>{liveCounter.toLocaleString()} dreams planned today</span>
             </div>
             
-            <h1 className="hero-title text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight mb-3 font-['DM_Sans']">
-              Air, sleep, dream
+            <h1 className="hero-title text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight mb-4 font-['DM_Sans']">
+              {featuredContent?.heroTitle || 'Air, sleep, dream'}
             </h1>
-            <p className="hero-subtitle text-lg md:text-xl font-normal leading-relaxed mb-4 font-['Poppins'] opacity-90">
-              Find and book a great experience.
+            <p className="hero-subtitle text-lg md:text-xl font-normal leading-7 mb-6 font-['Poppins'] opacity-90">
+              {featuredContent?.heroSubtitle || 'Find and book a great experience.'}
             </p>
             <button 
-              className="hero-cta bg-blue-ocean text-white border-none px-6 py-3 rounded-3xl text-base font-bold cursor-pointer transition-all duration-300 font-['DM_Sans'] inline-flex items-center gap-2 hover:bg-emerald hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(88,194,125,0.3)]"
+              className="hero-cta bg-blue-ocean text-white border-none px-5 py-2 rounded-2xl text-sm font-semibold cursor-pointer transition-all duration-300 font-['DM_Sans'] inline-flex items-center gap-2 hover:bg-emerald hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(88,194,125,0.3)]"
               onClick={() => document.querySelector('.search-widget')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
             >
               Start your search
@@ -314,55 +517,55 @@ const HomePage: React.FC = () => {
           </div>
 
           {/* Search Widget */}
-          <div className="search-widget bg-white/95 backdrop-blur-[20px] rounded-2xl md:rounded-3xl p-4 md:p-6 lg:p-8 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.15)] border border-white/50 w-full max-w-none relative z-[5] order-1 lg:order-2">
+          <div className="search-widget bg-white/95 rounded-2xl p-4 md:p-6 shadow-[0_20px_40px_-10px_rgba(15,15,15,0.15)] border border-white/50 w-full max-w-none relative order-1 lg:order-2" style={{zIndex: 1}}>
             {/* Search Tabs */}
-            <div className="search-tabs flex gap-2 mb-6">
+            <div className="search-tabs flex gap-1 mb-4 bg-gray-100 p-1 rounded-lg">
               <button
                 onClick={() => switchTab('flights')}
-                className={`search-tab flex-1 md:flex-none md:px-6 py-3 px-4 font-semibold text-sm cursor-pointer relative font-['DM_Sans'] transition-all duration-300 rounded-lg ${
+                className={`search-tab flex-1 py-2 px-2 md:px-3 font-semibold text-sm cursor-pointer relative font-['DM_Sans'] transition-all duration-300 rounded-md flex items-center justify-center gap-2 ${
                   activeTab === 'flights'
-                    ? 'text-white bg-blue-ocean shadow-lg transform -translate-y-0.5'
-                    : 'text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 hover:border-blue-ocean hover:text-blue-ocean'
+                    ? 'text-white bg-blue-ocean shadow-md'
+                    : 'text-gray-600 hover:text-blue-ocean hover:bg-white'
                 }`}
               >
-                <span className="mr-2">✈️</span>
-                <span>Flights</span>
+                <span className="text-base">✈️</span>
+                <span className="font-bold">Flights</span>
               </button>
               <button
                 onClick={() => switchTab('hotels')}
-                className={`search-tab flex-1 md:flex-none md:px-6 py-3 px-4 font-semibold text-sm cursor-pointer relative font-['DM_Sans'] transition-all duration-300 rounded-lg ${
+                className={`search-tab flex-1 py-2 px-2 md:px-3 font-semibold text-sm cursor-pointer relative font-['DM_Sans'] transition-all duration-300 rounded-md flex items-center justify-center gap-2 ${
                   activeTab === 'hotels'
-                    ? 'text-white bg-blue-ocean shadow-lg transform -translate-y-0.5'
-                    : 'text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 hover:border-blue-ocean hover:text-blue-ocean'
+                    ? 'text-white bg-blue-ocean shadow-md'
+                    : 'text-gray-600 hover:text-blue-ocean hover:bg-white'
                 }`}
               >
-                <span className="mr-2">🏨</span>
-                <span>Hotels</span>
+                <span className="text-base">🏨</span>
+                <span className="font-bold">Hotels</span>
               </button>
               <button
                 onClick={() => switchTab('itinerary')}
-                className={`search-tab flex-1 md:flex-none md:px-6 py-3 px-4 font-semibold text-sm cursor-pointer relative font-['DM_Sans'] transition-all duration-300 rounded-lg ${
+                className={`search-tab flex-1 py-2 px-2 md:px-3 font-semibold text-sm cursor-pointer relative font-['DM_Sans'] transition-all duration-300 rounded-md flex items-center justify-center gap-2 ${
                   activeTab === 'itinerary'
-                    ? 'text-white bg-blue-ocean shadow-lg transform -translate-y-0.5'
-                    : 'text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 hover:border-blue-ocean hover:text-blue-ocean'
+                    ? 'text-white bg-blue-ocean shadow-md'
+                    : 'text-gray-600 hover:text-blue-ocean hover:bg-white'
                 }`}
               >
-                <span className="mr-2">✨</span>
-                <span className="hidden sm:inline">Complete Trip</span>
-                <span className="sm:hidden">Trip</span>
+                <span className="text-base">✨</span>
+                <span className="font-bold hidden sm:inline">Complete Trip</span>
+                <span className="font-bold sm:hidden">Trip</span>
               </button>
             </div>
 
             {/* Search Forms */}
-            <div className={`search-content ${activeTab === 'flights' ? 'block' : 'hidden'}`}>
-              <div className="search-form flex flex-col gap-1">
+            <div className={`search-content ${activeTab === 'flights' ? 'block' : 'hidden'}`} style={{overflow: 'visible'}}>
+              <div className="search-form flex flex-col gap-2">
                 <div className="form-row grid grid-cols-2 gap-3 items-end">
-                  <div className="form-field flex-1 flex items-center bg-white rounded-2xl py-3 px-4 pl-14 relative min-h-[56px]">
-                    <div className="field-icon absolute left-4 top-1/2 -translate-y-1/2 text-xl">📍</div>
-                    <div className="field-content flex-1 flex flex-col gap-1 relative">
-                      <div className="field-label text-lg font-semibold text-primary-900 font-['Poppins']">From</div>
+                  <div className="form-field flex-1 flex items-center bg-white/90 backdrop-blur-sm rounded-xl py-3 px-4 pl-12 relative min-h-[52px] border border-gray-100 hover:border-blue-200 transition-all">
+                    <div className="field-icon absolute left-3 top-1/2 -translate-y-1/2 text-base opacity-60">🛫</div>
+                    <div className="field-content flex-1 flex flex-col gap-0.5 relative">
+                      <div className="field-label text-xs font-medium text-primary-600 font-['Poppins'] uppercase tracking-wide">From</div>
                       <input 
-                        className="field-input border-none bg-none text-sm text-primary-400 font-['Poppins'] outline-none w-full" 
+                        className="field-input border-none bg-none text-sm text-primary-800 font-['Poppins'] font-medium outline-none w-full placeholder:text-primary-400 placeholder:font-normal" 
                         placeholder="Departure city or airport" 
                         value={flightForm.from}
                         onChange={(e) => {
@@ -378,7 +581,7 @@ const HomePage: React.FC = () => {
                         }}
                       />
                       {showFromSuggestions && fromAirports.length > 0 && (
-                        <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto z-50 mt-1">
+                        <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto mt-1" style={{zIndex: 999999}}>
                           {fromAirports.map((airport) => (
                             <div
                               key={airport._id}
@@ -397,12 +600,12 @@ const HomePage: React.FC = () => {
                       )}
                     </div>
                   </div>
-                  <div className="form-field flex-1 flex items-center bg-white rounded-2xl py-3 px-4 pl-14 relative min-h-[56px]">
-                    <div className="field-icon absolute left-4 top-1/2 -translate-y-1/2 text-xl">📍</div>
-                    <div className="field-content flex-1 flex flex-col gap-1 relative">
-                      <div className="field-label text-lg font-semibold text-primary-900 font-['Poppins']">To</div>
+                  <div className="form-field flex-1 flex items-center bg-white/90 backdrop-blur-sm rounded-xl py-3 px-4 pl-12 relative min-h-[52px] border border-gray-100 hover:border-blue-200 transition-all">
+                    <div className="field-icon absolute left-3 top-1/2 -translate-y-1/2 text-base opacity-60">🛬</div>
+                    <div className="field-content flex-1 flex flex-col gap-0.5 relative">
+                      <div className="field-label text-xs font-medium text-primary-600 font-['Poppins'] uppercase tracking-wide">To</div>
                       <input 
-                        className="field-input border-none bg-none text-sm text-primary-400 font-['Poppins'] outline-none w-full" 
+                        className="field-input border-none bg-none text-sm text-primary-800 font-['Poppins'] font-medium outline-none w-full placeholder:text-primary-400 placeholder:font-normal" 
                         placeholder="Destination city or airport" 
                         value={flightForm.to}
                         onChange={(e) => {
@@ -418,7 +621,7 @@ const HomePage: React.FC = () => {
                         }}
                       />
                       {showToSuggestions && toAirports.length > 0 && (
-                        <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto z-50 mt-1">
+                        <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto mt-1" style={{zIndex: 999999}}>
                           {toAirports.map((airport) => (
                             <div
                               key={airport._id}
@@ -438,39 +641,47 @@ const HomePage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                <div className="form-row grid grid-cols-2 gap-3 items-end">
-                  <div className="form-field flex-1 flex items-center bg-white rounded-2xl py-3 px-4 pl-14 relative min-h-[56px]">
-                    <div className="field-icon absolute left-4 top-1/2 -translate-y-1/2 text-xl">📅</div>
-                    <div className="field-content flex-1 flex flex-col gap-1">
-                      <div className="field-label text-lg font-semibold text-primary-900 font-['Poppins']">Departure</div>
-                      <input 
-                        type="date" 
-                        className="field-input border-none bg-none text-sm text-primary-400 font-['Poppins'] outline-none w-full" 
-                        value={flightForm.departDate}
-                        onChange={(e) => setFlightForm(prev => ({ ...prev, departDate: e.target.value }))}
+                <div className="form-row grid grid-cols-2 gap-2 items-end">
+                  <div className="form-field flex-1 flex items-center bg-white/90 backdrop-blur-sm rounded-xl py-3 px-4 pl-12 relative min-h-[52px] border border-gray-100 hover:border-blue-200 transition-all">
+                    <div className="field-icon absolute left-3 top-1/2 -translate-y-1/2 text-base opacity-60">📅</div>
+                    <div className="field-content flex-1 flex flex-col gap-0.5">
+                      <div className="field-label text-xs font-medium text-primary-600 font-['Poppins'] uppercase tracking-wide">Departure</div>
+                      <DatePicker
+                        selected={flightForm.departDate}
+                        onChange={(date) => setFlightForm(prev => ({ ...prev, departDate: date || new Date() }))}
+                        className="field-input border-none bg-none text-sm text-primary-800 font-['Poppins'] font-medium outline-none w-full cursor-pointer pl-2"
+                        placeholderText="Select date"
+                        dateFormat="MMM dd, yyyy"
+                        minDate={new Date()}
+                        popperClassName="custom-datepicker-popper"
+                        wrapperClassName="w-full"
                       />
                     </div>
                   </div>
-                  <div className="form-field flex-1 flex items-center bg-white rounded-2xl py-3 px-4 pl-14 relative min-h-[56px]">
-                    <div className="field-icon absolute left-4 top-1/2 -translate-y-1/2 text-xl">📅</div>
-                    <div className="field-content flex-1 flex flex-col gap-1">
-                      <div className="field-label text-lg font-semibold text-primary-900 font-['Poppins']">Return</div>
-                      <input 
-                        type="date" 
-                        className="field-input border-none bg-none text-sm text-primary-400 font-['Poppins'] outline-none w-full" 
-                        value={flightForm.returnDate}
-                        onChange={(e) => setFlightForm(prev => ({ ...prev, returnDate: e.target.value }))}
+                  <div className="form-field flex-1 flex items-center bg-white/90 backdrop-blur-sm rounded-xl py-3 px-4 pl-12 relative min-h-[52px] border border-gray-100 hover:border-blue-200 transition-all">
+                    <div className="field-icon absolute left-3 top-1/2 -translate-y-1/2 text-base opacity-60">📅</div>
+                    <div className="field-content flex-1 flex flex-col gap-0.5">
+                      <div className="field-label text-xs font-medium text-primary-600 font-['Poppins'] uppercase tracking-wide">Return</div>
+                      <DatePicker
+                        selected={flightForm.returnDate}
+                        onChange={(date) => setFlightForm(prev => ({ ...prev, returnDate: date || new Date() }))}
+                        className="field-input border-none bg-none text-sm text-primary-800 font-['Poppins'] font-medium outline-none w-full cursor-pointer pl-2"
+                        placeholderText="Select date"
+                        dateFormat="MMM dd, yyyy"
+                        minDate={flightForm.departDate}
+                        popperClassName="custom-datepicker-popper"
+                        wrapperClassName="w-full"
                       />
                     </div>
                   </div>
                 </div>
-                <div className="form-row grid grid-cols-2 gap-3 items-end">
-                  <div className="form-field flex-1 flex items-center bg-white rounded-2xl py-3 px-4 pl-14 relative min-h-[56px]">
-                    <div className="field-icon absolute left-4 top-1/2 -translate-y-1/2 text-xl">👥</div>
-                    <div className="field-content flex-1 flex flex-col gap-1">
-                      <div className="field-label text-lg font-semibold text-primary-900 font-['Poppins']">Passengers</div>
+                <div className="form-row grid grid-cols-2 gap-2 items-end">
+                  <div className="form-field flex-1 flex items-center bg-white/90 backdrop-blur-sm rounded-xl py-3 px-4 pl-12 relative min-h-[52px] border border-gray-100 hover:border-blue-200 transition-all">
+                    <div className="field-icon absolute left-3 top-1/2 -translate-y-1/2 text-base opacity-60">👥</div>
+                    <div className="field-content flex-1 flex flex-col gap-0.5">
+                      <div className="field-label text-xs font-medium text-primary-600 font-['Poppins'] uppercase tracking-wide">Passengers</div>
                       <select 
-                        className="field-input border-none bg-none text-sm text-primary-400 font-['Poppins'] outline-none w-full"
+                        className="field-input border-none bg-none text-sm text-primary-800 font-['Poppins'] font-medium outline-none w-full cursor-pointer appearance-none bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzk0QTNBOCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+')] bg-no-repeat bg-right bg-[center_right_0.75rem] pr-8 pl-2"
                         value={flightForm.passengers}
                         onChange={(e) => setFlightForm(prev => ({ ...prev, passengers: parseInt(e.target.value) }))}
                       >
@@ -485,12 +696,12 @@ const HomePage: React.FC = () => {
                       </select>
                     </div>
                   </div>
-                  <div className="form-field flex-1 flex items-center bg-white rounded-2xl py-3 px-4 pl-14 relative min-h-[56px]">
-                    <div className="field-icon absolute left-4 top-1/2 -translate-y-1/2 text-xl">🎆</div>
-                    <div className="field-content flex-1 flex flex-col gap-1">
-                      <div className="field-label text-lg font-semibold text-primary-900 font-['Poppins']">Class</div>
+                  <div className="form-field flex-1 flex items-center bg-white/90 backdrop-blur-sm rounded-xl py-3 px-4 pl-12 relative min-h-[52px] border border-gray-100 hover:border-blue-200 transition-all">
+                    <div className="field-icon absolute left-3 top-1/2 -translate-y-1/2 text-base opacity-60">✈️</div>
+                    <div className="field-content flex-1 flex flex-col gap-0.5">
+                      <div className="field-label text-xs font-medium text-primary-600 font-['Poppins'] uppercase tracking-wide">Class</div>
                       <select 
-                        className="field-input border-none bg-none text-sm text-primary-400 font-['Poppins'] outline-none w-full"
+                        className="field-input border-none bg-none text-sm text-primary-800 font-['Poppins'] font-medium outline-none w-full cursor-pointer appearance-none bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzk0QTNBOCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+')] bg-no-repeat bg-right bg-[center_right_0.75rem] pr-8 pl-2"
                         value={flightForm.class}
                         onChange={(e) => setFlightForm(prev => ({ ...prev, class: e.target.value }))}
                       >
@@ -512,16 +723,16 @@ const HomePage: React.FC = () => {
               </div>
             </div>
 
-            <div className={`search-content ${activeTab === 'hotels' ? 'block' : 'hidden'}`}>
-              <div className="search-form flex flex-col gap-1">
-                <div className="form-row grid grid-cols-1 gap-3 items-end">
-                  <div className="form-field flex-1 flex items-center bg-white rounded-2xl py-3 px-4 pl-14 relative min-h-[56px]">
-                    <div className="field-icon absolute left-4 top-1/2 -translate-y-1/2 text-xl">📍</div>
-                    <div className="field-content flex-1 flex flex-col gap-1 relative">
-                      <div className="field-label text-lg font-semibold text-primary-900 font-['Poppins']">Where are you going?</div>
+            <div className={`search-content ${activeTab === 'hotels' ? 'block' : 'hidden'}`} style={{overflow: 'visible'}}>
+              <div className="search-form flex flex-col gap-2">
+                <div className="form-row grid grid-cols-1 gap-2 items-end">
+                  <div className="form-field flex-1 flex items-center bg-white/90 backdrop-blur-sm rounded-xl py-3 px-4 pl-12 relative min-h-[52px] border border-gray-100 hover:border-blue-200 transition-all">
+                    <div className="field-icon absolute left-3 top-1/2 -translate-y-1/2 text-base opacity-60">🏨</div>
+                    <div className="field-content flex-1 flex flex-col gap-0.5 relative">
+                      <div className="field-label text-xs font-medium text-primary-600 font-['Poppins'] uppercase tracking-wide">Destination</div>
                       <input 
-                        className="field-input border-none bg-none text-sm text-primary-400 font-['Poppins'] outline-none w-full" 
-                        placeholder="Destination" 
+                        className="field-input border-none bg-none text-sm text-primary-800 font-['Poppins'] font-medium outline-none w-full placeholder:text-primary-400 placeholder:font-normal" 
+                        placeholder="Where are you going?" 
                         value={hotelForm.location}
                         onChange={(e) => {
                           setHotelForm(prev => ({ ...prev, location: e.target.value }));
@@ -536,7 +747,7 @@ const HomePage: React.FC = () => {
                         }}
                       />
                       {showLocationSuggestions && locationSuggestions.length > 0 && (
-                        <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto z-50 mt-1">
+                        <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto mt-1" style={{zIndex: 999999}}>
                           {locationSuggestions.map((location) => (
                             <div
                               key={location._id}
@@ -556,39 +767,47 @@ const HomePage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                <div className="form-row grid grid-cols-2 gap-3 items-end">
-                  <div className="form-field flex-1 flex items-center bg-white rounded-2xl py-3 px-4 pl-14 relative min-h-[56px]">
-                    <div className="field-icon absolute left-4 top-1/2 -translate-y-1/2 text-xl">📅</div>
-                    <div className="field-content flex-1 flex flex-col gap-1">
-                      <div className="field-label text-lg font-semibold text-primary-900 font-['Poppins']">Check in</div>
-                      <input 
-                        type="date" 
-                        className="field-input border-none bg-none text-sm text-primary-400 font-['Poppins'] outline-none w-full" 
-                        value={hotelForm.checkIn}
-                        onChange={(e) => setHotelForm(prev => ({ ...prev, checkIn: e.target.value }))}
+                <div className="form-row grid grid-cols-2 gap-2 items-end">
+                  <div className="form-field flex-1 flex items-center bg-white/90 backdrop-blur-sm rounded-xl py-3 px-4 pl-12 relative min-h-[52px] border border-gray-100 hover:border-blue-200 transition-all">
+                    <div className="field-icon absolute left-3 top-1/2 -translate-y-1/2 text-base opacity-60">📅</div>
+                    <div className="field-content flex-1 flex flex-col gap-0.5">
+                      <div className="field-label text-xs font-medium text-primary-600 font-['Poppins'] uppercase tracking-wide">Check in</div>
+                      <DatePicker
+                        selected={hotelForm.checkIn}
+                        onChange={(date) => setHotelForm(prev => ({ ...prev, checkIn: date || new Date() }))}
+                        className="field-input border-none bg-none text-sm text-primary-800 font-['Poppins'] font-medium outline-none w-full cursor-pointer pl-2"
+                        placeholderText="Select date"
+                        dateFormat="MMM dd, yyyy"
+                        minDate={new Date()}
+                        popperClassName="custom-datepicker-popper"
+                        wrapperClassName="w-full"
                       />
                     </div>
                   </div>
-                  <div className="form-field flex-1 flex items-center bg-white rounded-2xl py-3 px-4 pl-14 relative min-h-[56px]">
-                    <div className="field-icon absolute left-4 top-1/2 -translate-y-1/2 text-xl">📅</div>
-                    <div className="field-content flex-1 flex flex-col gap-1">
-                      <div className="field-label text-lg font-semibold text-primary-900 font-['Poppins']">Check out</div>
-                      <input 
-                        type="date" 
-                        className="field-input border-none bg-none text-sm text-primary-400 font-['Poppins'] outline-none w-full" 
-                        value={hotelForm.checkOut}
-                        onChange={(e) => setHotelForm(prev => ({ ...prev, checkOut: e.target.value }))}
+                  <div className="form-field flex-1 flex items-center bg-white/90 backdrop-blur-sm rounded-xl py-3 px-4 pl-12 relative min-h-[52px] border border-gray-100 hover:border-blue-200 transition-all">
+                    <div className="field-icon absolute left-3 top-1/2 -translate-y-1/2 text-base opacity-60">📅</div>
+                    <div className="field-content flex-1 flex flex-col gap-0.5">
+                      <div className="field-label text-xs font-medium text-primary-600 font-['Poppins'] uppercase tracking-wide">Check out</div>
+                      <DatePicker
+                        selected={hotelForm.checkOut}
+                        onChange={(date) => setHotelForm(prev => ({ ...prev, checkOut: date || new Date() }))}
+                        className="field-input border-none bg-none text-sm text-primary-800 font-['Poppins'] font-medium outline-none w-full cursor-pointer pl-2"
+                        placeholderText="Select date"
+                        dateFormat="MMM dd, yyyy"
+                        minDate={hotelForm.checkIn}
+                        popperClassName="custom-datepicker-popper"
+                        wrapperClassName="w-full"
                       />
                     </div>
                   </div>
                 </div>
-                <div className="form-row grid grid-cols-[1fr_auto] gap-3 items-end">
-                  <div className="form-field flex-1 flex items-center bg-white rounded-2xl py-3 px-4 pl-14 relative min-h-[56px]">
-                    <div className="field-icon absolute left-4 top-1/2 -translate-y-1/2 text-xl">👥</div>
-                    <div className="field-content flex-1 flex flex-col gap-1">
-                      <div className="field-label text-lg font-semibold text-primary-900 font-['Poppins']">Travelers</div>
+                <div className="form-row grid grid-cols-[1fr_auto] gap-2 items-end">
+                  <div className="form-field flex-1 flex items-center bg-white/90 backdrop-blur-sm rounded-xl py-3 px-4 pl-12 relative min-h-[52px] border border-gray-100 hover:border-blue-200 transition-all">
+                    <div className="field-icon absolute left-3 top-1/2 -translate-y-1/2 text-base opacity-60">👥</div>
+                    <div className="field-content flex-1 flex flex-col gap-0.5">
+                      <div className="field-label text-xs font-medium text-primary-600 font-['Poppins'] uppercase tracking-wide">Travelers</div>
                       <select 
-                        className="field-input border-none bg-none text-sm text-primary-400 font-['Poppins'] outline-none w-full"
+                        className="field-input border-none bg-none text-sm text-primary-800 font-['Poppins'] font-medium outline-none w-full cursor-pointer appearance-none bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzk0QTNBOCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+')] bg-no-repeat bg-right bg-[center_right_0.75rem] pr-8 pl-2"
                         value={`${hotelForm.guests} Adults, ${hotelForm.rooms} Room${hotelForm.rooms > 1 ? 's' : ''}`}
                         onChange={(e) => {
                           const value = e.target.value;
@@ -612,35 +831,36 @@ const HomePage: React.FC = () => {
                   </div>
                   <button 
                     onClick={performSearch}
-                    className="search-btn w-auto h-12 bg-blue-ocean border-none rounded-xl cursor-pointer flex items-center justify-center text-sm ml-4 transition-all duration-300 text-white font-['DM_Sans'] font-bold gap-2 px-5 min-w-[120px] hover:bg-emerald hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(88,194,125,0.3)]"
+                    className="search-btn w-auto h-12 bg-gradient-to-r from-blue-600 to-blue-700 border-none rounded-xl cursor-pointer flex items-center justify-center text-sm ml-4 transition-all duration-300 text-white font-['DM_Sans'] font-semibold gap-2 px-5 min-w-[120px] hover:from-blue-700 hover:to-blue-800 hover:shadow-lg"
                   >
+                    <span className="text-base">🏨</span>
                     <span>Search Hotels</span>
                   </button>
                 </div>
               </div>
             </div>
 
-            <div className={`search-content ${activeTab === 'itinerary' ? 'block' : 'hidden'} active min-h-[240px]`}>
-              <div className="search-form flex flex-col gap-1">
-                <div className="form-row grid grid-cols-1 gap-3 items-end">
-                  <div className="form-field full-width col-span-full flex-1 flex items-center bg-white rounded-2xl py-3 px-4 pl-14 relative min-h-[56px]">
-                    <div className="field-icon absolute left-4 top-1/2 -translate-y-1/2 text-xl">✨</div>
-                    <div className="field-content flex-1 flex flex-col gap-1">
-                      <div className="field-label text-lg font-semibold text-primary-900 font-['Poppins']">Describe your dream trip</div>
+            <div className={`search-content ${activeTab === 'itinerary' ? 'block' : 'hidden'} active min-h-[240px]`} style={{overflow: 'visible'}}>
+              <div className="search-form flex flex-col gap-2">
+                <div className="form-row grid grid-cols-1 gap-2 items-end">
+                  <div className="form-field full-width col-span-full flex-1 flex items-center bg-white/90 backdrop-blur-sm rounded-xl py-3 px-4 pl-12 relative min-h-[52px] border border-gray-100 hover:border-blue-200 transition-all">
+                    <div className="field-icon absolute left-3 top-1/2 -translate-y-1/2 text-base opacity-60">✨</div>
+                    <div className="field-content flex-1 flex flex-col gap-0.5">
+                      <div className="field-label text-xs font-medium text-primary-600 font-['Poppins'] uppercase tracking-wide">Dream Trip</div>
                       <input 
                         value={dreamInput}
                         onChange={(e) => setDreamInput(e.target.value)}
-                        className="field-input border-none bg-none text-sm text-primary-400 font-['Poppins'] outline-none w-full" 
+                        className="field-input border-none bg-none text-sm text-primary-800 font-['Poppins'] font-medium outline-none w-full placeholder:text-primary-400 placeholder:font-normal" 
                         placeholder="e.g., Romantic getaway in Paris, Adventure in Japan, Beach relaxation in Bali..." 
                       />
                     </div>
                   </div>
                 </div>
-                <div className="form-row grid grid-cols-2 gap-3 items-end">
-                  <div className="form-field flex-1 flex items-center bg-white rounded-2xl py-3 px-4 pl-14 relative min-h-[56px]">
-                    <div className="field-icon absolute left-4 top-1/2 -translate-y-1/2 text-xl">🌍</div>
-                    <div className="field-content flex-1 flex flex-col gap-1 relative">
-                      <div className="field-label text-lg font-semibold text-primary-900 font-['Poppins']">Destination</div>
+                <div className="form-row grid grid-cols-2 gap-2 items-end">
+                  <div className="form-field flex-1 flex items-center bg-white/90 backdrop-blur-sm rounded-xl py-3 px-4 pl-12 relative min-h-[52px] border border-gray-100 hover:border-blue-200 transition-all">
+                    <div className="field-icon absolute left-3 top-1/2 -translate-y-1/2 text-base opacity-60">🌍</div>
+                    <div className="field-content flex-1 flex flex-col gap-0.5 relative">
+                      <div className="field-label text-xs font-medium text-primary-600 font-['Poppins'] uppercase tracking-wide">Destination</div>
                       <input 
                         className="field-input border-none bg-none text-sm text-primary-400 font-['Poppins'] outline-none w-full" 
                         placeholder="Where do you want to go?" 
@@ -658,7 +878,7 @@ const HomePage: React.FC = () => {
                         }}
                       />
                       {showTripToSuggestions && locationSuggestions.length > 0 && (
-                        <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto z-50 mt-1">
+                        <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto mt-1" style={{zIndex: 999999}}>
                           {locationSuggestions.map((location) => (
                             <div
                               key={location._id}
@@ -677,12 +897,12 @@ const HomePage: React.FC = () => {
                       )}
                     </div>
                   </div>
-                  <div className="form-field flex-1 flex items-center bg-white rounded-2xl py-3 px-4 pl-14 relative min-h-[56px]">
-                    <div className="field-icon absolute left-4 top-1/2 -translate-y-1/2 text-xl">🎭</div>
-                    <div className="field-content flex-1 flex flex-col gap-1">
-                      <div className="field-label text-lg font-semibold text-primary-900 font-['Poppins']">Trip Type</div>
+                  <div className="form-field flex-1 flex items-center bg-white/90 backdrop-blur-sm rounded-xl py-3 px-4 pl-12 relative min-h-[52px] border border-gray-100 hover:border-blue-200 transition-all">
+                    <div className="field-icon absolute left-3 top-1/2 -translate-y-1/2 text-base opacity-60">🎭</div>
+                    <div className="field-content flex-1 flex flex-col gap-0.5">
+                      <div className="field-label text-xs font-medium text-primary-600 font-['Poppins'] uppercase tracking-wide">Trip Type</div>
                       <select 
-                        className="field-input border-none bg-none text-sm text-primary-400 font-['Poppins'] outline-none w-full"
+                        className="field-input border-none bg-none text-sm text-primary-800 font-['Poppins'] font-medium outline-none w-full cursor-pointer appearance-none bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzk0QTNBOCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+')] bg-no-repeat bg-right bg-[center_right_0.75rem] pr-8 pl-2"
                         value={tripForm.tripType || 'any'}
                         onChange={(e) => setTripForm(prev => ({ ...prev, tripType: e.target.value }))}
                       >
@@ -707,25 +927,29 @@ const HomePage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                <div className="form-row grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                  <div className="form-field flex-1 flex items-center bg-white rounded-2xl py-3 px-4 pl-14 relative min-h-[56px]">
-                    <div className="field-icon absolute left-4 top-1/2 -translate-y-1/2 text-xl">📅</div>
-                    <div className="field-content flex-1 flex flex-col gap-1">
-                      <div className="field-label text-lg font-semibold text-primary-900 font-['Poppins']">When</div>
-                      <input 
-                        type="date" 
-                        className="field-input border-none bg-none text-sm text-primary-400 font-['Poppins'] outline-none w-full" 
-                        value={tripForm.departDate}
-                        onChange={(e) => setTripForm(prev => ({ ...prev, departDate: e.target.value }))}
+                <div className="form-row grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 items-end">
+                  <div className="form-field flex-1 flex items-center bg-white/90 backdrop-blur-sm rounded-xl py-3 px-4 pl-12 relative min-h-[52px] border border-gray-100 hover:border-blue-200 transition-all">
+                    <div className="field-icon absolute left-3 top-1/2 -translate-y-1/2 text-base opacity-60">📅</div>
+                    <div className="field-content flex-1 flex flex-col gap-0.5">
+                      <div className="field-label text-xs font-medium text-primary-600 font-['Poppins'] uppercase tracking-wide">When</div>
+                      <DatePicker
+                        selected={tripForm.departDate}
+                        onChange={(date) => setTripForm(prev => ({ ...prev, departDate: date || new Date() }))}
+                        className="field-input border-none bg-none text-sm text-primary-800 font-['Poppins'] font-medium outline-none w-full cursor-pointer pl-2"
+                        placeholderText="Select date"
+                        dateFormat="MMM dd, yyyy"
+                        minDate={new Date()}
+                        popperClassName="custom-datepicker-popper"
+                        wrapperClassName="w-full"
                       />
                     </div>
                   </div>
-                  <div className="form-field flex-1 flex items-center bg-white rounded-2xl py-3 px-4 pl-14 relative min-h-[56px]">
-                    <div className="field-icon absolute left-4 top-1/2 -translate-y-1/2 text-xl">👥</div>
-                    <div className="field-content flex-1 flex flex-col gap-1">
-                      <div className="field-label text-lg font-semibold text-primary-900 font-['Poppins']">Travelers</div>
+                  <div className="form-field flex-1 flex items-center bg-white/90 backdrop-blur-sm rounded-xl py-3 px-4 pl-12 relative min-h-[52px] border border-gray-100 hover:border-blue-200 transition-all">
+                    <div className="field-icon absolute left-3 top-1/2 -translate-y-1/2 text-base opacity-60">👥</div>
+                    <div className="field-content flex-1 flex flex-col gap-0.5">
+                      <div className="field-label text-xs font-medium text-primary-600 font-['Poppins'] uppercase tracking-wide">Travelers</div>
                       <select 
-                        className="field-input border-none bg-none text-sm text-primary-400 font-['Poppins'] outline-none w-full"
+                        className="field-input border-none bg-none text-sm text-primary-800 font-['Poppins'] font-medium outline-none w-full cursor-pointer appearance-none bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzk0QTNBOCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+')] bg-no-repeat bg-right bg-[center_right_0.75rem] pr-8 pl-2"
                         value={tripForm.travelers}
                         onChange={(e) => setTripForm(prev => ({ ...prev, travelers: e.target.value }))}
                       >
@@ -737,12 +961,12 @@ const HomePage: React.FC = () => {
                       </select>
                     </div>
                   </div>
-                  <div className="form-field flex-1 flex items-center bg-white rounded-2xl py-3 px-4 pl-14 relative min-h-[56px]">
-                    <div className="field-icon absolute left-4 top-1/2 -translate-y-1/2 text-xl">💰</div>
-                    <div className="field-content flex-1 flex flex-col gap-1">
-                      <div className="field-label text-lg font-semibold text-primary-900 font-['Poppins']">Budget</div>
+                  <div className="form-field flex-1 flex items-center bg-white/90 backdrop-blur-sm rounded-xl py-3 px-4 pl-12 relative min-h-[52px] border border-gray-100 hover:border-blue-200 transition-all">
+                    <div className="field-icon absolute left-3 top-1/2 -translate-y-1/2 text-base opacity-60">💰</div>
+                    <div className="field-content flex-1 flex flex-col gap-0.5">
+                      <div className="field-label text-xs font-medium text-primary-600 font-['Poppins'] uppercase tracking-wide">Budget</div>
                       <select 
-                        className="field-input border-none bg-none text-sm text-primary-400 font-['Poppins'] outline-none w-full"
+                        className="field-input border-none bg-none text-sm text-primary-800 font-['Poppins'] font-medium outline-none w-full cursor-pointer appearance-none bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzk0QTNBOCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+')] bg-no-repeat bg-right bg-[center_right_0.75rem] pr-8 pl-2"
                         value={tripForm.budget}
                         onChange={(e) => setTripForm(prev => ({ ...prev, budget: e.target.value }))}
                       >
@@ -755,10 +979,10 @@ const HomePage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                <div className="itinerary-options grid grid-cols-1 md:grid-cols-3 gap-3 my-6">
+                <div className="itinerary-options grid grid-cols-1 sm:grid-cols-3 gap-2 my-4">
                   <div 
-                    className={`option-card bg-gradient-to-br from-blue-ocean/5 to-emerald/5 border-2 border-blue-ocean/10 rounded-xl py-3 px-3 text-center cursor-pointer transition-all duration-300 min-h-[70px] md:min-h-[80px] flex flex-col justify-center relative hover:-translate-y-1 hover:shadow-[0_12px_30px_rgba(59,113,254,0.2)] hover:border-blue-ocean ${
-                      selectedOption === 'ai-magic' ? 'selected border-blue-ocean bg-gradient-to-br from-blue-ocean/15 to-emerald/15 shadow-[0_8px_20px_rgba(59,113,254,0.25)] transform -translate-y-1' : ''
+                    className={`option-card bg-white/95 backdrop-blur-sm border border-gray-200 rounded-xl py-4 px-4 text-center cursor-pointer transition-all duration-300 min-h-[80px] flex flex-col justify-center relative hover:-translate-y-0.5 hover:shadow-lg hover:border-blue-300 ${
+                      selectedOption === 'ai-magic' ? 'selected border-blue-500 bg-blue-50 shadow-md transform -translate-y-0.5' : ''
                     }`}
                     onClick={() => selectItineraryOption('ai-magic')}
                   >
@@ -768,19 +992,19 @@ const HomePage: React.FC = () => {
                     <div className="text-xs text-primary-500 leading-tight">AI creates perfect trip</div>
                   </div>
                   <div 
-                    className={`option-card bg-gradient-to-br from-blue-ocean/5 to-emerald/5 border-2 border-blue-ocean/10 rounded-xl py-3 px-3 text-center cursor-pointer transition-all duration-300 min-h-[70px] md:min-h-[80px] flex flex-col justify-center relative hover:-translate-y-1 hover:shadow-[0_12px_30px_rgba(59,113,254,0.2)] hover:border-blue-ocean ${
-                      selectedOption === 'packages' ? 'selected border-blue-ocean bg-gradient-to-br from-blue-ocean/15 to-emerald/15 shadow-[0_8px_20px_rgba(59,113,254,0.25)] transform -translate-y-1' : ''
+                    className={`option-card bg-white/95 backdrop-blur-sm border border-gray-200 rounded-xl py-4 px-4 text-center cursor-pointer transition-all duration-300 min-h-[80px] flex flex-col justify-center relative hover:-translate-y-0.5 hover:shadow-lg hover:border-blue-300 ${
+                      selectedOption === 'packages' ? 'selected border-blue-500 bg-blue-50 shadow-md transform -translate-y-0.5' : ''
                     }`}
                     onClick={() => selectItineraryOption('packages')}
                   >
-                    <div className="option-badge badge-ready absolute -top-2 left-1/2 -translate-x-1/2 text-[0.6rem] px-2 py-1 rounded-full font-bold font-['DM_Sans'] bg-amber-premium text-white shadow-sm">🌟 Ready</div>
+                    <div className="option-badge badge-ready absolute -top-2 left-1/2 -translate-x-1/2 text-[0.6rem] px-2 py-1 rounded-full font-bold font-['DM_Sans'] bg-emerald text-white shadow-sm">🌟 Default</div>
                     <div className="text-xl md:text-2xl mb-2">📦</div>
-                    <div className="text-sm font-bold text-primary-900 mb-1">Packages</div>
+                    <div className="text-sm font-bold text-primary-900 mb-1">Trips</div>
                     <div className="text-xs text-primary-500 leading-tight">Pre-made adventures</div>
                   </div>
                   <div 
-                    className={`option-card bg-gradient-to-br from-blue-ocean/5 to-emerald/5 border-2 border-blue-ocean/10 rounded-xl py-3 px-3 text-center cursor-pointer transition-all duration-300 min-h-[70px] md:min-h-[80px] flex flex-col justify-center relative hover:-translate-y-1 hover:shadow-[0_12px_30px_rgba(59,113,254,0.2)] hover:border-blue-ocean ${
-                      selectedOption === 'custom' ? 'selected border-blue-ocean bg-gradient-to-br from-blue-ocean/15 to-emerald/15 shadow-[0_8px_20px_rgba(59,113,254,0.25)] transform -translate-y-1' : ''
+                    className={`option-card bg-white/95 backdrop-blur-sm border border-gray-200 rounded-xl py-4 px-4 text-center cursor-pointer transition-all duration-300 min-h-[80px] flex flex-col justify-center relative hover:-translate-y-0.5 hover:shadow-lg hover:border-blue-300 ${
+                      selectedOption === 'custom' ? 'selected border-blue-500 bg-blue-50 shadow-md transform -translate-y-0.5' : ''
                     }`}
                     onClick={() => selectItineraryOption('custom')}
                   >
@@ -792,10 +1016,10 @@ const HomePage: React.FC = () => {
                 </div>
                 <button 
                   onClick={performSearch}
-                  className="search-btn full-width w-full ml-0 mt-4 text-base px-6 h-12 md:h-14 bg-blue-ocean border-none rounded-xl cursor-pointer flex items-center justify-center transition-all duration-300 text-white font-['DM_Sans'] font-bold gap-2 hover:bg-emerald hover:-translate-y-1 hover:shadow-[0_12px_30px_rgba(88,194,125,0.3)] active:transform active:scale-95"
+                  className="search-btn full-width w-full ml-0 mt-4 text-base px-6 h-12 bg-gradient-to-r from-blue-600 to-blue-700 border-none rounded-xl cursor-pointer flex items-center justify-center transition-all duration-300 text-white font-['DM_Sans'] font-semibold gap-2 hover:from-blue-700 hover:to-blue-800 hover:shadow-lg active:transform active:scale-95"
                 >
-                  <span className="search-icon text-lg">✨</span>
-                  <span>Create My Dream Trip</span>
+                  <span className="search-icon text-lg">🔍</span>
+                  <span>Find Perfect Trips</span>
                 </button>
               </div>
             </div>
@@ -808,15 +1032,15 @@ const HomePage: React.FC = () => {
         <div className="container max-w-[1280px] mx-auto px-4 md:px-8 lg:px-20">
           <div className="section-header text-center mb-16">
             <h2 className="section-title text-5xl font-bold leading-[56px] text-primary-900 mb-3 font-['DM_Sans']">
-              Let's go on an adventure
+              {featuredContent?.adventureSection?.title || "Let's go on an adventure"}
             </h2>
             <p className="section-subtitle text-2xl font-normal leading-8 text-primary-400 font-['Poppins']">
-              Find and book a great experience.
+              {featuredContent?.adventureSection?.subtitle || "Find and book a great experience."}
             </p>
           </div>
 
           <div className="adventure-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8 max-w-[1120px] mx-auto">
-            {adventureCategories.map((category, index) => (
+            {adventureCategories.length > 0 ? adventureCategories.map((category: AdventureCategory, index: number) => (
               <div
                 key={index}
                 className="adventure-card flex items-center gap-4 cursor-pointer transition-all duration-300 p-6 rounded-2xl bg-white shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)]"
@@ -834,7 +1058,11 @@ const HomePage: React.FC = () => {
                   </div>
                 </div>
               </div>
-            ))}
+            )) : (
+              <div className="col-span-full text-center py-12">
+                <p className="text-primary-600">Adventure categories will be available soon.</p>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -852,16 +1080,11 @@ const HomePage: React.FC = () => {
           </div>
           
           <div className="destinations-slider flex gap-8 overflow-x-auto scroll-smooth pb-5">
-            {(featuredContent?.destinationSpotlight?.destinations || [
-              { id: 1, name: 'Mountain Lodge', location: 'New Zealand', price: 190, image: 'photo-1506905925346-21bda4d32df4', discount: '20% off' },
-              { id: 2, name: 'Alpine Retreat', location: 'Switzerland', price: 230, image: 'photo-1464822759844-d150baec3e5e', discount: null },
-              { id: 3, name: 'Forest Cabin', location: 'Canada', price: 170, image: 'photo-1441974231531-c6227db76b6e', discount: '15% off' },
-              { id: 4, name: 'Lake House', location: 'Norway', price: 280, image: 'photo-1506905925346-21bda4d32df4', discount: null }
-            ]).map((destination, index) => (
-              <div key={destination.id || index} className="destination-card min-w-[256px] cursor-pointer transition-all duration-300 rounded-3xl overflow-hidden bg-white shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)]" onClick={() => viewDestination(destination.id || `destination-${index}`)}>
+            {featuredContent?.destinationSpotlight?.destinations?.length > 0 ? featuredContent.destinationSpotlight.destinations.map((destination: Destination, index: number) => (
+              <div key={destination.id || index} className="destination-card min-w-[256px] cursor-pointer transition-all duration-300 rounded-3xl overflow-hidden bg-white shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)]" onClick={() => viewDestination(String(destination.id) || `destination-${index}`)}>
                 <div className="destination-image relative w-64 h-64 rounded-3xl overflow-hidden mb-5">
                   <img 
-                    src={destination.image?.startsWith('http') ? destination.image : `https://images.unsplash.com/${destination.image || 'photo-1506905925346-21bda4d32df4'}?w=400&h=400&fit=crop`} 
+                    src={destination.image?.startsWith('http') ? destination.image : `https://images.unsplash.com/${destination.image}?w=400&h=400&fit=crop`} 
                     alt={destination.name || 'Beautiful destination'} 
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -869,18 +1092,36 @@ const HomePage: React.FC = () => {
                     }}
                   />
                   <div className="destination-badge absolute top-4 left-4 bg-primary-900 text-white px-3 rounded-[13px] text-xs font-bold uppercase leading-[26px] font-['Poppins']">
-                    {destination.discount || `from $${destination.price || (190 + index * 40)}`}
+                    {destination.discount || `from $${destination.price}`}
                   </div>
                 </div>
                 <div className="destination-info">
-                  <h3 className="text-base font-medium leading-6 text-primary-900 mb-2 font-['Poppins']">{destination.name || 'Amazing Place'}</h3>
-                  <div className="destination-rating flex items-center gap-1.5 text-xs font-semibold text-primary-400 font-['Poppins']">
-                    <span className="rating-icon">📍</span>
-                    <span>{destination.location || 'Beautiful Location'}</span>
+                  <h3 className="text-base font-medium leading-6 text-primary-900 mb-2 font-['Poppins']">{destination.name}</h3>
+                  <div className="destination-info-row flex items-center justify-between text-xs font-['Poppins']">
+                    <div className="destination-location flex items-center gap-1.5 text-primary-400">
+                      <span className="location-icon">📍</span>
+                      <span>{destination.location}</span>
+                    </div>
+                    {destination.rating && (
+                      <div className="destination-rating flex items-center gap-1 text-primary-600">
+                        <span>⭐</span>
+                        <span className="font-semibold">{destination.rating}</span>
+                        {destination.reviewCount && (
+                          <span className="text-primary-400">({destination.reviewCount})</span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
-            ))}
+            )) : (
+              <div className="col-span-full text-center py-12 min-w-full">
+                <p className="text-primary-600 mb-4">Featured destinations will be available soon.</p>
+                <Button onClick={loadHomeData} variant="outline">
+                  Load Destinations
+                </Button>
+              </div>
+            )}
           </div>
           
           <div className="slider-controls hidden lg:flex absolute top-1/2 right-20 -translate-y-1/2 gap-2">
@@ -903,7 +1144,7 @@ const HomePage: React.FC = () => {
           </div>
 
           <div className="planning-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-[1120px] mx-auto">
-            {planningOptions.map((option, index) => (
+            {planningOptions.map((option: PlanningOption, index: number) => (
               <div
                 key={index}
                 className={`planning-card bg-white rounded-2xl py-6 px-5 text-center cursor-pointer transition-all duration-300 border-2 relative hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)] hover:border-blue-ocean ${
@@ -926,7 +1167,7 @@ const HomePage: React.FC = () => {
                 <p className="text-sm text-primary-400 leading-5 mb-4 font-['Poppins']">{option.description}</p>
                 
                 <div className="planning-features mb-5">
-                  {option.features.map((feature, featureIndex) => (
+                  {option.features.map((feature: string, featureIndex: number) => (
                     <div key={featureIndex} className="feature text-xs text-primary-900 mb-1.5 font-['DM_Sans'] font-medium">
                       {feature}
                     </div>
@@ -1017,19 +1258,19 @@ const HomePage: React.FC = () => {
         <div className="container max-w-[1280px] mx-auto px-4 md:px-8 lg:px-20">
           <div className="stats-grid grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-10 max-w-[1000px] mx-auto text-center">
             <div className="stat-item p-8 bg-gradient-to-br from-white to-blue-ocean/[0.02] rounded-3xl border border-primary-200 transition-all duration-300 relative overflow-hidden hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(59,113,254,0.1)] hover:border-blue-ocean before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-gradient-to-r before:from-blue-ocean before:via-emerald before:to-amber-premium">
-              <div className="stat-number text-[40px] font-black bg-gradient-to-br from-blue-ocean to-emerald bg-clip-text text-transparent mb-2 font-['DM_Sans']">{stats?.happyCustomers?.toLocaleString() || '50,000'}+</div>
+              <div className="stat-number text-[40px] font-black bg-gradient-to-br from-blue-ocean to-emerald bg-clip-text text-transparent mb-2 font-['DM_Sans']">{stats?.happyCustomers?.toLocaleString() || '0'}+</div>
               <div className="stat-label text-base text-primary-400 font-medium font-['Poppins']">Happy Travelers</div>
             </div>
             <div className="stat-item p-8 bg-gradient-to-br from-white to-blue-ocean/[0.02] rounded-3xl border border-primary-200 transition-all duration-300 relative overflow-hidden hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(59,113,254,0.1)] hover:border-blue-ocean before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-gradient-to-r before:from-blue-ocean before:via-emerald before:to-amber-premium">
-              <div className="stat-number text-[40px] font-black bg-gradient-to-br from-blue-ocean to-emerald bg-clip-text text-transparent mb-2 font-['DM_Sans']">{stats?.averageRating || '4.9'}⭐</div>
+              <div className="stat-number text-[40px] font-black bg-gradient-to-br from-blue-ocean to-emerald bg-clip-text text-transparent mb-2 font-['DM_Sans']">{stats?.averageRating || '0'}⭐</div>
               <div className="stat-label text-base text-primary-400 font-medium font-['Poppins']">Average Rating</div>
             </div>
             <div className="stat-item p-8 bg-gradient-to-br from-white to-blue-ocean/[0.02] rounded-3xl border border-primary-200 transition-all duration-300 relative overflow-hidden hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(59,113,254,0.1)] hover:border-blue-ocean before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-gradient-to-r before:from-blue-ocean before:via-emerald before:to-amber-premium">
-              <div className="stat-number text-[40px] font-black bg-gradient-to-br from-blue-ocean to-emerald bg-clip-text text-transparent mb-2 font-['DM_Sans']">{stats?.destinations || '200'}+</div>
+              <div className="stat-number text-[40px] font-black bg-gradient-to-br from-blue-ocean to-emerald bg-clip-text text-transparent mb-2 font-['DM_Sans']">{stats?.destinations || '0'}+</div>
               <div className="stat-label text-base text-primary-400 font-medium font-['Poppins']">Destinations</div>
             </div>
             <div className="stat-item p-8 bg-gradient-to-br from-white to-blue-ocean/[0.02] rounded-3xl border border-primary-200 transition-all duration-300 relative overflow-hidden hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(59,113,254,0.1)] hover:border-blue-ocean before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-gradient-to-r before:from-blue-ocean before:via-emerald before:to-amber-premium">
-              <div className="stat-number text-[40px] font-black bg-gradient-to-br from-blue-ocean to-emerald bg-clip-text text-transparent mb-2 font-['DM_Sans']">{stats?.support || '24/7'}</div>
+              <div className="stat-number text-[40px] font-black bg-gradient-to-br from-blue-ocean to-emerald bg-clip-text text-transparent mb-2 font-['DM_Sans']">{stats?.support || 'N/A'}</div>
               <div className="stat-label text-base text-primary-400 font-medium font-['Poppins']">Support</div>
             </div>
           </div>
@@ -1049,35 +1290,7 @@ const HomePage: React.FC = () => {
           </div>
           
           <div className="blog-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-8 md:mb-10">
-            {(featuredContent?.blogPosts || [
-              {
-                id: 'travel-planning-2024',
-                title: 'Ultimate Travel Planning Guide 2024',
-                excerpt: 'Everything you need to know to plan your perfect trip',
-                category: 'Planning',
-                date: 'Dec 15, 2024',
-                readTime: '8 min read',
-                image: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=350&h=200&fit=crop'
-              },
-              {
-                id: 'budget-travel-tips',
-                title: 'Travel More, Spend Less: Budget Secrets',
-                excerpt: 'Smart strategies to explore the world without breaking the bank',
-                category: 'Budget Tips',
-                date: 'Dec 12, 2024',
-                readTime: '7 min read',
-                image: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=350&h=200&fit=crop'
-              },
-              {
-                id: 'best-destinations-2024',
-                title: 'Top 10 Must-Visit Destinations 2024',
-                excerpt: 'Discover the most amazing places to add to your travel bucket list',
-                category: 'Destinations',
-                date: 'Dec 10, 2024',
-                readTime: '6 min read',
-                image: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=350&h=200&fit=crop'
-              }
-            ]).map((post, index) => (
+            {(featuredContent?.blogPosts || []).map((post: BlogPost, index: number) => (
               <div key={post.id || index} className="blog-card bg-white rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)]" onClick={() => navigate(`/blog/${post.id || post.slug}`)}>
                 <div className="blog-image relative overflow-hidden">
                   <img 

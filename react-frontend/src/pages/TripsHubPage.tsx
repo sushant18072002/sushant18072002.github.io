@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { tripService, Trip, TripFilters } from '@/services/trip.service';
 import { masterDataService, Category } from '@/services/masterData.service';
 import Button from '@/components/common/Button';
@@ -57,22 +57,31 @@ const QuickTripAccess: React.FC = () => {
 
 const TripsHubPage: React.FC = () => {
   const navigate = useNavigate();
+  const { id: destinationId } = useParams();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [featuredTrips, setFeaturedTrips] = useState<Trip[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [destinationName, setDestinationName] = useState('');
   const [filters, setFilters] = useState<TripFilters>({
     category: '',
     priceRange: '',
     duration: '',
-    search: ''
+    search: '',
+    destination: destinationId || ''
   });
 
   useEffect(() => {
     loadInitialData();
     loadUrlParameters();
   }, []);
+
+  useEffect(() => {
+    if (destinationId) {
+      loadDestinationTrips();
+    }
+  }, [destinationId]);
 
   const loadUrlParameters = () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -95,11 +104,11 @@ const TripsHubPage: React.FC = () => {
         setSearchQuery(destination);
       }
       
-      // Set category from type or category
+      // Set category from type or category - map adventure category types
       if (type) {
-        newFilters.category = type;
+        newFilters.category = mapAdventureCategoryToFilter(type);
       } else if (category) {
-        newFilters.category = category;
+        newFilters.category = mapAdventureCategoryToFilter(category);
       }
       
       // Set price range
@@ -107,7 +116,7 @@ const TripsHubPage: React.FC = () => {
         newFilters.priceRange = priceRange;
       } else if (budget) {
         // Map budget values to price ranges
-        const budgetMap = {
+        const budgetMap: Record<string, string> = {
           'budget': 'budget',
           'budget-friendly': 'budget',
           'mid-range': 'mid-range',
@@ -119,6 +128,22 @@ const TripsHubPage: React.FC = () => {
       
       setFilters(newFilters);
     }
+  };
+  
+  // Map adventure category types to filter values
+  const mapAdventureCategoryToFilter = (categoryType: string): string => {
+    const categoryMap: Record<string, string> = {
+      'adventure': 'adventure',
+      'relaxation': 'relaxation', 
+      'cultural': 'cultural',
+      'city': 'city',
+      'nature': 'nature',
+      'food': 'food',
+      'luxury': 'luxury',
+      'romance': 'romance',
+      'family': 'family'
+    };
+    return categoryMap[categoryType] || categoryType;
   };
 
   useEffect(() => {
@@ -153,13 +178,45 @@ const TripsHubPage: React.FC = () => {
     }
   };
 
+  const loadDestinationTrips = async () => {
+    if (!destinationId) return;
+    
+    setLoading(true);
+    try {
+      // Get destination info first
+      const destResponse = await fetch(`http://localhost:3000/api/destinations/${destinationId}`);
+      const destData = await destResponse.json();
+      
+      if (destData.success && destData.data.destination) {
+        setDestinationName(destData.data.destination.name);
+        
+        // Search for trips by destination name
+        const tripsResponse = await tripService.getTrips({
+          search: destData.data.destination.name,
+          category: '',
+          priceRange: '',
+          duration: ''
+        });
+        
+        setTrips(tripsResponse.trips || []);
+      }
+    } catch (error) {
+      console.error('Failed to load destination trips:', error);
+      // Fallback: load featured trips
+      const response = await tripService.getFeaturedTrips();
+      setTrips(response.trips || []);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setFilters(prev => ({ ...prev, search: searchQuery }));
   };
 
   const clearFilters = () => {
-    setFilters({ category: '', priceRange: '', duration: '', search: '' });
+    setFilters({ category: '', priceRange: '', duration: '', search: '', destination: destinationId || '' });
     setSearchQuery('');
     setTrips([]);
   };
@@ -177,10 +234,13 @@ const TripsHubPage: React.FC = () => {
       <section className="bg-gradient-to-br from-primary-50 to-blue-50 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-primary-900 mb-4">
-            Discover Amazing Trips
+            {destinationName ? `Trips to ${destinationName}` : 'Discover Amazing Trips'}
           </h1>
           <p className="text-xl text-primary-600 mb-8">
-            From ready-to-book adventures to custom experiences crafted just for you
+            {destinationName 
+              ? `Explore amazing experiences and adventures in ${destinationName}`
+              : 'From ready-to-book adventures to custom experiences crafted just for you'
+            }
           </p>
           
           {/* Enhanced Search Bar */}
@@ -190,7 +250,7 @@ const TripsHubPage: React.FC = () => {
                 <div className="md:col-span-2">
                   <input
                     type="text"
-                    placeholder="Where do you want to go? (e.g., Paris, Tokyo, Bali)"
+                    placeholder={destinationName ? `Search trips in ${destinationName}...` : "Where do you want to go? (e.g., Paris, Tokyo, Bali)"}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-ocean focus:border-transparent transition-all"
@@ -208,7 +268,10 @@ const TripsHubPage: React.FC = () => {
                     <option value="relaxation">Beach & Relaxation</option>
                     <option value="city">City Break</option>
                     <option value="nature">Nature & Wildlife</option>
+                    <option value="food">Food & Wine</option>
                     <option value="luxury">Luxury</option>
+                    <option value="romance">Romance</option>
+                    <option value="family">Family</option>
                   </select>
                 </div>
                 <div>
@@ -267,17 +330,18 @@ const TripsHubPage: React.FC = () => {
             <div className="flex flex-wrap gap-4">
               {/* Categories */}
               <div className="flex flex-wrap gap-2">
-                {categories.map(category => (
+                {/* Trip Categories from Database */}
+                {categories.filter(cat => cat.type === 'trip').map(category => (
                   <button
                     key={category._id}
                     onClick={() => setFilters(prev => ({ 
                       ...prev, 
-                      category: prev.category === category._id ? '' : category._id 
+                      category: prev.category === category.slug ? '' : category.slug 
                     }))}
                     className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                      filters.category === category._id
-                        ? 'bg-blue-ocean text-white'
-                        : 'bg-white text-primary-700 hover:bg-primary-100'
+                      filters.category === category.slug
+                        ? 'bg-blue-ocean text-white shadow-lg'
+                        : 'bg-white text-primary-700 hover:bg-primary-100 border border-primary-200'
                     }`}
                   >
                     {category.icon} {category.name}
@@ -325,7 +389,9 @@ const TripsHubPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-2xl font-bold text-primary-900">
-              {filters.search || filters.category || filters.priceRange || filters.duration
+              {destinationName
+                ? `${displayTrips.length} trips to ${destinationName}`
+                : filters.search || filters.category || filters.priceRange || filters.duration
                 ? `${displayTrips.length} trips found`
                 : '✨ Featured Trips'
               }

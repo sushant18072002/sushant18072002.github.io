@@ -63,6 +63,7 @@ app.use('/api/airports', require('./src/routes/airports.routes'));
 app.use('/api/locations', require('./src/routes/locations.routes'));
 app.use('/api/master', require('./src/routes/master.routes'));
 app.use('/api/home', require('./src/routes/home.routes'));
+app.use('/api/destinations', require('./src/routes/destinations.routes'));
 
 // Public routes
 app.use('/api', require('./src/routes/public.routes'));
@@ -114,8 +115,10 @@ app.listen(PORT, async () => {
   if (process.env.NODE_ENV === 'development') {
     const { seedMasterData } = require('./src/seeders/masterData');
     const { seedCities } = require('./src/seeders/cities');
+    const { seedDestinations } = require('./src/seeders/destinations');
     await seedMasterData();
     await seedCities();
+    await seedDestinations();
   }
 });
 

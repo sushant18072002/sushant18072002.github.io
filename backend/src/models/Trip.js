@@ -260,11 +260,11 @@ const tripSchema = new mongoose.Schema({
 
 // Generate slug from title
 tripSchema.pre('save', function(next) {
-  if (this.isModified('title') && !this.slug) {
+  if (this.isModified('title') || !this.slug) {
     this.slug = this.title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
+      .replace(/(^-|-$)/g, '') + '-' + Math.random().toString(36).substr(2, 5);
   }
   
   // Generate share code if public

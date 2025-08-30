@@ -1,44 +1,46 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { tripService, Trip } from '@/services/trip.service';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { apiService } from '@/services/api.service';
 import Button from '@/components/common/Button';
 import Card from '@/components/common/Card';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 const TripDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [trip, setTrip] = useState<Trip | null>(null);
+  const [trip, setTrip] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   useEffect(() => {
-    if (id) {
+    const destinationId = searchParams.get('destination');
+    if (id || destinationId) {
       loadTripDetails();
     }
-  }, [id]);
+  }, [id, searchParams]);
 
   const loadTripDetails = async () => {
-    if (!id) return;
+    const tripId = id || new URLSearchParams(window.location.search).get('destination');
+    if (!tripId) return;
     
     setLoading(true);
     try {
-      // Check if it's a MongoDB ObjectId (24 hex chars) or slug
-      const isObjectId = /^[0-9a-fA-F]{24}$/.test(id || '');
+      // Try destinations endpoint first (for destination links from homepage)
+      let response = await fetch(`http://localhost:3000/api/destinations/${tripId}`);
+      let data = await response.json();
       
-      if (!isObjectId) {
-        // It's a slug - use slug endpoint
-        const response = await fetch(`http://localhost:3000/api/trips/slug/${id}`);
-        const data = await response.json();
-        if (data.success) {
-          setTrip(data.data.trip);
-          return;
-        }
-      } else {
-        // It's an ObjectId - use regular endpoint
-        const response = await tripService.getTripDetails(id);
-        setTrip(response.trip);
+      if (data.success && data.data.trip) {
+        setTrip(data.data.trip);
+        return;
+      }
+      
+      // Fallback to trips endpoint
+      response = await fetch(`http://localhost:3000/api/trips/${tripId}`);
+      data = await response.json();
+      if (data.success) {
+        setTrip(data.data.trip || data.data);
       }
     } catch (error) {
       console.error('Failed to load trip details:', error);

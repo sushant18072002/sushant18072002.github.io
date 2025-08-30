@@ -11,10 +11,25 @@ interface Category {
   description: string;
   icon: string;
   color: string;
-  parentCategory?: Category;
-  type: string;
+  parent?: Category;
+  children?: Category[];
+  type: 'flight' | 'hotel' | 'trip' | 'activity' | 'general' | 'adventure';
+  metadata?: {
+    flightSpecific?: {
+      cabinClass?: 'economy' | 'premium-economy' | 'business' | 'first';
+      serviceLevel?: 'basic' | 'standard' | 'premium' | 'luxury';
+    };
+    hotelSpecific?: {
+      starRating?: number;
+      propertyType?: 'hotel' | 'resort' | 'apartment' | 'villa' | 'hostel';
+    };
+    adventureSpecific?: {
+      places?: string;
+      difficulty?: 'easy' | 'moderate' | 'challenging' | 'extreme';
+    };
+  };
+  active: boolean;
   order: number;
-  status: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -26,13 +41,28 @@ const CategoryManagement: React.FC = () => {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [formData, setFormData] = useState({
     name: '',
+    slug: '',
     description: '',
     icon: '',
     color: '#3B82F6',
-    parentCategory: '',
-    type: 'trip',
+    parent: '',
+    type: 'trip' as Category['type'],
+    active: true,
     order: 0,
-    status: 'active'
+    metadata: {
+      flightSpecific: {
+        cabinClass: '' as any,
+        serviceLevel: '' as any
+      },
+      hotelSpecific: {
+        starRating: 0,
+        propertyType: '' as any
+      },
+      adventureSpecific: {
+        places: '',
+        difficulty: '' as any
+      }
+    }
   });
 
   useEffect(() => {
@@ -56,7 +86,18 @@ const CategoryManagement: React.FC = () => {
     try {
       const payload = {
         ...formData,
-        parentCategory: formData.parentCategory || undefined
+        parent: formData.parent || undefined,
+        metadata: {
+          ...(formData.type === 'flight' && formData.metadata.flightSpecific.cabinClass && {
+            flightSpecific: formData.metadata.flightSpecific
+          }),
+          ...(formData.type === 'hotel' && formData.metadata.hotelSpecific.starRating && {
+            hotelSpecific: formData.metadata.hotelSpecific
+          }),
+          ...(formData.type === 'adventure' && formData.metadata.adventureSpecific.places && {
+            adventureSpecific: formData.metadata.adventureSpecific
+          })
+        }
       };
 
       if (editingCategory) {
@@ -76,13 +117,28 @@ const CategoryManagement: React.FC = () => {
     setEditingCategory(category);
     setFormData({
       name: category.name,
-      description: category.description,
-      icon: category.icon,
-      color: category.color,
-      parentCategory: category.parentCategory?._id || '',
+      slug: category.slug,
+      description: category.description || '',
+      icon: category.icon || '',
+      color: category.color || '#3B82F6',
+      parent: category.parent?._id || '',
       type: category.type,
+      active: category.active,
       order: category.order,
-      status: category.status
+      metadata: {
+        flightSpecific: {
+          cabinClass: category.metadata?.flightSpecific?.cabinClass || '' as any,
+          serviceLevel: category.metadata?.flightSpecific?.serviceLevel || '' as any
+        },
+        hotelSpecific: {
+          starRating: category.metadata?.hotelSpecific?.starRating || 0,
+          propertyType: category.metadata?.hotelSpecific?.propertyType || '' as any
+        },
+        adventureSpecific: {
+          places: category.metadata?.adventureSpecific?.places || '',
+          difficulty: category.metadata?.adventureSpecific?.difficulty || '' as any
+        }
+      }
     });
     setShowForm(true);
   };
@@ -90,19 +146,34 @@ const CategoryManagement: React.FC = () => {
   const resetForm = () => {
     setFormData({
       name: '',
+      slug: '',
       description: '',
       icon: '',
       color: '#3B82F6',
-      parentCategory: '',
+      parent: '',
       type: 'trip',
+      active: true,
       order: 0,
-      status: 'active'
+      metadata: {
+        flightSpecific: {
+          cabinClass: '' as any,
+          serviceLevel: '' as any
+        },
+        hotelSpecific: {
+          starRating: 0,
+          propertyType: '' as any
+        },
+        adventureSpecific: {
+          places: '',
+          difficulty: '' as any
+        }
+      }
     });
     setEditingCategory(null);
     setShowForm(false);
   };
 
-  const parentCategories = categories.filter(cat => !cat.parentCategory);
+  const parentCategories = categories.filter(cat => !cat.parent);
 
   return (
     <div className="space-y-6">
@@ -136,6 +207,17 @@ const CategoryManagement: React.FC = () => {
                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                 className="w-full px-3 py-2 border border-primary-200 rounded-lg focus:ring-2 focus:ring-blue-ocean focus:border-transparent"
                 required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-primary-900 mb-2">Slug</label>
+              <input
+                type="text"
+                value={formData.slug}
+                onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
+                className="w-full px-3 py-2 border border-primary-200 rounded-lg focus:ring-2 focus:ring-blue-ocean focus:border-transparent"
+                placeholder="auto-generated from name"
               />
             </div>
 
@@ -182,20 +264,23 @@ const CategoryManagement: React.FC = () => {
               <label className="block text-sm font-semibold text-primary-900 mb-2">Type</label>
               <select
                 value={formData.type}
-                onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
+                onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as Category['type'] }))}
                 className="w-full px-3 py-2 border border-primary-200 rounded-lg focus:ring-2 focus:ring-blue-ocean focus:border-transparent"
               >
+                <option value="flight">Flight</option>
+                <option value="hotel">Hotel</option>
                 <option value="trip">Trip</option>
                 <option value="activity">Activity</option>
-                <option value="accommodation">Accommodation</option>
+                <option value="general">General</option>
+                <option value="adventure">Adventure</option>
               </select>
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-primary-900 mb-2">Parent Category</label>
               <select
-                value={formData.parentCategory}
-                onChange={(e) => setFormData(prev => ({ ...prev, parentCategory: e.target.value }))}
+                value={formData.parent}
+                onChange={(e) => setFormData(prev => ({ ...prev, parent: e.target.value }))}
                 className="w-full px-3 py-2 border border-primary-200 rounded-lg focus:ring-2 focus:ring-blue-ocean focus:border-transparent"
               >
                 <option value="">None (Top Level)</option>
@@ -220,14 +305,166 @@ const CategoryManagement: React.FC = () => {
             <div>
               <label className="block text-sm font-semibold text-primary-900 mb-2">Status</label>
               <select
-                value={formData.status}
-                onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
+                value={formData.active ? 'active' : 'inactive'}
+                onChange={(e) => setFormData(prev => ({ ...prev, active: e.target.value === 'active' }))}
                 className="w-full px-3 py-2 border border-primary-200 rounded-lg focus:ring-2 focus:ring-blue-ocean focus:border-transparent"
               >
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
               </select>
             </div>
+
+            {/* Type-specific metadata fields */}
+            {formData.type === 'flight' && (
+              <>
+                <div>
+                  <label className="block text-sm font-semibold text-primary-900 mb-2">Cabin Class</label>
+                  <select
+                    value={formData.metadata.flightSpecific.cabinClass}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      metadata: {
+                        ...prev.metadata,
+                        flightSpecific: {
+                          ...prev.metadata.flightSpecific,
+                          cabinClass: e.target.value as any
+                        }
+                      }
+                    }))}
+                    className="w-full px-3 py-2 border border-primary-200 rounded-lg focus:ring-2 focus:ring-blue-ocean focus:border-transparent"
+                  >
+                    <option value="">Select cabin class</option>
+                    <option value="economy">Economy</option>
+                    <option value="premium-economy">Premium Economy</option>
+                    <option value="business">Business</option>
+                    <option value="first">First Class</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-primary-900 mb-2">Service Level</label>
+                  <select
+                    value={formData.metadata.flightSpecific.serviceLevel}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      metadata: {
+                        ...prev.metadata,
+                        flightSpecific: {
+                          ...prev.metadata.flightSpecific,
+                          serviceLevel: e.target.value as any
+                        }
+                      }
+                    }))}
+                    className="w-full px-3 py-2 border border-primary-200 rounded-lg focus:ring-2 focus:ring-blue-ocean focus:border-transparent"
+                  >
+                    <option value="">Select service level</option>
+                    <option value="basic">Basic</option>
+                    <option value="standard">Standard</option>
+                    <option value="premium">Premium</option>
+                    <option value="luxury">Luxury</option>
+                  </select>
+                </div>
+              </>
+            )}
+
+            {formData.type === 'hotel' && (
+              <>
+                <div>
+                  <label className="block text-sm font-semibold text-primary-900 mb-2">Star Rating</label>
+                  <select
+                    value={formData.metadata.hotelSpecific.starRating}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      metadata: {
+                        ...prev.metadata,
+                        hotelSpecific: {
+                          ...prev.metadata.hotelSpecific,
+                          starRating: parseInt(e.target.value) || 0
+                        }
+                      }
+                    }))}
+                    className="w-full px-3 py-2 border border-primary-200 rounded-lg focus:ring-2 focus:ring-blue-ocean focus:border-transparent"
+                  >
+                    <option value="0">Select star rating</option>
+                    <option value="1">1 Star</option>
+                    <option value="2">2 Stars</option>
+                    <option value="3">3 Stars</option>
+                    <option value="4">4 Stars</option>
+                    <option value="5">5 Stars</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-primary-900 mb-2">Property Type</label>
+                  <select
+                    value={formData.metadata.hotelSpecific.propertyType}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      metadata: {
+                        ...prev.metadata,
+                        hotelSpecific: {
+                          ...prev.metadata.hotelSpecific,
+                          propertyType: e.target.value as any
+                        }
+                      }
+                    }))}
+                    className="w-full px-3 py-2 border border-primary-200 rounded-lg focus:ring-2 focus:ring-blue-ocean focus:border-transparent"
+                  >
+                    <option value="">Select property type</option>
+                    <option value="hotel">Hotel</option>
+                    <option value="resort">Resort</option>
+                    <option value="apartment">Apartment</option>
+                    <option value="villa">Villa</option>
+                    <option value="hostel">Hostel</option>
+                  </select>
+                </div>
+              </>
+            )}
+
+            {formData.type === 'adventure' && (
+              <>
+                <div>
+                  <label className="block text-sm font-semibold text-primary-900 mb-2">Places Count</label>
+                  <input
+                    type="text"
+                    value={formData.metadata.adventureSpecific.places}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      metadata: {
+                        ...prev.metadata,
+                        adventureSpecific: {
+                          ...prev.metadata.adventureSpecific,
+                          places: e.target.value
+                        }
+                      }
+                    }))}
+                    className="w-full px-3 py-2 border border-primary-200 rounded-lg focus:ring-2 focus:ring-blue-ocean focus:border-transparent"
+                    placeholder="e.g., 50+ Places"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-primary-900 mb-2">Difficulty Level</label>
+                  <select
+                    value={formData.metadata.adventureSpecific.difficulty}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      metadata: {
+                        ...prev.metadata,
+                        adventureSpecific: {
+                          ...prev.metadata.adventureSpecific,
+                          difficulty: e.target.value as any
+                        }
+                      }
+                    }))}
+                    className="w-full px-3 py-2 border border-primary-200 rounded-lg focus:ring-2 focus:ring-blue-ocean focus:border-transparent"
+                  >
+                    <option value="">Select difficulty</option>
+                    <option value="easy">Easy</option>
+                    <option value="moderate">Moderate</option>
+                    <option value="challenging">Challenging</option>
+                    <option value="extreme">Extreme</option>
+                  </select>
+                </div>
+              </>
+            )}
 
             <div className="md:col-span-2">
               <Button type="submit" className="w-full">
@@ -261,20 +498,40 @@ const CategoryManagement: React.FC = () => {
                   <div>
                     <h4 className="font-semibold text-primary-900">{category.name}</h4>
                     <p className="text-sm text-primary-600">{category.description}</p>
-                    <div className="flex items-center gap-2 mt-1">
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
                       <span className="text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded">
                         {category.type}
                       </span>
-                      {category.parentCategory && (
+                      {category.parent && (
                         <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                          Child of: {category.parentCategory.name}
+                          Child of: {category.parent.name}
                         </span>
                       )}
                       <span className={`text-xs px-2 py-1 rounded ${
-                        category.status === 'active' ? 'bg-emerald/20 text-emerald' : 'bg-red-100 text-red-700'
+                        category.active ? 'bg-emerald/20 text-emerald' : 'bg-red-100 text-red-700'
                       }`}>
-                        {category.status}
+                        {category.active ? 'Active' : 'Inactive'}
                       </span>
+                      {category.slug && (
+                        <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
+                          /{category.slug}
+                        </span>
+                      )}
+                      {category.metadata?.adventureSpecific?.places && (
+                        <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded">
+                          {category.metadata.adventureSpecific.places}
+                        </span>
+                      )}
+                      {category.metadata?.hotelSpecific?.starRating && (
+                        <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">
+                          {category.metadata.hotelSpecific.starRating} ⭐
+                        </span>
+                      )}
+                      {category.metadata?.flightSpecific?.cabinClass && (
+                        <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">
+                          {category.metadata.flightSpecific.cabinClass}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>

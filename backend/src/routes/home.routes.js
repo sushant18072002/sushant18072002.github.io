@@ -8,5 +8,6 @@ console.log('Home routes file loaded');
 router.get('/featured', homeController.getFeaturedContent);
 router.get('/stats', homeController.getStats);
 router.get('/deals', homeController.getDeals);
+router.get('/live-stats', homeController.getLiveStats);
 
 module.exports = router;

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import MultiSelect from '@/components/common/MultiSelect';
 import Button from '@/components/common/Button';
 import ItineraryBuilder from './ItineraryBuilder';
 import ImageUpload from './ImageUpload';
@@ -87,9 +88,9 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
   const [categories, setCategories] = useState<any[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [cities, setCities] = useState<any[]>([]);
+  const [countries, setCountries] = useState<any[]>([]);
   const [selectedDestinations, setSelectedDestinations] = useState<string[]>([]);
-  const [destinationSuggestions, setDestinationSuggestions] = useState<any[]>([]);
-  const [showDestinationSuggestions, setShowDestinationSuggestions] = useState(false);
+  const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
   const [includedServices, setIncludedServices] = useState({
     flights: [],
     hotels: [],
@@ -127,9 +128,10 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
   
   const loadCategories = async () => {
     try {
-      const [categoriesResponse, citiesResponse] = await Promise.all([
+      const [categoriesResponse, citiesResponse, countriesResponse] = await Promise.all([
         apiService.get('/master/categories?type=trip'),
-        apiService.get('/master/cities')
+        apiService.get('/locations/cities?limit=200'),
+        apiService.get('/master/countries')
       ]);
       
       if (categoriesResponse.success) {
@@ -139,32 +141,16 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
       if (citiesResponse.success) {
         setCities(citiesResponse.data.cities || []);
       }
+      
+      if (countriesResponse.success) {
+        setCountries(countriesResponse.data.countries || []);
+      }
     } catch (error) {
       console.error('Failed to load master data:', error);
     }
   };
 
-  const searchDestinations = async (query: string) => {
-    if (query.length < 2) {
-      setDestinationSuggestions([]);
-      return;
-    }
-    
-    try {
-      const response = await apiService.get(`/locations/search?q=${encodeURIComponent(query)}`);
-      if (response.success) {
-        setDestinationSuggestions(response.data.locations || []);
-      }
-    } catch (error) {
-      console.error('Error searching destinations:', error);
-      // Fallback to cities data
-      const filtered = cities.filter(city => 
-        city.name.toLowerCase().includes(query.toLowerCase()) ||
-        city.country?.name?.toLowerCase().includes(query.toLowerCase())
-      );
-      setDestinationSuggestions(filtered.slice(0, 5));
-    }
-  };
+
 
   const loadPackageData = async () => {
     setLoading(true);
@@ -253,6 +239,17 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
           allowComments: pkg.sharing?.allowComments !== false
         });
         
+        // Initialize selected destinations and countries
+        if (pkg.primaryDestination) {
+          setSelectedDestinations([pkg.primaryDestination._id || pkg.primaryDestination]);
+        }
+        if (pkg.destinations) {
+          setSelectedDestinations(pkg.destinations.map(d => d._id || d));
+        }
+        if (pkg.countries) {
+          setSelectedCountries(pkg.countries.map(c => c._id || c));
+        }
+        
         if (pkg.itinerary) {
           const itineraryData = Array.isArray(pkg.itinerary) ? { overview: '', days: pkg.itinerary } : pkg.itinerary;
           setItinerary(itineraryData);
@@ -291,17 +288,9 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
       let primaryDestination = selectedDestinations[0] || null;
       let categoryId = null;
       
-      // If no destination selected from autocomplete, try to find by name
-      if (!primaryDestination && data.destinations) {
-        const destinationName = data.destinations.split(',')[0].trim();
-        try {
-          const destResponse = await apiService.get(`/locations/search?q=${encodeURIComponent(destinationName)}`);
-          if (destResponse.success && destResponse.data.locations?.length > 0) {
-            primaryDestination = destResponse.data.locations[0]._id;
-          }
-        } catch (error) {
-          console.warn('Failed to resolve destination:', error);
-        }
+      if (!primaryDestination) {
+        alert('Please select a primary destination');
+        return;
       }
       
       // Get category
@@ -317,16 +306,14 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
         }
       }
       
-      if (!primaryDestination) {
-        alert('Please select a valid destination from the suggestions');
-        return;
-      }
+
       
       const transformedData = {
         title: data.title,
         description: data.description,
         primaryDestination: primaryDestination,
-        destinations: [primaryDestination],
+        destinations: selectedDestinations,
+        countries: selectedCountries,
         duration: {
           days: parseInt(data.duration.toString()),
           nights: parseInt(data.duration.toString()) - 1
@@ -680,50 +667,62 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="relative">
+                    <div>
                       <label className="block text-sm font-semibold text-primary-900 mb-2">Primary Destination *</label>
-                      <input
-                        {...form.register('destinations', { required: 'Destination required' })}
-                        type="text"
-                        className="w-full px-4 py-3 border border-primary-200 rounded-lg"
-                        placeholder="e.g., Paris, France"
-                        onChange={(e) => {
-                          form.setValue('destinations', e.target.value);
-                          if (e.target.value.length >= 2) {
-                            searchDestinations(e.target.value);
-                            setShowDestinationSuggestions(true);
+                      <MultiSelect
+                        options={cities.map(city => ({
+                          value: city._id,
+                          label: city.name,
+                          subtitle: city.country?.name || city.state?.name
+                        }))}
+                        value={selectedDestinations.slice(0, 1)}
+                        onChange={(values) => {
+                          setSelectedDestinations(values);
+                          if (values.length > 0) {
+                            const selectedCity = cities.find(c => c._id === values[0]);
+                            if (selectedCity) {
+                              form.setValue('destinations', `${selectedCity.name}, ${selectedCity.country?.name || ''}`);
+                            }
                           }
                         }}
-                        onFocus={(e) => {
-                          if (e.target.value.length >= 2) {
-                            searchDestinations(e.target.value);
-                            setShowDestinationSuggestions(true);
-                          }
-                        }}
+                        placeholder="Select primary destination..."
+                        searchable={true}
                       />
-                      {showDestinationSuggestions && destinationSuggestions.length > 0 && (
-                        <div className="absolute z-10 w-full mt-1 bg-white border border-primary-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                          {destinationSuggestions.map((destination) => (
-                            <div
-                              key={destination._id}
-                              onMouseDown={(e) => {
-                                e.preventDefault();
-                                const cityName = destination.country ? `${destination.name}, ${destination.country}` : destination.name;
-                                form.setValue('destinations', cityName);
-                                setSelectedDestinations([destination._id]);
-                                setShowDestinationSuggestions(false);
-                              }}
-                              className="w-full px-4 py-2 text-left hover:bg-primary-50 flex items-center justify-between cursor-pointer"
-                            >
-                              <div>
-                                <div className="font-medium">{destination.name}</div>
-                                <div className="text-sm text-primary-500">{destination.country}</div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
                     </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-primary-900 mb-2">Additional Destinations</label>
+                      <MultiSelect
+                        options={cities.map(city => ({
+                          value: city._id,
+                          label: city.name,
+                          subtitle: city.country?.name || city.state?.name
+                        }))}
+                        value={selectedDestinations.slice(1)}
+                        onChange={(values) => {
+                          const primary = selectedDestinations[0];
+                          setSelectedDestinations(primary ? [primary, ...values] : values);
+                        }}
+                        placeholder="Select additional destinations..."
+                        searchable={true}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-primary-900 mb-2">Countries</label>
+                      <MultiSelect
+                        options={countries.map(country => ({
+                          value: country._id,
+                          label: country.name,
+                          subtitle: country.code
+                        }))}
+                        value={selectedCountries}
+                        onChange={setSelectedCountries}
+                        placeholder="Select countries..."
+                        searchable={true}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-semibold text-primary-900 mb-2">Duration (days) *</label>
                       <input {...form.register('duration', { required: 'Duration required' })} 
