@@ -1,80 +1,160 @@
 const express = require('express');
 const router = express.Router();
-const { auth, admin } = require('../middleware/auth');
-const { bookingValidation } = require('../middleware/validation');
-const {
-  getUserBookings,
-  getBookingById,
-  createBooking,
-  updateBooking,
-  cancelBooking,
-  confirmBooking,
-  processPayment
-} = require('../controllers/bookingController');
 
-router.get('/', auth, getUserBookings);
-router.get('/:id', auth, getBookingById);
-router.post('/', auth, bookingValidation, createBooking);
-router.put('/:id', auth, updateBooking);
-router.delete('/:id', auth, cancelBooking);
-router.post('/:id/cancel', auth, cancelBooking);
-router.post('/:id/payment', auth, processPayment);
-router.post('/:id/confirm', auth, admin, confirmBooking);
-
-// Additional booking endpoints
-const {
-  createFlightBooking,
-  createHotelBooking,
-  createPackageBooking,
-  getBookingInvoice,
-  modifyBooking,
-  getBookingHistory,
-  getUpcomingBookings,
-  addBookingReview
-} = require('../controllers/bookingController');
-
-router.post('/flights', auth, createFlightBooking);
-router.post('/hotels', auth, createHotelBooking);
-router.post('/packages', auth, createPackageBooking);
-router.get('/:id/invoice', auth, getBookingInvoice);
-router.post('/:id/modify', auth, modifyBooking);
-router.get('/history', auth, getBookingHistory);
-router.get('/upcoming', auth, getUpcomingBookings);
-router.post('/:id/review', auth, addBookingReview);
-// Payment process already handled by processPayment above
-router.get('/payment/status/:id', auth, async (req, res) => {
+// Create new booking
+router.post('/', async (req, res) => {
   try {
-    const { Payment } = require('../models');
-    const payment = await Payment.findById(req.params.id)
-      .populate('booking', 'bookingReference')
-      .populate('user', 'email');
-    
-    if (!payment || payment.user._id.toString() !== req.user._id.toString()) {
-      return res.status(404).json({ success: false, error: { message: 'Payment not found' } });
+    const { Booking, Flight, User } = require('../models');
+    const {
+      type,
+      flightId,
+      selectedClass,
+      bookingOption,
+      addOns,
+      passengers,
+      contactInfo,
+      paymentInfo,
+      total
+    } = req.body;
+
+    // Validate required fields
+    if (!type || !flightId || !selectedClass || !contactInfo || !total) {
+      return res.status(400).json({
+        success: false,
+        error: { message: 'Missing required booking information' }
+      });
     }
-    
-    res.json({ success: true, data: { payment } });
+
+    // Validate flight exists and has availability
+    const flight = await Flight.findById(flightId);
+    if (!flight) {
+      return res.status(404).json({
+        success: false,
+        error: { message: 'Flight not found' }
+      });
+    }
+
+    const classAvailability = flight.pricing[selectedClass]?.availability || 0;
+    if (classAvailability < (passengers?.length || 1)) {
+      return res.status(400).json({
+        success: false,
+        error: { message: 'Insufficient seats available' }
+      });
+    }
+
+    // Generate booking reference
+    const bookingRef = `TRV${Date.now().toString().slice(-8)}${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
+
+    // Create booking
+    const booking = new Booking({
+      bookingReference: bookingRef,
+      type,
+      status: 'confirmed',
+      flight: flightId,
+      selectedClass,
+      bookingOption,
+      addOns,
+      passengers: passengers || [{
+        firstName: contactInfo.firstName,
+        lastName: contactInfo.lastName,
+        email: contactInfo.email,
+        phone: contactInfo.phone
+      }],
+      contactInfo,
+      pricing: {
+        basePrice: flight.pricing[selectedClass].totalPrice,
+        addOns: {
+          seatUpgrade: addOns?.seatUpgrade ? 49 : 0,
+          insurance: addOns?.insurance ? 29 : 0,
+          hotelPackage: bookingOption === 'package' ? 300 : 0
+        },
+        total
+      },
+      paymentStatus: 'completed',
+      paymentMethod: paymentInfo?.method || 'card'
+    });
+
+    await booking.save();
+
+    // Update flight availability
+    await Flight.findByIdAndUpdate(flightId, {
+      $inc: {
+        [`pricing.${selectedClass}.availability`]: -(passengers?.length || 1),
+        'stats.bookings': 1
+      }
+    });
+
+    // Populate booking for response
+    const populatedBooking = await Booking.findById(booking._id)
+      .populate('flight', 'flightNumber airline route duration')
+      .populate('flight.airline', 'name code logo');
+
+    res.status(201).json({
+      success: true,
+      data: { booking: populatedBooking },
+      message: 'Booking created successfully'
+    });
+
   } catch (error) {
-    res.status(500).json({ success: false, error: { message: error.message } });
+    console.error('Booking creation error:', error);
+    res.status(500).json({
+      success: false,
+      error: { message: 'Failed to create booking' }
+    });
   }
 });
-router.post('/payment/refund', auth, async (req, res) => {
+
+// Get booking by reference
+router.get('/reference/:ref', async (req, res) => {
   try {
     const { Booking } = require('../models');
-    const booking = await Booking.findById(req.params.id);
+    const booking = await Booking.findOne({ bookingReference: req.params.ref })
+      .populate('flight', 'flightNumber airline route duration pricing')
+      .populate('flight.airline', 'name code logo')
+      .populate('flight.route.departure.airport', 'name code city')
+      .populate('flight.route.arrival.airport', 'name code city');
+
     if (!booking) {
-      return res.status(404).json({ success: false, error: { message: 'Booking not found' } });
+      return res.status(404).json({
+        success: false,
+        error: { message: 'Booking not found' }
+      });
     }
-    if (booking.payment.status !== 'completed') {
-      return res.status(400).json({ success: false, error: { message: 'No payment to refund' } });
-    }
-    booking.payment.status = 'refunded';
-    booking.payment.refundDate = new Date();
-    booking.status = 'refunded';
-    await booking.save();
-    res.json({ success: true, data: { message: 'Refund processed successfully', booking } });
+
+    res.json({ success: true, data: { booking } });
   } catch (error) {
-    res.status(500).json({ success: false, error: { message: error.message } });
+    console.error('Booking retrieval error:', error);
+    res.status(500).json({
+      success: false,
+      error: { message: 'Failed to retrieve booking' }
+    });
+  }
+});
+
+// Get booking confirmation
+router.get('/confirmation/:id', async (req, res) => {
+  try {
+    const { Booking } = require('../models');
+    const booking = await Booking.findById(req.params.id)
+      .populate('flight', 'flightNumber airline route duration pricing')
+      .populate('flight.airline', 'name code logo')
+      .populate('flight.route.departure.airport', 'name code city')
+      .populate('flight.route.arrival.airport', 'name code city');
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        error: { message: 'Booking not found' }
+      });
+    }
+
+    res.json({ success: true, data: { booking } });
+  } catch (error) {
+    console.error('Booking confirmation error:', error);
+    res.status(500).json({
+      success: false,
+      error: { message: 'Failed to retrieve booking confirmation' }
+    });
   }
 });
 

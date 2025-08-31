@@ -22,6 +22,20 @@ export const APP_CONSTANTS = {
   // UI
   ANIMATION_DURATION_MS: 300,
   TOAST_DURATION_MS: 4000,
+  
+  // Images
+  FALLBACK_IMAGES: {
+    AIRLINE: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=80&h=60&fit=crop&auto=format',
+    FLIGHT_HERO: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1920&h=1080&fit=crop&auto=format',
+    AIRCRAFT: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=400&h=300&fit=crop&auto=format'
+  },
+  
+  // Pricing
+  ADDON_PRICES: {
+    SEAT_UPGRADE: 49,
+    TRAVEL_INSURANCE: 29,
+    HOTEL_PACKAGE: 300
+  }
 } as const;
 
 // Trip Constants
@@ -31,6 +45,16 @@ export const TRIP_CONSTANTS = {
   BUDGET_RANGES: ['budget', 'mid-range', 'luxury'] as const,
   TRAVELER_TYPES: ['solo', 'couple', 'family', 'group'] as const,
   DIFFICULTY_LEVELS: ['easy', 'moderate', 'challenging'] as const,
+} as const;
+
+// Flight Constants
+export const FLIGHT_CONSTANTS = {
+  CLASSES: ['economy', 'premiumEconomy', 'business', 'first'] as const,
+  TRIP_TYPES: ['roundtrip', 'oneway', 'multi'] as const,
+  STOPS: ['any', '0', '1', '2+'] as const,
+  SORT_OPTIONS: ['price', 'duration', 'departure', 'arrival'] as const,
+  MAX_PASSENGERS: 9,
+  MIN_PASSENGERS: 1
 } as const;
 
 // Form Constants

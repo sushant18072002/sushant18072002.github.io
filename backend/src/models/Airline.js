@@ -23,7 +23,7 @@ const airlineSchema = new mongoose.Schema({
     }
   }],
   services: {
-    classes: [{ type: String, enum: ['economy', 'premium_economy', 'business', 'first'] }],
+    classes: [{ type: String, enum: ['economy', 'premiumEconomy', 'business', 'first'] }],
     amenities: [String],
     baggage: {
       carry_on: {

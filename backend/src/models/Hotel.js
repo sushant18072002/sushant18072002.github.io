@@ -61,6 +61,7 @@ const hotelSchema = new mongoose.Schema({
     pricing: {
       baseRate: { type: Number, required: true },
       currency: { type: String, default: 'USD' },
+      currencySymbol: { type: String, default: '$' },
       taxes: { type: Number, default: 0 },
       fees: { type: Number, default: 0 },
       totalRate: { type: Number, required: true },
@@ -140,16 +141,19 @@ const hotelSchema = new mongoose.Schema({
   },
   
   pricing: {
+    currency: { type: String, default: 'USD', required: true },
+    currencySymbol: { type: String, default: '$' },
     priceRange: {
       min: Number,
-      max: Number,
-      currency: { type: String, default: 'USD' }
+      max: Number
     },
     averageNightlyRate: Number,
     ratePlans: [{
       name: String,
       description: String,
       baseRate: Number,
+      currency: { type: String, default: 'USD' },
+      currencySymbol: { type: String, default: '$' },
       inclusions: [String],
       cancellationPolicy: String,
       prepayment: { type: Boolean, default: false }
@@ -179,10 +183,12 @@ const hotelSchema = new mongoose.Schema({
   updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 }, { timestamps: true });
 
-// Generate slug from name
+// Generate slug from name and set currency symbols
 hotelSchema.pre('save', function(next) {
+  const { getCurrencySymbol } = require('../utils/currency');
+  
+  // Generate slug
   if (this.isModified('name')) {
-    // Initialize seo object if it doesn't exist
     if (!this.seo) {
       this.seo = {};
     }
@@ -190,6 +196,30 @@ hotelSchema.pre('save', function(next) {
       this.seo.slug = this.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     }
   }
+  
+  // Set currency symbols automatically
+  if (this.pricing && this.pricing.currency) {
+    this.pricing.currencySymbol = getCurrencySymbol(this.pricing.currency);
+  }
+  
+  // Set currency symbols for rooms
+  if (this.rooms && Array.isArray(this.rooms)) {
+    this.rooms.forEach(room => {
+      if (room.pricing && room.pricing.currency) {
+        room.pricing.currencySymbol = getCurrencySymbol(room.pricing.currency);
+      }
+    });
+  }
+  
+  // Set currency symbols for rate plans
+  if (this.pricing && this.pricing.ratePlans && Array.isArray(this.pricing.ratePlans)) {
+    this.pricing.ratePlans.forEach(plan => {
+      if (plan.currency) {
+        plan.currencySymbol = getCurrencySymbol(plan.currency);
+      }
+    });
+  }
+  
   next();
 });
 

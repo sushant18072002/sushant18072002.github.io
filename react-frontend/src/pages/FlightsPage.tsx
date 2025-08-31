@@ -8,6 +8,7 @@ import LoadingSpinner from '@/components/common/LoadingSpinner';
 import useApi from '@/hooks/useApi';
 import { PopularRoutesCards, FlightDealsCards } from '@/components/FlightCards';
 import { debounce } from '@/utils/performance';
+import { APP_CONSTANTS, FLIGHT_CONSTANTS } from '@/constants/app.constants';
 
 interface FlightSearchForm {
   from: string;
@@ -28,8 +29,8 @@ const FlightsPage: React.FC = () => {
     departDate: searchParams.get('departDate') || new Date().toISOString().split('T')[0],
     returnDate: searchParams.get('returnDate') || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     passengers: parseInt(searchParams.get('passengers') || '1'),
-    class: (searchParams.get('class') as any) || 'economy',
-    tripType: (searchParams.get('tripType') as any) || 'roundtrip'
+    class: (searchParams.get('class') as 'economy' | 'business' | 'first') || 'economy',
+    tripType: (searchParams.get('tripType') as 'roundtrip' | 'oneway' | 'multi') || 'roundtrip'
   });
   
   const [flights, setFlights] = useState<Flight[]>([]);
@@ -46,8 +47,8 @@ const FlightsPage: React.FC = () => {
   const [toAirports, setToAirports] = useState<Airport[]>([]);
   const [showFromSuggestions, setShowFromSuggestions] = useState(false);
   const [showToSuggestions, setShowToSuggestions] = useState(false);
-  const [popularRoutes, setPopularRoutes] = useState([]);
-  const [flightDeals, setFlightDeals] = useState([]);
+  const [popularRoutes, setPopularRoutes] = useState<any[]>([]);
+  const [flightDeals, setFlightDeals] = useState<any[]>([]);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   useEffect(() => {
@@ -125,7 +126,7 @@ const FlightsPage: React.FC = () => {
         to: toCity || searchForm.to,
         departDate: dateParam || searchForm.departDate,
         passengers: parseInt(searchParams.get('passengers')) || searchForm.passengers,
-        class: searchParams.get('class') || searchForm.class
+        class: (searchParams.get('class') as 'economy' | 'business' | 'first') || searchForm.class
       };
       
       console.log('New form data:', newFormData);
@@ -160,6 +161,7 @@ const FlightsPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
+      const { API_CONFIG, API_ENDPOINTS } = await import('@/config/api.config');
       const cityToCode = getCityToCodeMap();
       const fromCode = cityToCode[formData.from] || formData.from;
       const toCode = cityToCode[formData.to] || formData.to;
@@ -188,7 +190,7 @@ const FlightsPage: React.FC = () => {
       
       console.log('Final search query:', queryParams.toString());
       
-      const response = await fetch(`http://localhost:3000/api/flights?${queryParams}`);
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.FLIGHTS}?${queryParams}`);
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
@@ -220,10 +222,8 @@ const FlightsPage: React.FC = () => {
       setError(errorMessage);
       setFlights([]);
       
-      // Auto-hide error after 10 seconds on mobile
-      if (window.innerWidth < 768) {
-        setTimeout(() => setError(null), 10000);
-      }
+      // Auto-hide error after 8 seconds
+      setTimeout(() => setError(null), 8000);
     } finally {
       setLoading(false);
     }
@@ -234,9 +234,10 @@ const FlightsPage: React.FC = () => {
   const loadInitialData = async () => {
     try {
       setLoading(true);
+      const { API_CONFIG, API_ENDPOINTS } = await import('@/config/api.config');
       const [routesRes, dealsRes] = await Promise.all([
-        fetch('http://localhost:3000/api/flights/popular-routes').then(r => r.json()).catch(() => ({ data: { routes: [] } })),
-        fetch('http://localhost:3000/api/flights/deals').then(r => r.json()).catch(() => ({ data: { deals: [] } }))
+        fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.FLIGHTS_POPULAR_ROUTES}`).then(r => r.json()).catch(() => ({ data: { routes: [] } })),
+        fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.FLIGHTS_DEALS}`).then(r => r.json()).catch(() => ({ data: { deals: [] } }))
       ]);
       setPopularRoutes(routesRes.data?.routes || []);
       setFlightDeals(dealsRes.data?.deals || []);
@@ -266,7 +267,8 @@ const FlightsPage: React.FC = () => {
     ];
     
     try {
-      const response = await fetch(`http://localhost:3000/api/airports/search?q=${encodeURIComponent(query)}`);
+      const { API_CONFIG, API_ENDPOINTS } = await import('@/config/api.config');
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.AIRPORTS_SEARCH}?q=${encodeURIComponent(query)}`);
       if (!response.ok) {
         const filtered = sampleAirports.filter(airport => 
           airport.code.toLowerCase().includes(query.toLowerCase()) ||
@@ -291,33 +293,55 @@ const FlightsPage: React.FC = () => {
   );
 
   const handleSearch = async () => {
-    // Form validation
-    if (!searchForm.from.trim()) {
-      setError('Please select a departure city');
+    // Comprehensive form validation
+    if (!searchForm.from?.trim()) {
+      setError('Please select a departure city.');
       return;
     }
-    if (!searchForm.to.trim()) {
-      setError('Please select a destination city');
+    if (!searchForm.to?.trim()) {
+      setError('Please select a destination city.');
       return;
     }
-    if (searchForm.from.toLowerCase() === searchForm.to.toLowerCase()) {
-      setError('Departure and destination cities cannot be the same');
+    if (searchForm.from.toLowerCase().trim() === searchForm.to.toLowerCase().trim()) {
+      setError('Departure and destination cities must be different.');
       return;
     }
     if (!searchForm.departDate) {
-      setError('Please select a departure date');
+      setError('Please select a departure date.');
       return;
     }
-    if (searchForm.tripType === 'roundtrip' && !searchForm.returnDate) {
-      setError('Please select a return date');
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const departDate = new Date(searchForm.departDate);
+    
+    if (departDate < today) {
+      setError('Departure date cannot be in the past.');
       return;
     }
-    if (new Date(searchForm.departDate) < new Date().setHours(0,0,0,0)) {
-      setError('Departure date cannot be in the past');
-      return;
+    
+    if (searchForm.tripType === 'roundtrip') {
+      if (!searchForm.returnDate) {
+        setError('Please select a return date for round-trip flights.');
+        return;
+      }
+      
+      const returnDate = new Date(searchForm.returnDate);
+      if (returnDate <= departDate) {
+        setError('Return date must be after departure date.');
+        return;
+      }
+      
+      const maxDate = new Date(departDate);
+      maxDate.setFullYear(maxDate.getFullYear() + 1);
+      if (returnDate > maxDate) {
+        setError('Return date cannot be more than 1 year from departure.');
+        return;
+      }
     }
-    if (searchForm.tripType === 'roundtrip' && new Date(searchForm.returnDate) <= new Date(searchForm.departDate)) {
-      setError('Return date must be after departure date');
+    
+    if (searchForm.passengers < 1 || searchForm.passengers > 9) {
+      setError('Number of passengers must be between 1 and 9.');
       return;
     }
     
@@ -354,8 +378,12 @@ const FlightsPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Flight Search Hero */}
-      <section className="bg-gradient-to-br from-blue-ocean to-emerald py-8 sm:py-12 lg:py-20 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+      <section className="relative bg-gradient-to-br from-blue-ocean to-emerald py-8 sm:py-12 lg:py-20 overflow-hidden">
+        {/* Background Image with Overlay */}
+        <div className="absolute inset-0 bg-cover bg-center opacity-10" style={{ backgroundImage: `url('${APP_CONSTANTS.FALLBACK_IMAGES.FLIGHT_HERO}')` }}></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-ocean/90 to-emerald/90"></div>
+        
+        <div className="relative z-10 max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-[10px] border border-white/30 px-4 py-2 rounded-full text-white mb-4">
               <span className="text-lg">✈️</span>
@@ -370,10 +398,10 @@ const FlightsPage: React.FC = () => {
           </div>
 
           {/* Flight Search Form */}
-          <Card className="max-w-6xl mx-auto bg-white/95 backdrop-blur-sm shadow-[0_20px_40px_-10px_rgba(15,15,15,0.15)] overflow-hidden" padding="lg">
+          <Card className="max-w-6xl mx-auto shadow-2xl backdrop-blur-sm bg-white/95 border border-white/20" padding="lg">
             {/* Trip Type Toggle */}
             <div className="flex justify-center mb-6">
-              <div className="flex bg-gray-100 rounded-lg p-1">
+              <div className="flex bg-gray-100 rounded-xl p-1">
                 <button
                   onClick={() => {
                     setSearchForm(prev => ({
@@ -383,7 +411,7 @@ const FlightsPage: React.FC = () => {
                     }));
                     setError(null);
                   }}
-                  className={`px-6 py-3 rounded-md text-sm font-semibold transition-all font-['DM_Sans'] ${
+                  className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-300 font-['DM_Sans'] min-h-[44px] ${
                     searchForm.tripType === 'roundtrip'
                       ? 'bg-blue-ocean text-white shadow-md'
                       : 'text-primary-600 hover:text-blue-ocean hover:bg-white'
@@ -396,7 +424,7 @@ const FlightsPage: React.FC = () => {
                     setSearchForm(prev => ({ ...prev, tripType: 'oneway' }));
                     setError(null);
                   }}
-                  className={`px-6 py-3 rounded-md text-sm font-semibold transition-all font-['DM_Sans'] ${
+                  className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-300 font-['DM_Sans'] min-h-[44px] ${
                     searchForm.tripType === 'oneway'
                       ? 'bg-blue-ocean text-white shadow-md'
                       : 'text-primary-600 hover:text-blue-ocean hover:bg-white'
@@ -408,7 +436,7 @@ const FlightsPage: React.FC = () => {
                   onClick={() => {
                     setError('Multi-city booking is coming soon! Please use round-trip or one-way for now.');
                   }}
-                  className="px-6 py-3 rounded-md text-sm font-semibold transition-all font-['DM_Sans'] text-primary-400 cursor-not-allowed opacity-60"
+                  className="px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-300 font-['DM_Sans'] text-primary-400 cursor-not-allowed opacity-60 min-h-[44px]"
                   disabled
                   title="Multi-city booking coming soon"
                 >
@@ -417,10 +445,10 @@ const FlightsPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Search Inputs Row */}
-            <div className="flex flex-col gap-4 mb-6">
+            {/* Search Inputs Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               {/* From Input */}
-              <div className="flex-1 relative airport-dropdown">
+              <div className="relative airport-dropdown">
                 <label className="block text-sm font-semibold text-primary-900 mb-2 font-['DM_Sans']">From</label>
                 <div className="relative">
                   <input
@@ -436,11 +464,15 @@ const FlightsPage: React.FC = () => {
                       if (searchForm.from.length >= 2) {
                         searchAirports(searchForm.from, setFromAirports);
                       }
-                      // Mobile keyboard handling
+                      // Mobile keyboard handling with viewport adjustment
                       if (window.innerWidth < 768) {
                         const input = e.target as HTMLInputElement;
+                        // Prevent zoom on iOS
+                        input.style.fontSize = '16px';
                         setTimeout(() => {
                           input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          // Adjust viewport for mobile keyboards
+                          window.scrollTo({ top: window.scrollY - 100, behavior: 'smooth' });
                         }, 300);
                       }
                     }}
@@ -449,10 +481,11 @@ const FlightsPage: React.FC = () => {
                         setShowFromSuggestions(false);
                       }
                     }}
-                    className="w-full pl-12 pr-4 py-4 border border-primary-200 rounded-xl focus:ring-2 focus:ring-blue-ocean focus:border-transparent text-primary-800 font-['Poppins'] font-medium text-base"
+                    className="w-full pl-12 pr-4 py-4 border border-primary-200 rounded-xl focus:ring-2 focus:ring-blue-ocean focus:border-transparent text-primary-800 font-['Poppins'] font-medium text-base transition-all duration-300 hover:border-blue-ocean/50"
                     placeholder="Departure city"
                     autoComplete="off"
                     inputMode="text"
+                    style={{ fontSize: '16px' }}
                   />
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-primary-400 text-lg">
                     🛫
@@ -476,7 +509,7 @@ const FlightsPage: React.FC = () => {
                         tabIndex={0}
                         role="option"
                         aria-selected={false}
-                        className="w-full px-3 sm:px-4 py-3 sm:py-4 text-left hover:bg-blue-50 focus:bg-blue-50 focus:outline-none flex items-center justify-between cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors duration-200 min-h-[48px] active:bg-blue-100 overflow-hidden"
+                        className="w-full px-3 sm:px-4 py-3 sm:py-4 text-left hover:bg-blue-50 focus:bg-blue-50 focus:outline-none flex items-center justify-between cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors duration-200 min-h-[52px] active:bg-blue-100 overflow-hidden touch-manipulation"
                       >
                         <div className="min-w-0 flex-1 pr-2 overflow-hidden">
                           <div className="font-semibold text-primary-900 text-sm sm:text-base truncate leading-tight">{airport.name}</div>
@@ -490,32 +523,8 @@ const FlightsPage: React.FC = () => {
               </div>
 
               
-              {/* Swap Button - Mobile Centered */}
-              <div className="flex justify-center py-2">
-                <button
-                  onClick={() => {
-                    if (searchForm.from || searchForm.to) {
-                      setSearchForm(prev => ({
-                        ...prev,
-                        from: prev.to,
-                        to: prev.from
-                      }));
-                      setShowFromSuggestions(false);
-                      setShowToSuggestions(false);
-                      setError(null);
-                    }
-                  }}
-                  disabled={!searchForm.from && !searchForm.to}
-                  className="p-4 bg-white border-2 border-primary-200 rounded-full hover:border-blue-ocean hover:bg-blue-50 transition-all duration-300 shadow-sm hover:rotate-180 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:rotate-0 min-h-[48px] min-w-[48px]"
-                  type="button"
-                  title="Swap departure and destination"
-                >
-                  <span className="text-xl text-primary-600 transition-transform duration-300">⇄</span>
-                </button>
-              </div>
-              
               {/* To Input */}
-              <div className="flex-1 relative airport-dropdown">
+              <div className="relative airport-dropdown">
                 <label className="block text-sm font-semibold text-primary-900 mb-2 font-['DM_Sans']">To</label>
                 <div className="relative">
                   <input
@@ -531,11 +540,15 @@ const FlightsPage: React.FC = () => {
                       if (searchForm.to.length >= 2) {
                         searchAirports(searchForm.to, setToAirports);
                       }
-                      // Mobile keyboard handling
+                      // Mobile keyboard handling with viewport adjustment
                       if (window.innerWidth < 768) {
                         const input = e.target as HTMLInputElement;
+                        // Prevent zoom on iOS
+                        input.style.fontSize = '16px';
                         setTimeout(() => {
                           input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          // Adjust viewport for mobile keyboards
+                          window.scrollTo({ top: window.scrollY - 100, behavior: 'smooth' });
                         }, 300);
                       }
                     }}
@@ -544,10 +557,11 @@ const FlightsPage: React.FC = () => {
                         setShowToSuggestions(false);
                       }
                     }}
-                    className="w-full pl-12 pr-4 py-4 border border-primary-200 rounded-xl focus:ring-2 focus:ring-blue-ocean focus:border-transparent text-primary-800 font-['Poppins'] font-medium text-base"
+                    className="w-full pl-12 pr-4 py-4 border border-primary-200 rounded-xl focus:ring-2 focus:ring-blue-ocean focus:border-transparent text-primary-800 font-['Poppins'] font-medium text-base transition-all duration-300 hover:border-blue-ocean/50"
                     placeholder="Destination city"
                     autoComplete="off"
                     inputMode="text"
+                    style={{ fontSize: '16px' }}
                   />
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-primary-400 text-lg">
                     🛬
@@ -571,7 +585,7 @@ const FlightsPage: React.FC = () => {
                         tabIndex={0}
                         role="option"
                         aria-selected={false}
-                        className="w-full px-3 sm:px-4 py-3 sm:py-4 text-left hover:bg-blue-50 focus:bg-blue-50 focus:outline-none flex items-center justify-between cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors duration-200 min-h-[48px] active:bg-blue-100 overflow-hidden"
+                        className="w-full px-3 sm:px-4 py-3 sm:py-4 text-left hover:bg-blue-50 focus:bg-blue-50 focus:outline-none flex items-center justify-between cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors duration-200 min-h-[52px] active:bg-blue-100 overflow-hidden touch-manipulation"
                       >
                         <div className="min-w-0 flex-1 pr-2 overflow-hidden">
                           <div className="font-semibold text-primary-900 text-sm sm:text-base truncate leading-tight">{airport.name}</div>
@@ -584,10 +598,7 @@ const FlightsPage: React.FC = () => {
                 )}
               </div>
 
-            </div>
-            
-            {/* Second Row: Dates, Travelers, Search */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
+              
               {/* Departure Date */}
               <div className="relative">
                 <label className="block text-sm font-semibold text-primary-900 mb-2 font-['DM_Sans']">Departure</label>
@@ -604,10 +615,13 @@ const FlightsPage: React.FC = () => {
                           ? new Date(new Date(newDate).getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
                           : prev.returnDate
                       }));
+                      setError(null);
                     }}
                     min={new Date().toISOString().split('T')[0]}
                     max={new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
-                    className="w-full pl-12 pr-4 py-4 border border-primary-200 rounded-xl focus:ring-2 focus:ring-blue-ocean focus:border-transparent text-primary-800 font-['Poppins'] font-medium text-base"
+                    className="w-full pl-12 pr-4 py-4 border border-primary-200 rounded-xl focus:ring-2 focus:ring-blue-ocean focus:border-transparent text-primary-800 font-['Poppins'] font-medium text-base transition-all duration-300 hover:border-blue-ocean/50"
+                    aria-label="Select departure date"
+                    required
                   />
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-primary-400 text-lg">
                     📅
@@ -623,10 +637,15 @@ const FlightsPage: React.FC = () => {
                     <input
                       type="date"
                       value={searchForm.returnDate}
-                      onChange={(e) => setSearchForm(prev => ({ ...prev, returnDate: e.target.value }))}
+                      onChange={(e) => {
+                        setSearchForm(prev => ({ ...prev, returnDate: e.target.value }));
+                        setError(null);
+                      }}
                       min={searchForm.departDate}
                       max={new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
-                      className="w-full pl-12 pr-4 py-4 border border-primary-200 rounded-xl focus:ring-2 focus:ring-blue-ocean focus:border-transparent text-primary-800 font-['Poppins'] font-medium text-base"
+                      className="w-full pl-12 pr-4 py-4 border border-primary-200 rounded-xl focus:ring-2 focus:ring-blue-ocean focus:border-transparent text-primary-800 font-['Poppins'] font-medium text-base transition-all duration-300 hover:border-blue-ocean/50"
+                      aria-label="Select return date"
+                      required
                     />
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-primary-400 text-lg">
                       📅
@@ -634,47 +653,82 @@ const FlightsPage: React.FC = () => {
                   </div>
                 </div>
               )}
-
+            </div>
+            
+            {/* Bottom Row: Travelers & Search */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end mt-4">
               {/* Travelers */}
               <div className="relative">
                 <label className="block text-sm font-semibold text-primary-900 mb-2 font-['DM_Sans']">Travelers</label>
                 <div className="relative">
                   <select
                     value={searchForm.passengers}
-                    onChange={(e) => setSearchForm(prev => ({ ...prev, passengers: parseInt(e.target.value) }))}
-                    className="w-full pl-12 pr-8 py-4 border border-primary-200 rounded-xl focus:ring-2 focus:ring-blue-ocean focus:border-transparent text-primary-800 font-['Poppins'] font-medium appearance-none bg-white bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzk0QTNBOCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+')] bg-no-repeat bg-right bg-[center_right_1rem] text-base"
+                    onChange={(e) => {
+                      setSearchForm(prev => ({ ...prev, passengers: parseInt(e.target.value) }));
+                      setError(null);
+                    }}
+                    className="w-full pl-12 pr-8 py-4 border border-primary-200 rounded-xl focus:ring-2 focus:ring-blue-ocean focus:border-transparent text-primary-800 font-['Poppins'] font-medium appearance-none bg-white bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzk0QTNBOCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+')] bg-no-repeat bg-right bg-[center_right_1rem] text-base transition-all duration-300 hover:border-blue-ocean/50"
+                    aria-label="Select number of passengers"
                   >
                     <option value={1}>1 Adult</option>
                     <option value={2}>2 Adults</option>
                     <option value={3}>3 Adults</option>
-                    <option value={4}>4+ Adults</option>
+                    <option value={4}>4 Adults</option>
+                    <option value={5}>5 Adults</option>
+                    <option value={6}>6 Adults</option>
+                    <option value={7}>7 Adults</option>
+                    <option value={8}>8 Adults</option>
+                    <option value={9}>9 Adults</option>
                   </select>
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-primary-400 text-lg">
                     👥
                   </div>
                 </div>
               </div>
-
-              {/* Search Button - Full Width on Mobile */}
-              <div className="sm:col-span-2">
+              
+              {/* Swap Button */}
+              <div className="flex justify-center">
                 <button
-                  onClick={handleSearch}
-                  disabled={loading || !searchForm.from || !searchForm.to}
-                  className="w-full bg-blue-ocean text-white border-none py-4 px-6 rounded-xl cursor-pointer flex items-center justify-center text-base transition-all duration-300 font-['DM_Sans'] font-bold gap-2 hover:bg-emerald hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(88,194,125,0.3)] disabled:opacity-50 disabled:cursor-not-allowed min-h-[56px] disabled:hover:transform-none disabled:hover:shadow-none"
+                  onClick={() => {
+                    if (searchForm.from || searchForm.to) {
+                      setSearchForm(prev => ({
+                        ...prev,
+                        from: prev.to,
+                        to: prev.from
+                      }));
+                      setShowFromSuggestions(false);
+                      setShowToSuggestions(false);
+                      setError(null);
+                    }
+                  }}
+                  disabled={!searchForm.from && !searchForm.to}
+                  className="p-3 bg-white border-2 border-primary-200 rounded-full hover:border-blue-ocean hover:bg-blue-50 transition-all duration-300 shadow-sm hover:rotate-180 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:rotate-0 min-h-[48px] min-w-[48px] touch-manipulation active:scale-95"
+                  type="button"
+                  title="Swap departure and destination"
+                  aria-label="Swap departure and destination cities"
                 >
-                  {loading ? (
-                    <>
-                      <LoadingSpinner size="sm" />
-                      <span>Searching...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="text-lg">🔍</span>
-                      <span>Search Flights</span>
-                    </>
-                  )}
+                  <span className="text-lg text-primary-600 transition-transform duration-300">⇄</span>
                 </button>
               </div>
+
+              {/* Search Button */}
+              <button
+                onClick={handleSearch}
+                disabled={loading || !searchForm.from?.trim() || !searchForm.to?.trim() || !searchForm.departDate}
+                className="w-full bg-blue-ocean text-white border-none py-4 px-6 rounded-xl cursor-pointer flex items-center justify-center text-base transition-all duration-300 font-['DM_Sans'] font-bold gap-2 hover:bg-emerald hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(88,194,125,0.3)] disabled:opacity-50 disabled:cursor-not-allowed min-h-[56px] disabled:hover:transform-none disabled:hover:shadow-none active:scale-95"
+              >
+                {loading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Searching...</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-lg">🔍</span>
+                    <span>Search Flights</span>
+                  </>
+                )}
+              </button>
             </div>
             
             {/* Error Message */}
@@ -700,19 +754,20 @@ const FlightsPage: React.FC = () => {
                   <div className="lg:hidden mb-4">
                     <button
                       onClick={() => {
-                      const newState = !showMobileFilters;
-                      setShowMobileFilters(newState);
-                      // Prevent body scroll when filters are open on mobile
-                      if (window.innerWidth < 1024) {
-                        document.body.style.overflow = newState ? 'hidden' : 'auto';
-                        if (newState) {
-                          setTimeout(() => {
-                            document.querySelector('.mobile-filters')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                          }, 150);
+                        const newState = !showMobileFilters;
+                        setShowMobileFilters(newState);
+                        // Prevent body scroll when filters are open on mobile
+                        if (window.innerWidth < 1024) {
+                          document.body.style.overflow = newState ? 'hidden' : 'auto';
+                          // Add safe area padding for iOS
+                          if (newState) {
+                            document.body.style.paddingBottom = 'env(safe-area-inset-bottom)';
+                          } else {
+                            document.body.style.paddingBottom = '0';
+                          }
                         }
-                      }
-                    }}
-                      className="w-full flex items-center justify-between p-4 bg-white border border-primary-200 rounded-xl font-semibold text-primary-900 min-h-[56px]"
+                      }}
+                      className="w-full flex items-center justify-between p-4 bg-white border border-primary-200 rounded-xl font-semibold text-primary-900 min-h-[56px] hover:bg-blue-50 hover:border-blue-ocean transition-all duration-200 active:scale-[0.98] touch-manipulation"
                     >
                       <span className="flex items-center gap-2">
                         <span>🗓️</span>
@@ -722,13 +777,25 @@ const FlightsPage: React.FC = () => {
                     </button>
                   </div>
                   
-                <Card className={`${showMobileFilters ? 'block' : 'hidden'} lg:block mobile-filters`}>
-                  <div className="flex items-center justify-between mb-4">
+                <Card className={`${showMobileFilters ? 'block fixed inset-0 z-50 lg:relative lg:inset-auto lg:z-auto' : 'hidden'} lg:block mobile-filters bg-white lg:bg-transparent overflow-y-auto lg:overflow-visible`}>
+                  {/* Mobile Close Button */}
+                  <div className="lg:hidden sticky top-0 bg-white z-10 flex justify-between items-center p-4 mb-4 border-b border-gray-200 shadow-sm">
                     <h3 className="text-lg font-bold text-primary-900 font-['DM_Sans']">Filter Results</h3>
-                    <span className="text-sm text-primary-600 bg-blue-50 px-2 py-1 rounded">{flights.length} flights</span>
+                    <button
+                      onClick={() => {
+                        setShowMobileFilters(false);
+                        document.body.style.overflow = 'auto';
+                      }}
+                      className="p-3 hover:bg-gray-100 rounded-lg transition-colors duration-200 min-h-[48px] min-w-[48px] flex items-center justify-center"
+                      aria-label="Close filters"
+                    >
+                      <span className="text-2xl text-primary-600 leading-none">×</span>
+                    </button>
                   </div>
                   
-                  {/* Price Range */}
+                  {/* Mobile Filter Content */}
+                  <div className="lg:hidden p-4">
+                    {/* Price Range */}
                   <div className="mb-6">
                     <label className="block text-sm font-semibold text-primary-900 mb-2 font-['DM_Sans']">
                       Max Price: <span className="text-blue-ocean">{formatPrice(filters.maxPrice)}</span>
@@ -779,8 +846,14 @@ const FlightsPage: React.FC = () => {
                     <label className="block text-sm font-semibold text-primary-900 mb-2 font-['DM_Sans']">Sort by</label>
                     <select
                       value={filters.sort}
-                      onChange={(e) => setFilters(prev => ({ ...prev, sort: e.target.value }))}
+                      onChange={(e) => {
+                        setFilters(prev => ({ ...prev, sort: e.target.value }));
+                        if (searched && flights.length > 0) {
+                          performSearch();
+                        }
+                      }}
                       className="w-full px-4 py-3 border border-primary-200 rounded-xl focus:ring-2 focus:ring-blue-ocean focus:border-transparent text-primary-800 font-['Poppins'] font-medium appearance-none bg-white bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzk0QTNBOCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+')] bg-no-repeat bg-right bg-[center_right_1rem]"
+                      aria-label="Sort flights by"
                     >
                       <option value="price">💰 Price (Low to High)</option>
                       <option value="duration">⏱️ Duration (Shortest)</option>
@@ -789,47 +862,167 @@ const FlightsPage: React.FC = () => {
                     </select>
                   </div>
 
-                  <Button
-                    onClick={() => {
-                      setError(null);
-                      handleSearch();
-                    }}
-                    variant="outline"
-                    size="sm"
-                    fullWidth
-                    className="mb-2"
-                    disabled={loading}
-                  >
-                    {loading ? 'Applying...' : 'Apply Filters'}
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => {
+                        setError(null);
+                        performSearch();
+                      }}
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      disabled={loading}
+                    >
+                      {loading ? (
+                        <>
+                          <div className="w-3 h-3 border-2 border-blue-ocean border-t-transparent rounded-full animate-spin"></div>
+                          <span className="ml-2">Applying...</span>
+                        </>
+                      ) : (
+                        'Apply Filters'
+                      )}
+                    </Button>
+                    
+                    <Button
+                      onClick={() => {
+                        setFilters({
+                          maxPrice: 5000,
+                          airlines: [],
+                          stops: 'any',
+                          sort: 'price'
+                        });
+                        setError(null);
+                        if (searched) {
+                          performSearch();
+                        }
+                      }}
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      disabled={loading}
+                    >
+                      Reset
+                    </Button>
+                  </div>
+                  </div>
                   
-                  <Button
-                    onClick={() => {
-                      setSearchForm({
-                        from: '',
-                        to: '',
-                        departDate: new Date().toISOString().split('T')[0],
-                        returnDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-                        passengers: 1,
-                        class: 'economy',
-                        tripType: 'roundtrip'
-                      });
-                      setFilters({
-                        maxPrice: 5000,
-                        airlines: [],
-                        stops: 'any',
-                        sort: 'price'
-                      });
-                      setSearched(false);
-                      setFlights([]);
-                      setError(null);
-                    }}
-                    variant="outline"
-                    size="sm"
-                    fullWidth
-                  >
-                    Clear All
-                  </Button>
+                  {/* Desktop Filter Content */}
+                  <div className="hidden lg:block">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-bold text-primary-900 font-['DM_Sans']">Filter Results</h3>
+                      <span className="text-sm text-primary-600 bg-blue-50 px-2 py-1 rounded">{flights.length} flights</span>
+                    </div>
+                    
+                    {/* Price Range */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-semibold text-primary-900 mb-2 font-['DM_Sans']">
+                        Max Price: <span className="text-blue-ocean">{formatPrice(filters.maxPrice)}</span>
+                      </label>
+                      <input
+                        type="range"
+                        min="0"
+                        max="5000"
+                        step="50"
+                        value={filters.maxPrice}
+                        onChange={(e) => setFilters(prev => ({ ...prev, maxPrice: parseInt(e.target.value) }))}
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                      />
+                      <div className="flex justify-between text-xs text-primary-500 mt-1">
+                        <span>$0</span>
+                        <span>$5,000</span>
+                      </div>
+                    </div>
+
+                    {/* Stops */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-semibold text-primary-900 mb-3 font-['DM_Sans']">Stops</label>
+                      <div className="space-y-3">
+                        {[
+                          { value: 'any', label: 'Any stops', icon: '✈️' },
+                          { value: '0', label: 'Non-stop', icon: '🚀' },
+                          { value: '1', label: '1 stop', icon: '🔄' },
+                          { value: '2+', label: '2+ stops', icon: '🔀' }
+                        ].map(stop => (
+                          <label key={stop.value} className="flex items-center p-2 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors duration-200">
+                            <input
+                              type="radio"
+                              name="stops"
+                              value={stop.value}
+                              checked={filters.stops === stop.value}
+                              onChange={(e) => setFilters(prev => ({ ...prev, stops: e.target.value }))}
+                              className="mr-3 text-blue-ocean focus:ring-blue-ocean"
+                            />
+                            <span className="mr-2">{stop.icon}</span>
+                            <span className="text-sm font-medium text-primary-800">{stop.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Sort */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-semibold text-primary-900 mb-2 font-['DM_Sans']">Sort by</label>
+                      <select
+                        value={filters.sort}
+                        onChange={(e) => {
+                          setFilters(prev => ({ ...prev, sort: e.target.value }));
+                          if (searched && flights.length > 0) {
+                            performSearch();
+                          }
+                        }}
+                        className="w-full px-4 py-3 border border-primary-200 rounded-xl focus:ring-2 focus:ring-blue-ocean focus:border-transparent text-primary-800 font-['Poppins'] font-medium appearance-none bg-white bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzk0QTNBOCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+')] bg-no-repeat bg-right bg-[center_right_1rem]"
+                        aria-label="Sort flights by"
+                      >
+                        <option value="price">💰 Price (Low to High)</option>
+                        <option value="duration">⏱️ Duration (Shortest)</option>
+                        <option value="departure">🕰️ Departure Time</option>
+                        <option value="arrival">🏁 Arrival Time</option>
+                      </select>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <Button
+                        onClick={() => {
+                          setError(null);
+                          performSearch();
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 min-h-[48px]"
+                        disabled={loading}
+                      >
+                        {loading ? (
+                          <>
+                            <div className="w-3 h-3 border-2 border-blue-ocean border-t-transparent rounded-full animate-spin"></div>
+                            <span className="ml-2">Apply</span>
+                          </>
+                        ) : (
+                          'Apply Filters'
+                        )}
+                      </Button>
+                      
+                      <Button
+                        onClick={() => {
+                          setFilters({
+                            maxPrice: 5000,
+                            airlines: [],
+                            stops: 'any',
+                            sort: 'price'
+                          });
+                          setError(null);
+                          if (searched) {
+                            performSearch();
+                          }
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 min-h-[48px]"
+                        disabled={loading}
+                      >
+                        Reset
+                      </Button>
+                    </div>
+                  </div>
                 </Card>
                 </div>
               </div>
@@ -931,136 +1124,169 @@ const FlightsPage: React.FC = () => {
                     </div>
                   </Card>
                 ) : (
-                  <div className="space-y-6">
-                    <div className="flex flex-col gap-4 mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                      <div>
-                        <h2 className="text-lg sm:text-xl font-bold text-primary-900 font-['DM_Sans'] break-words">
-                          {searchForm.from} → {searchForm.to}
-                        </h2>
-                        <p className="text-xs sm:text-sm text-primary-600 font-['Poppins'] mt-1">
-                          {new Date(searchForm.departDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                          {searchForm.tripType === 'roundtrip' && ` - ${new Date(searchForm.returnDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
-                        </p>
-                        <p className="text-xs sm:text-sm text-primary-600 font-['Poppins']">
-                          {searchForm.passengers} {searchForm.passengers === 1 ? 'Adult' : 'Adults'} • {searchForm.tripType === 'roundtrip' ? 'Round-trip' : 'One-way'}
-                        </p>
-                        <div className="text-sm font-semibold text-blue-ocean mt-2">
-                          Found {flights.length} flights
+                  <div className="space-y-4">
+                    {/* Compact Search Summary */}
+                    <div className="mb-4 p-3 bg-white border border-gray-200 rounded-lg">
+                      <div className="flex items-center justify-between text-sm font-['Poppins']">
+                        <div className="flex items-center gap-3">
+                          <span className="font-bold text-primary-900 font-['DM_Sans']">
+                            {searchForm.from} → {searchForm.to}
+                          </span>
+                          <span className="text-primary-600">
+                            {new Date(searchForm.departDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            {searchForm.tripType === 'roundtrip' && ` - ${new Date(searchForm.returnDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
+                          </span>
+                          <span className="text-primary-600">
+                            {searchForm.passengers} Adult{searchForm.passengers > 1 ? 's' : ''} • {searchForm.tripType === 'roundtrip' ? 'Round-trip' : 'One-way'}
+                          </span>
+                          <span className="font-semibold text-emerald-600">
+                            Found {flights.length} flight{flights.length !== 1 ? 's' : ''}
+                          </span>
                         </div>
+                        <button
+                          onClick={() => {
+                            setSearched(false);
+                            setFlights([]);
+                          }}
+                          className="flex items-center gap-2 px-3 py-2 bg-blue-ocean text-white rounded-lg hover:bg-emerald transition-colors duration-300 font-semibold font-['DM_Sans'] text-sm"
+                        >
+                          <span>✏️</span>
+                          <span>Modify Search</span>
+                        </button>
                       </div>
-                      <button
-                        onClick={() => {
-                          setSearched(false);
-                          setFlights([]);
-                        }}
-                        className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors duration-200 text-blue-ocean font-semibold min-h-[48px]"
-                      >
-                        <span>✏️</span>
-                        <span>Modify Search</span>
-                      </button>
                     </div>
 
                     {flights.map((flight, index) => (
-                      <Card
+                      <div
                         key={flight._id || index}
-                        hover
-                        className="p-4 sm:p-6 hover:shadow-xl transition-all duration-300 cursor-pointer border border-gray-200 rounded-xl hover:border-blue-300 bg-white overflow-hidden"
+                        className="bg-white border border-gray-200 rounded-lg hover:border-blue-ocean hover:shadow-md transition-all duration-300 cursor-pointer group"
                         onClick={() => handleFlightSelect(flight)}
                       >
-                        <div className="flex flex-col gap-4">
-                          {/* Mobile: Airline Info */}
-                          <div className="flex items-center gap-3">
-                            <div className="flex-shrink-0">
+                        {/* Flight Main Section */}
+                        <div className="p-4 pt-5">
+                          <div className="flex items-start justify-between">
+                            {/* Airline Section */}
+                            <div className="flex items-center gap-3 flex-shrink-0 min-w-[200px]">
                               <img
-                                src={flight.airline?.logo || 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=80&h=60&fit=crop&auto=format'}
-                                alt={flight.airline?.name}
-                                className="w-16 h-12 sm:w-20 sm:h-16 object-contain rounded-lg border shadow-sm"
+                                src={flight.airline?.logo || APP_CONSTANTS.FALLBACK_IMAGES.AIRLINE}
+                                alt={flight.airline?.name || 'Airline'}
+                                className="w-20 h-20 sm:w-24 sm:h-24 object-contain rounded border bg-white"
                                 onError={(e) => {
-                                  e.currentTarget.src = 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=80&h=60&fit=crop&auto=format';
+                                  e.currentTarget.src = APP_CONSTANTS.FALLBACK_IMAGES.AIRLINE;
                                 }}
                               />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <div className="font-bold text-primary-900 text-base sm:text-lg mb-1 leading-tight">{flight.airline?.name || 'Airline'}</div>
-                              <div className="text-sm text-primary-600 mb-1">{flight.flightNumber || 'N/A'}</div>
-                              <div className="text-xs sm:text-sm text-green-600 font-semibold">
-                                {flight.flightType || 'Direct'} Flight
-                              </div>
-                            </div>
-                            {/* Mobile: Price */}
-                            <div className="text-right flex-shrink-0">
-                              <div className="text-lg sm:text-xl font-bold text-emerald-600 leading-tight">
-                                {formatPrice(flight.pricing?.[searchForm.class]?.totalPrice || flight.pricing?.economy?.totalPrice || 0)}
-                              </div>
-                              <div className="text-xs text-primary-600 whitespace-nowrap">per person</div>
-                            </div>
-                          </div>
-
-                          {/* Mobile: Route & Time */}
-                          <div className="flex items-center justify-between gap-2">
-                            {/* Departure */}
-                            <div className="text-center flex-1">
-                              <div className="text-xl sm:text-2xl font-bold text-primary-900 mb-1">
-                                {flight.route?.departure?.scheduledTime ? new Date(flight.route.departure.scheduledTime).toLocaleTimeString('en-US', {
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                  hour12: false
-                                }) : '--:--'}
-                              </div>
-                              <div className="text-sm sm:text-base font-bold text-primary-700 mb-1">{flight.route?.departure?.airport?.code || 'N/A'}</div>
-                              <div className="text-xs sm:text-sm text-primary-600">{flight.route?.departure?.airport?.city || 'Unknown'}</div>
-                            </div>
-                            
-                            {/* Flight Path */}
-                            <div className="flex-1 text-center px-2">
-                              <div className="text-sm font-bold text-primary-600 mb-2">
-                                {formatDuration(flight.duration?.scheduled || 0)}
-                              </div>
-                              <div className="relative">
-                                <div className="border-t-2 border-primary-300"></div>
-                                <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-white px-1">
-                                  <span className="text-lg text-primary-400">✈️</span>
+                              <div>
+                                <h4 className="font-bold text-primary-900 font-['DM_Sans'] text-sm">{flight.airline?.name || 'Airline'}</h4>
+                                <span className="text-xs text-primary-600 font-['Poppins']">{flight.flightNumber}</span>
+                                <div className="flex items-center gap-1 mt-1">
+                                  <span className="text-xs text-amber-500">★★★★☆</span>
+                                  <span className="text-xs text-primary-600">4.2</span>
                                 </div>
                               </div>
-                              <div className="text-xs text-primary-500 mt-2">Direct</div>
                             </div>
                             
-                            {/* Arrival */}
-                            <div className="text-center flex-1">
-                              <div className="text-xl sm:text-2xl font-bold text-primary-900 mb-1">
-                                {flight.route?.arrival?.scheduledTime ? new Date(flight.route.arrival.scheduledTime).toLocaleTimeString('en-US', {
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                  hour12: false
-                                }) : '--:--'}
+                            {/* Flight Route */}
+                            <div className="flex items-center justify-center gap-6 flex-1 mx-4">
+                              {/* Departure */}
+                              <div className="text-center">
+                                <div className="text-xl font-bold text-primary-900 font-['DM_Sans']">
+                                  {flight.route?.departure?.scheduledTime ? new Date(flight.route.departure.scheduledTime).toLocaleTimeString('en-US', {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    hour12: true
+                                  }) : '--:--'}
+                                </div>
+                                <div className="text-sm font-bold text-primary-700 font-['DM_Sans']">{flight.route?.departure?.airport?.code || 'N/A'}</div>
+                                <div className="text-xs text-primary-600 font-['Poppins']">{flight.route?.departure?.airport?.city || ''}</div>
                               </div>
-                              <div className="text-sm sm:text-base font-bold text-primary-700 mb-1">{flight.route?.arrival?.airport?.code || 'N/A'}</div>
-                              <div className="text-xs sm:text-sm text-primary-600">{flight.route?.arrival?.airport?.city || 'Unknown'}</div>
+                              
+                              {/* Flight Path */}
+                              <div className="flex-1 text-center">
+                                <div className="text-xs text-primary-600 mb-1 font-['DM_Sans'] font-medium">
+                                  {formatDuration(flight.duration?.scheduled || 0)}
+                                </div>
+                                <div className="relative">
+                                  <div className="border-t border-primary-300"></div>
+                                  <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 bg-white px-1">
+                                    <span className="text-sm text-primary-400">✈️</span>
+                                  </div>
+                                </div>
+                                <div className="text-xs text-primary-500 mt-1 font-['Poppins']">Nonstop</div>
+                              </div>
+                              
+                              {/* Arrival */}
+                              <div className="text-center">
+                                <div className="text-xl font-bold text-primary-900 font-['DM_Sans']">
+                                  {flight.route?.arrival?.scheduledTime ? new Date(flight.route.arrival.scheduledTime).toLocaleTimeString('en-US', {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    hour12: true
+                                  }) : '--:--'}
+                                </div>
+                                <div className="text-sm font-bold text-primary-700 font-['DM_Sans']">{flight.route?.arrival?.airport?.code || 'N/A'}</div>
+                                <div className="text-xs text-primary-600 font-['Poppins']">{flight.route?.arrival?.airport?.city || ''}</div>
+                              </div>
                             </div>
-                          </div>
-
-                          {/* Mobile: Action & Details */}
-                          <div className="flex flex-col gap-3">
-                            <Button 
-                              size="lg" 
-                              className="w-full px-6 py-3 text-base font-bold bg-blue-ocean hover:bg-emerald transition-all duration-300 min-h-[48px] active:scale-95"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleFlightSelect(flight);
-                              }}
-                            >
-                              Select Flight
-                            </Button>
                             
-                            <div className="flex justify-between items-center text-xs sm:text-sm">
-                              <div className="text-primary-500 truncate">
-                                {flight.pricing?.[searchForm.class]?.availability || flight.pricing?.economy?.availability || 0} seats available
+                            {/* Pricing Section */}
+                            <div className="text-right flex-shrink-0">
+                              <div className="text-xs text-primary-500 line-through font-['Poppins'] mb-1">$699</div>
+                              <div className="text-2xl font-bold text-emerald-600 font-['DM_Sans']">
+                                ${flight.pricing?.[searchForm.class]?.totalPrice || flight.pricing?.economy?.totalPrice || 0}
                               </div>
-                              <div className="text-green-600 font-semibold flex-shrink-0">{flight.status || 'Scheduled'}</div>
+                              <div className="text-xs text-primary-600 font-['Poppins'] mb-2">per person</div>
+                              <div className="flex gap-2">
+                                <button
+                                  className="bg-blue-ocean text-white px-4 py-2 rounded-lg font-semibold font-['DM_Sans'] text-sm hover:bg-emerald transition-colors duration-300 group-hover:bg-emerald"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleFlightSelect(flight);
+                                  }}
+                                >
+                                  View Details
+                                </button>
+                                <button
+                                  className="border border-gray-300 text-primary-700 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-300"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    alert('Price alert set!');
+                                  }}
+                                  title="Get price alerts"
+                                >
+                                  🔔
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </Card>
+                        
+                        {/* Flight Details Row */}
+                        <div className="px-4 pb-4 border-t border-gray-100">
+                          <div className="flex items-center justify-between pt-3">
+                            <div className="flex items-center gap-4 text-xs text-primary-600 font-['Poppins']">
+                              <div className="flex items-center gap-1">
+                                <span>🧳</span>
+                                <span>{(flight.pricing?.[searchForm.class] as any)?.baggage?.included || 1} carry-on, {(flight.pricing?.[searchForm.class] as any)?.baggage?.included || 1} checked bag</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span>🔄</span>
+                                <span>Free cancellation</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span>🌱</span>
+                                <span>1.2 tons CO₂</span>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              {['Free WiFi', 'Meal Included'].map((feature, idx) => (
+                                <span key={idx} className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded font-medium">
+                                  {feature}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 )}

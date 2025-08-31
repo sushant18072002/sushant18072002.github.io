@@ -124,7 +124,7 @@ const flightSchema = new mongoose.Schema({
   },
   services: {
     meals: [{ 
-      class: { type: String, enum: ['economy', 'premium-economy', 'business', 'first'] },
+      class: { type: String, enum: ['economy', 'premiumEconomy', 'business', 'first'] },
       type: String, 
       description: String,
       included: { type: Boolean, default: true },

@@ -103,7 +103,7 @@ const HomePage: React.FC = () => {
   const [showToSuggestions, setShowToSuggestions] = useState(false);
   const [featuredContent, setFeaturedContent] = useState<any>(null);
   const [stats, setStats] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
 
   useEffect(() => {
@@ -532,18 +532,19 @@ const HomePage: React.FC = () => {
               <span>{liveCounter.toLocaleString()} dreams planned today</span>
             </div>
             
-            <h1 className="hero-title text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight mb-4 font-['DM_Sans']">
+            <h1 className="hero-title text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-tight mb-6 font-['DM_Sans'] tracking-tight">
               {featuredContent?.heroTitle || 'Air, sleep, dream'}
             </h1>
-            <p className="hero-subtitle text-lg md:text-xl font-normal leading-7 mb-6 font-['Poppins'] opacity-90">
+            <p className="hero-subtitle text-xl md:text-2xl font-medium leading-8 mb-8 font-['Poppins'] opacity-95 max-w-2xl">
               {featuredContent?.heroSubtitle || 'Find and book a great experience.'}
             </p>
             <button 
-              className="hero-cta bg-blue-ocean text-white border-none px-5 py-2 rounded-2xl text-sm font-semibold cursor-pointer transition-all duration-300 font-['DM_Sans'] inline-flex items-center gap-2 hover:bg-emerald hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(88,194,125,0.3)]"
+              className="hero-cta bg-blue-ocean text-white border-none px-8 py-4 rounded-2xl text-lg font-bold cursor-pointer transition-all duration-300 font-['DM_Sans'] inline-flex items-center gap-3 hover:bg-emerald hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(88,194,125,0.4)] active:scale-95"
               onClick={() => document.querySelector('.search-widget')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
               aria-label="Scroll to search widget to start planning your trip"
             >
-              Start your search
+              <span className="text-xl">✨</span>
+              <span>Start your search</span>
             </button>
           </div>
 
@@ -594,7 +595,7 @@ const HomePage: React.FC = () => {
                   <div className="form-field flex-1 flex items-center bg-white/90 backdrop-blur-sm rounded-xl py-3 px-4 pl-12 relative min-h-[52px] border border-gray-100 hover:border-blue-200 transition-all">
                     <div className="field-icon absolute left-3 top-1/2 -translate-y-1/2 text-base opacity-60">🛫</div>
                     <div className="field-content flex-1 flex flex-col gap-0.5 relative">
-                      <div className="field-label text-xs font-medium text-primary-600 font-['Poppins'] uppercase tracking-wide">From</div>
+                      <div className="field-label text-xs font-bold text-primary-700 font-['DM_Sans'] uppercase tracking-wider">From</div>
                       <input 
                         className="field-input border-none bg-none text-sm text-primary-800 font-['Poppins'] font-medium outline-none w-full placeholder:text-primary-400 placeholder:font-normal" 
                         placeholder="Departure city or airport" 
@@ -646,7 +647,7 @@ const HomePage: React.FC = () => {
                   <div className="form-field flex-1 flex items-center bg-white/90 backdrop-blur-sm rounded-xl py-3 px-4 pl-12 relative min-h-[52px] border border-gray-100 hover:border-blue-200 transition-all">
                     <div className="field-icon absolute left-3 top-1/2 -translate-y-1/2 text-base opacity-60">🛬</div>
                     <div className="field-content flex-1 flex flex-col gap-0.5 relative">
-                      <div className="field-label text-xs font-medium text-primary-600 font-['Poppins'] uppercase tracking-wide">To</div>
+                      <div className="field-label text-xs font-bold text-primary-700 font-['DM_Sans'] uppercase tracking-wider">To</div>
                       <input 
                         className="field-input border-none bg-none text-sm text-primary-800 font-['Poppins'] font-medium outline-none w-full placeholder:text-primary-400 placeholder:font-normal" 
                         placeholder="Destination city or airport" 
@@ -699,7 +700,7 @@ const HomePage: React.FC = () => {
                   <div className="form-field flex-1 flex items-center bg-white/90 backdrop-blur-sm rounded-xl py-3 px-4 pl-12 relative min-h-[52px] border border-gray-100 hover:border-blue-200 transition-all">
                     <div className="field-icon absolute left-3 top-1/2 -translate-y-1/2 text-base opacity-60">📅</div>
                     <div className="field-content flex-1 flex flex-col gap-0.5">
-                      <div className="field-label text-xs font-medium text-primary-600 font-['Poppins'] uppercase tracking-wide">Departure</div>
+                      <div className="field-label text-xs font-bold text-primary-700 font-['DM_Sans'] uppercase tracking-wider">Departure</div>
                       <DatePicker
                         selected={flightForm.departDate}
                         onChange={(date) => setFlightForm(prev => ({ ...prev, departDate: date || new Date() }))}
@@ -715,7 +716,7 @@ const HomePage: React.FC = () => {
                   <div className="form-field flex-1 flex items-center bg-white/90 backdrop-blur-sm rounded-xl py-3 px-4 pl-12 relative min-h-[52px] border border-gray-100 hover:border-blue-200 transition-all">
                     <div className="field-icon absolute left-3 top-1/2 -translate-y-1/2 text-base opacity-60">📅</div>
                     <div className="field-content flex-1 flex flex-col gap-0.5">
-                      <div className="field-label text-xs font-medium text-primary-600 font-['Poppins'] uppercase tracking-wide">Return</div>
+                      <div className="field-label text-xs font-bold text-primary-700 font-['DM_Sans'] uppercase tracking-wider">Return</div>
                       <DatePicker
                         selected={flightForm.returnDate}
                         onChange={(date) => setFlightForm(prev => ({ ...prev, returnDate: date || new Date() }))}
@@ -733,7 +734,7 @@ const HomePage: React.FC = () => {
                   <div className="form-field flex-1 flex items-center bg-white/90 backdrop-blur-sm rounded-xl py-3 px-4 pl-12 relative min-h-[52px] border border-gray-100 hover:border-blue-200 transition-all">
                     <div className="field-icon absolute left-3 top-1/2 -translate-y-1/2 text-base opacity-60">👥</div>
                     <div className="field-content flex-1 flex flex-col gap-0.5">
-                      <div className="field-label text-xs font-medium text-primary-600 font-['Poppins'] uppercase tracking-wide">Passengers</div>
+                      <div className="field-label text-xs font-bold text-primary-700 font-['DM_Sans'] uppercase tracking-wider">Passengers</div>
                       <select 
                         className="field-input border-none bg-none text-sm text-primary-800 font-['Poppins'] font-medium outline-none w-full cursor-pointer appearance-none bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzk0QTNBOCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+')] bg-no-repeat bg-right bg-[center_right_0.75rem] pr-8 pl-2"
                         value={flightForm.passengers}
@@ -753,7 +754,7 @@ const HomePage: React.FC = () => {
                   <div className="form-field flex-1 flex items-center bg-white/90 backdrop-blur-sm rounded-xl py-3 px-4 pl-12 relative min-h-[52px] border border-gray-100 hover:border-blue-200 transition-all">
                     <div className="field-icon absolute left-3 top-1/2 -translate-y-1/2 text-base opacity-60">✈️</div>
                     <div className="field-content flex-1 flex flex-col gap-0.5">
-                      <div className="field-label text-xs font-medium text-primary-600 font-['Poppins'] uppercase tracking-wide">Class</div>
+                      <div className="field-label text-xs font-bold text-primary-700 font-['DM_Sans'] uppercase tracking-wider">Class</div>
                       <select 
                         className="field-input border-none bg-none text-sm text-primary-800 font-['Poppins'] font-medium outline-none w-full cursor-pointer appearance-none bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzk0QTNBOCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+')] bg-no-repeat bg-right bg-[center_right_0.75rem] pr-8 pl-2"
                         value={flightForm.class}
@@ -770,12 +771,18 @@ const HomePage: React.FC = () => {
                   <button 
                     onClick={performSearch}
                     disabled={searchLoading}
-                    className="search-btn w-full h-12 bg-blue-ocean border-none rounded-xl cursor-pointer flex items-center justify-center text-sm transition-all duration-300 text-white font-['DM_Sans'] font-bold gap-2 px-5 hover:bg-emerald hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(88,194,125,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="search-btn w-full h-14 bg-blue-ocean border-none rounded-xl cursor-pointer flex items-center justify-center text-base transition-all duration-300 text-white font-['DM_Sans'] font-bold gap-3 px-6 hover:bg-emerald hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(88,194,125,0.3)] disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
                   >
                     {searchLoading ? (
-                      <LoadingSpinner size="sm" />
+                      <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span>Searching...</span>
+                      </>
                     ) : (
-                      <span>Search Flights</span>
+                      <>
+                        <span className="text-lg">✈️</span>
+                        <span>Search Flights</span>
+                      </>
                     )}
                   </button>
                 </div>
@@ -1116,10 +1123,10 @@ const HomePage: React.FC = () => {
       <section className="adventure-section py-12 md:py-20 lg:py-[136px] bg-white">
         <div className="container max-w-[1280px] mx-auto px-4 md:px-8 lg:px-20">
           <div className="section-header text-center mb-16">
-            <h2 className="section-title text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-primary-900 mb-3 font-['DM_Sans']">
+            <h2 className="section-title text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-tight text-primary-900 mb-4 font-['DM_Sans'] tracking-tight">
               {featuredContent?.adventureSection?.title || "Let's go on an adventure"}
             </h2>
-            <p className="section-subtitle text-lg sm:text-xl md:text-2xl font-normal leading-8 text-primary-400 font-['Poppins']">
+            <p className="section-subtitle text-xl sm:text-2xl md:text-3xl font-medium leading-9 text-primary-600 font-['Poppins'] max-w-4xl mx-auto">
               {featuredContent?.adventureSection?.subtitle || "Find and book a great experience."}
             </p>
           </div>
@@ -1156,10 +1163,10 @@ const HomePage: React.FC = () => {
       <section className="destinations-section py-12 md:py-16 lg:py-20 bg-white relative">
         <div className="container max-w-[1280px] mx-auto px-4 md:px-8 lg:px-20">
           <div className="section-header text-center mb-16">
-            <h2 className="section-title text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-primary-900 mb-3 font-['DM_Sans']">
+            <h2 className="section-title text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-tight text-primary-900 mb-4 font-['DM_Sans'] tracking-tight">
               {featuredContent?.destinationSpotlight?.title || 'Explore amazing destinations'}
             </h2>
-            <p className="section-subtitle text-lg sm:text-xl md:text-2xl font-normal leading-8 text-primary-400 font-['Poppins']">
+            <p className="section-subtitle text-xl sm:text-2xl md:text-3xl font-medium leading-9 text-primary-600 font-['Poppins'] max-w-4xl mx-auto">
               {featuredContent?.destinationSpotlight?.subtitle || 'Discover breathtaking places around the world'}
             </p>
           </div>
@@ -1247,10 +1254,10 @@ const HomePage: React.FC = () => {
       <section className="planning-section py-12 md:py-20 lg:py-[136px] bg-white">
         <div className="container max-w-[1280px] mx-auto px-4 md:px-8 lg:px-20">
           <div className="section-header text-center mb-16">
-            <h2 className="section-title text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-primary-900 mb-3 font-['DM_Sans']">
+            <h2 className="section-title text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-tight text-primary-900 mb-4 font-['DM_Sans'] tracking-tight">
               How do you want to plan your trip?
             </h2>
-            <p className="section-subtitle text-lg sm:text-xl md:text-2xl font-normal leading-8 text-primary-400 font-['Poppins']">
+            <p className="section-subtitle text-xl sm:text-2xl md:text-3xl font-medium leading-9 text-primary-600 font-['Poppins'] max-w-4xl mx-auto">
               Choose the perfect way to create your dream journey
             </p>
           </div>
@@ -1299,18 +1306,21 @@ const HomePage: React.FC = () => {
       <section className="packages-section py-12 md:py-20 lg:py-[136px] bg-white">
         <div className="container max-w-[1280px] mx-auto px-4 md:px-8 lg:px-20">
           <div className="section-header text-center mb-16">
-            <h2 className="section-title text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-primary-900 mb-3 font-['DM_Sans']">
+            <h2 className="section-title text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-tight text-primary-900 mb-4 font-['DM_Sans'] tracking-tight">
               Ready-made adventures
             </h2>
-            <p className="section-subtitle text-lg sm:text-xl md:text-2xl font-normal leading-8 text-primary-400 font-['Poppins']">
+            <p className="section-subtitle text-xl sm:text-2xl md:text-3xl font-medium leading-9 text-primary-600 font-['Poppins'] max-w-4xl mx-auto">
               Handcrafted itineraries by travel experts
             </p>
           </div>
 
           <div className="packages-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8 mb-8 md:mb-12">
             {loading ? (
-              <div className="col-span-full flex justify-center py-12">
-                <LoadingSpinner size="lg" />
+              <div className="col-span-full flex justify-center py-16">
+                <div className="text-center">
+                  <div className="w-16 h-16 border-4 border-blue-ocean border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                  <p className="text-primary-600 font-['Poppins'] text-lg">Loading amazing trips...</p>
+                </div>
               </div>
             ) : featuredPackages.length === 0 ? (
               <div className="col-span-full text-center py-12">

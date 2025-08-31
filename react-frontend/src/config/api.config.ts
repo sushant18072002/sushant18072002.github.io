@@ -19,6 +19,13 @@ export const API_ENDPOINTS = {
   // Airports
   AIRPORTS_SEARCH: '/airports/search',
   
+  // Flights
+  FLIGHTS: '/flights',
+  FLIGHTS_SEARCH: '/flights/search',
+  FLIGHTS_POPULAR_ROUTES: '/flights/popular-routes',
+  FLIGHTS_DEALS: '/flights/deals',
+  FLIGHT_DETAILS: (id: string) => `/flights/${id}`,
+  
   // Master Data
   MASTER_COUNTRIES: '/master/admin/countries',
   MASTER_CITIES: '/master/admin/cities',
@@ -35,6 +42,10 @@ export const API_ENDPOINTS = {
   // Auth
   AUTH_LOGIN: '/auth/login',
   AUTH_REGISTER: '/auth/register',
+  
+  // Bookings
+  BOOKINGS: '/bookings',
+  BOOKING_CONFIRMATION: '/bookings/confirmation',
 } as const;
 
 export default API_CONFIG;

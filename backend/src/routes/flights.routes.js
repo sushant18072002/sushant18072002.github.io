@@ -21,17 +21,22 @@ router.get('/', async (req, res) => {
       page = 1,
       limit = 20
     } = req.query;
+    
+    // Validate and sanitize flightClass to prevent NoSQL injection
+    const validClasses = ['economy', 'premiumEconomy', 'business', 'first'];
+    const sanitizedClass = validClasses.includes(flightClass) ? flightClass : 'economy';
 
     const query = { status: 'scheduled' };
     
-    // Handle departure airport (city name or code)
+    // Handle departure airport (city name or code) with input sanitization
     const departureParam = departure || from;
-    if (departureParam) {
+    if (departureParam && typeof departureParam === 'string' && departureParam.trim().length > 0) {
+      const sanitizedParam = departureParam.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const airport = await Airport.findOne({
         $or: [
-          { code: departureParam.toUpperCase() },
-          { city: { $regex: new RegExp(departureParam, 'i') } },
-          { name: { $regex: new RegExp(departureParam, 'i') } }
+          { code: sanitizedParam.toUpperCase() },
+          { city: { $regex: new RegExp(sanitizedParam, 'i') } },
+          { name: { $regex: new RegExp(sanitizedParam, 'i') } }
         ]
       });
       if (airport) {
@@ -39,14 +44,15 @@ router.get('/', async (req, res) => {
       }
     }
     
-    // Handle arrival airport (city name or code)
+    // Handle arrival airport (city name or code) with input sanitization
     const arrivalParam = arrival || to;
-    if (arrivalParam) {
+    if (arrivalParam && typeof arrivalParam === 'string' && arrivalParam.trim().length > 0) {
+      const sanitizedParam = arrivalParam.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const airport = await Airport.findOne({
         $or: [
-          { code: arrivalParam.toUpperCase() },
-          { city: { $regex: new RegExp(arrivalParam, 'i') } },
-          { name: { $regex: new RegExp(arrivalParam, 'i') } }
+          { code: sanitizedParam.toUpperCase() },
+          { city: { $regex: new RegExp(sanitizedParam, 'i') } },
+          { name: { $regex: new RegExp(sanitizedParam, 'i') } }
         ]
       });
       if (airport) {
@@ -54,10 +60,13 @@ router.get('/', async (req, res) => {
       }
     }
     if (airline) query.airline = airline;
-    // Handle date parameter
+    // Handle date parameter with validation
     const dateParam = date || departDate;
     if (dateParam) {
       const startDate = new Date(dateParam);
+      if (isNaN(startDate.getTime())) {
+        return res.status(400).json({ success: false, error: { message: 'Invalid date format' } });
+      }
       const endDate = new Date(startDate);
       endDate.setDate(endDate.getDate() + 1);
       query['route.departure.scheduledTime'] = {
@@ -66,12 +75,12 @@ router.get('/', async (req, res) => {
       };
     }
 
-    // Price filter
+    // Price filter with sanitized class
     if (maxPrice) {
       const priceQuery = { $lte: parseFloat(maxPrice) };
       if (minPrice) priceQuery.$gte = parseFloat(minPrice);
       
-      const priceField = `pricing.${flightClass}.totalPrice`;
+      const priceField = `pricing.${sanitizedClass}.totalPrice`;
       query[priceField] = priceQuery;
     }
     
@@ -87,11 +96,14 @@ router.get('/', async (req, res) => {
       }
     }
 
-    // Sort options
+    // Sort options with sanitized class
     let sortQuery = {};
-    switch (sort) {
+    const validSorts = ['price', 'duration', 'departure', 'arrival'];
+    const sanitizedSort = validSorts.includes(sort) ? sort : 'price';
+    
+    switch (sanitizedSort) {
       case 'price':
-        sortQuery[`pricing.${flightClass}.totalPrice`] = 1;
+        sortQuery[`pricing.${sanitizedClass}.totalPrice`] = 1;
         break;
       case 'duration':
         sortQuery['duration.scheduled'] = 1;
@@ -103,7 +115,7 @@ router.get('/', async (req, res) => {
         sortQuery['route.arrival.scheduledTime'] = 1;
         break;
       default:
-        sortQuery[`pricing.${flightClass}.totalPrice`] = 1;
+        sortQuery[`pricing.${sanitizedClass}.totalPrice`] = 1;
     }
     
     const flights = await Flight.find(query)
@@ -116,8 +128,8 @@ router.get('/', async (req, res) => {
     
     // Ensure pricing data exists for selected class
     const processedFlights = flights.map(flight => {
-      if (!flight.pricing[flightClass] && flight.pricing.economy) {
-        flight.pricing[flightClass] = flight.pricing.economy;
+      if (!flight.pricing[sanitizedClass] && flight.pricing.economy) {
+        flight.pricing[sanitizedClass] = flight.pricing.economy;
       }
       return flight;
     });
@@ -272,21 +284,76 @@ router.get('/deals', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const { Flight } = require('../models');
+    const mongoose = require('mongoose');
+    
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ success: false, error: { message: 'Invalid flight ID format' } });
+    }
+    
     const flight = await Flight.findById(req.params.id)
       .populate('airline', 'name code logo contact services')
       .populate('route.departure.airport', 'name code city country timezone')
-      .populate('route.arrival.airport', 'name code city country timezone');
+      .populate('route.arrival.airport', 'name code city country timezone')
+      .populate('layovers.airport', 'name code city');
 
     if (!flight) {
       return res.status(404).json({ success: false, error: { message: 'Flight not found' } });
     }
 
-    // Increment view count
-    await Flight.findByIdAndUpdate(flight._id, { $inc: { 'stats.views': 1 } });
+    // Ensure all pricing classes have required fields with proper validation
+    const processedFlight = flight.toObject();
+    const classDefaults = {
+      economy: { baggage: 0, refundable: false, changeFee: 150 },
+      premiumEconomy: { baggage: 1, refundable: true, changeFee: 75 },
+      business: { baggage: 2, refundable: true, changeFee: 0 },
+      first: { baggage: 3, refundable: true, changeFee: 0 }
+    };
+    
+    Object.keys(classDefaults).forEach(classType => {
+      if (processedFlight.pricing[classType]) {
+        const pricing = processedFlight.pricing[classType];
+        const defaults = classDefaults[classType];
+        
+        // Ensure pricing structure
+        if (!pricing.basePrice && pricing.totalPrice) {
+          pricing.basePrice = Math.floor(pricing.totalPrice * 0.75);
+          pricing.taxes = Math.floor(pricing.totalPrice * 0.20);
+          pricing.fees = pricing.totalPrice - pricing.basePrice - pricing.taxes;
+        }
+        
+        // Ensure restrictions
+        if (!pricing.restrictions) {
+          pricing.restrictions = {
+            refundable: defaults.refundable,
+            changeable: true,
+            changeFee: defaults.changeFee
+          };
+        }
+        
+        // Ensure baggage
+        if (!pricing.baggage) {
+          pricing.baggage = { included: defaults.baggage };
+        }
+      }
+    });
 
-    res.json({ success: true, data: { flight } });
+    // Ensure services exist
+    if (!processedFlight.services) {
+      processedFlight.services = {
+        wifi: { available: true, price: 0 },
+        meals: [{ class: 'economy', type: 'Standard', included: true }],
+        baggage: { carryOn: { included: true } }
+      };
+    }
+
+    // Increment view count asynchronously
+    Flight.findByIdAndUpdate(flight._id, { $inc: { 'stats.views': 1 } }).catch(console.error);
+
+    res.json({ success: true, data: { flight: processedFlight } });
   } catch (error) {
-    res.status(500).json({ success: false, error: { message: error.message } });
+    console.error('Flight details error:', error);
+    res.status(500).json({ success: false, error: { message: 'Internal server error' } });
   }
 });
 
