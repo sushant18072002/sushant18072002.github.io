@@ -233,13 +233,13 @@ const TripsHubPage: React.FC = () => {
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-primary-50 to-blue-50 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-primary-900 mb-4">
-            {destinationName ? `Trips to ${destinationName}` : 'Discover Amazing Trips'}
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-primary-900 mb-4 font-['DM_Sans'] leading-[0.9] tracking-tight">
+            {destinationName ? `Trips to ${destinationName}` : 'Your next amazing trip starts here'}
           </h1>
-          <p className="text-xl text-primary-600 mb-8">
+          <p className="text-lg sm:text-xl md:text-2xl text-primary-600 mb-8 font-['Poppins'] font-medium leading-relaxed max-w-3xl mx-auto">
             {destinationName 
               ? `Explore amazing experiences and adventures in ${destinationName}`
-              : 'From ready-to-book adventures to custom experiences crafted just for you'
+              : 'See beautiful itineraries, pick what you love, customize to make it yours'
             }
           </p>
           
@@ -388,14 +388,17 @@ const TripsHubPage: React.FC = () => {
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-bold text-primary-900">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-primary-900 font-['DM_Sans'] leading-[0.9] tracking-tight">
               {destinationName
                 ? `${displayTrips.length} trips to ${destinationName}`
                 : filters.search || filters.category || filters.priceRange || filters.duration
                 ? `${displayTrips.length} trips found`
-                : '✨ Featured Trips'
+                : '✨ Amazing Trips People Love'
               }
             </h2>
+            <p className="text-base sm:text-lg text-primary-600 font-['Poppins'] font-medium mt-2 mb-6">
+              Real itineraries, real experiences, ready to customize
+            </p>
           </div>
 
           {loading ? (
@@ -437,7 +440,7 @@ const TripsHubPage: React.FC = () => {
                       </div>
                     )}
                     <div className="absolute bottom-4 left-4 right-4">
-                      <h3 className="text-xl font-bold text-white mb-1 drop-shadow-lg">
+                      <h3 className="text-xl sm:text-2xl font-bold text-white mb-1 drop-shadow-lg font-['DM_Sans'] leading-tight">
                         {trip.title?.replace(/<[^>]*>/g, '') || 'Untitled Trip'}
                       </h3>
                       <p className="text-white/90 text-sm drop-shadow">
@@ -464,46 +467,42 @@ const TripsHubPage: React.FC = () => {
                     
                     <div className="flex justify-between items-center mb-6">
                       <div>
-                        <div className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">
-                          ${trip.pricing?.estimated?.toLocaleString() || 'TBD'}
+                        <div className="text-2xl sm:text-3xl font-black text-emerald font-['DM_Sans'] leading-none">
+                          From ${trip.pricing?.estimated?.toLocaleString() || 'TBD'}
                         </div>
-                        <div className="text-xs text-primary-500 font-medium">
+                        <div className="text-xs text-primary-500 font-medium font-['Poppins']">
                           per person • {trip.pricing?.currency || 'USD'}
                         </div>
                       </div>
                       <div className="text-right">
                         <div className="flex items-center gap-1 mb-1">
                           <span className="text-amber-400 text-lg">⭐</span>
-                          <span className="font-bold text-primary-900">{trip.stats?.rating || 4.5}</span>
+                          <span className="font-bold text-primary-900 font-['DM_Sans']">{trip.stats?.rating || 4.5}</span>
+                          <span className="text-xs text-primary-500 font-['Poppins']">({trip.stats?.reviewCount || 0})</span>
                         </div>
-                        <div className="text-xs text-primary-500 mb-1">
-                          ({trip.stats?.reviewCount || 0} reviews)
-                        </div>
-                        <div className="text-xs text-green-600 font-semibold">
-                          👁️ {trip.stats?.views || 0} views
-                        </div>
+
                       </div>
                     </div>
                     
                     <div className="flex gap-3">
                       <Button 
-                        className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300"
+                        className="flex-1 bg-blue-ocean text-white hover:bg-emerald transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg font-bold font-['DM_Sans'] text-sm rounded-xl py-2.5"
                         onClick={(e) => {
                           e.stopPropagation();
                           navigate(`/trips/${trip.slug || trip._id}`);
                         }}
                       >
-                        View Details
+                        Customize
                       </Button>
                       <Button 
                         variant="outline" 
-                        className="px-4 border-2 border-primary-200 hover:border-primary-300 hover:bg-primary-50 transition-all duration-300"
+                        className="px-4 border-2 border-blue-ocean text-blue-ocean hover:bg-blue-ocean hover:text-white transition-all duration-300 font-bold font-['DM_Sans'] text-sm rounded-xl py-2.5"
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate(`/trips/${trip.slug || trip._id}/customize`);
+                          navigate(`/trips/${trip.slug || trip._id}/ai-similar`);
                         }}
                       >
-                        ⚙️
+                        AI Similar
                       </Button>
                     </div>
                   </div>
@@ -515,8 +514,8 @@ const TripsHubPage: React.FC = () => {
           {displayTrips.length === 0 && !loading && (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">🔍</div>
-              <h3 className="text-xl font-bold text-primary-900 mb-2">No trips found</h3>
-              <p className="text-primary-600 mb-6">Try adjusting your filters or search terms</p>
+              <h3 className="text-xl font-bold text-primary-900 mb-2 font-['DM_Sans'] leading-tight">No trips found</h3>
+              <p className="text-primary-600 mb-6 font-['Poppins'] leading-relaxed">Try adjusting your filters or search terms</p>
               <div className="space-y-2">
                 <Button onClick={clearFilters}>Clear Filters</Button>
                 <Button variant="outline" onClick={async () => {
@@ -541,8 +540,8 @@ const TripsHubPage: React.FC = () => {
       <section className="py-8 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-6">
-            <h2 className="text-xl font-bold text-primary-900 mb-2">Quick Access</h2>
-            <p className="text-primary-600 text-sm">Jump directly to any trip</p>
+            <h2 className="text-xl font-bold text-primary-900 mb-2 font-['DM_Sans'] leading-tight">Quick Access</h2>
+            <p className="text-primary-600 text-sm font-['Poppins']">Jump directly to any trip</p>
           </div>
           <QuickTripAccess />
         </div>
@@ -552,8 +551,8 @@ const TripsHubPage: React.FC = () => {
       <section className="py-16 bg-primary-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-primary-900 mb-4">How It Works</h2>
-            <p className="text-primary-600">Three easy ways to plan your perfect trip</p>
+            <h2 className="text-3xl sm:text-4xl font-black text-primary-900 mb-4 font-['DM_Sans'] leading-[0.9] tracking-tight">It's This Simple</h2>
+            <p className="text-lg text-primary-600 font-['Poppins'] font-medium">Three easy ways to get your perfect trip</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -566,8 +565,8 @@ const TripsHubPage: React.FC = () => {
                 <div className="w-16 h-16 bg-blue-ocean text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
                   {item.icon}
                 </div>
-                <h3 className="text-xl font-bold text-primary-900 mb-2">{item.title}</h3>
-                <p className="text-primary-600">{item.desc}</p>
+                <h3 className="text-xl font-bold text-primary-900 mb-2 font-['DM_Sans'] leading-tight">{item.title}</h3>
+                <p className="text-primary-600 font-['Poppins'] leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
