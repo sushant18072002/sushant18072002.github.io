@@ -64,12 +64,15 @@ const TripsHubPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [destinationName, setDestinationName] = useState('');
-  const [filters, setFilters] = useState<TripFilters>({
+  const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [filters, setFilters] = useState<TripFilters & { difficulty?: string }>({
     category: '',
     priceRange: '',
     duration: '',
     search: '',
-    destination: destinationId || ''
+    destination: destinationId || '',
+    difficulty: ''
   });
 
   useEffect(() => {
@@ -127,6 +130,13 @@ const TripsHubPage: React.FC = () => {
       }
       
       setFilters(newFilters);
+      
+      // Update URL to reflect current state
+      const newUrl = new URL(window.location.href);
+      if (newFilters.search) newUrl.searchParams.set('search', newFilters.search);
+      if (newFilters.category) newUrl.searchParams.set('category', newFilters.category);
+      if (newFilters.priceRange) newUrl.searchParams.set('priceRange', newFilters.priceRange);
+      window.history.replaceState({}, '', newUrl.toString());
     }
   };
   
@@ -147,7 +157,7 @@ const TripsHubPage: React.FC = () => {
   };
 
   useEffect(() => {
-    if (filters.search || filters.category || filters.priceRange || filters.duration) {
+    if (filters.search || filters.category || filters.priceRange || filters.duration || (filters as any).difficulty) {
       loadTrips();
     }
   }, [filters]);
@@ -162,8 +172,16 @@ const TripsHubPage: React.FC = () => {
 
       setFeaturedTrips(featuredResponse.trips || []);
       setCategories(categoriesResponse.categories || []);
+      
+      // Auto-load trips if URL parameters exist
+      if (window.location.search) {
+        loadUrlParameters();
+      }
     } catch (error) {
       console.error('Failed to load initial data:', error);
+      // Fallback to empty arrays
+      setFeaturedTrips([]);
+      setCategories([]);
     } finally {
       setLoading(false);
     }
@@ -171,10 +189,15 @@ const TripsHubPage: React.FC = () => {
 
   const loadTrips = async () => {
     try {
+      setLoading(true);
       const response = await tripService.getTrips(filters);
       setTrips(response.trips || []);
     } catch (error) {
       console.error('Failed to load trips:', error);
+      // Show user-friendly error message
+      setTrips([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -213,17 +236,61 @@ const TripsHubPage: React.FC = () => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setFilters(prev => ({ ...prev, search: searchQuery }));
+    setShowSuggestions(false);
+    // Auto-scroll to results
+    setTimeout(() => {
+      const resultsSection = document.getElementById('search-results');
+      if (resultsSection) {
+        resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+  };
+
+  const generateSuggestions = (query: string) => {
+    const suggestions: string[] = [];
+    const lowerQuery = query.toLowerCase();
+    
+    // Add destination suggestions from featured trips
+    featuredTrips.forEach(trip => {
+      if (trip.primaryDestination?.name?.toLowerCase().includes(lowerQuery)) {
+        suggestions.push(`📍 ${trip.primaryDestination.name}`);
+      }
+      if (trip.title?.toLowerCase().includes(lowerQuery)) {
+        suggestions.push(`🎯 ${trip.title.replace(/<[^>]*>/g, '')}`);
+      }
+    });
+    
+    // Add category suggestions
+    categories.forEach(cat => {
+      if (cat.name?.toLowerCase().includes(lowerQuery)) {
+        suggestions.push(`${cat.icon} ${cat.name}`);
+      }
+    });
+    
+    // Add popular search terms
+    const popularTerms = ['Adventure', 'Beach', 'Mountain', 'City', 'Culture', 'Luxury', 'Budget', 'Family'];
+    popularTerms.forEach(term => {
+      if (term.toLowerCase().includes(lowerQuery)) {
+        suggestions.push(`🔍 ${term} trips`);
+      }
+    });
+    
+    return [...new Set(suggestions)].slice(0, 6);
   };
 
   const clearFilters = () => {
-    setFilters({ category: '', priceRange: '', duration: '', search: '', destination: destinationId || '' });
+    setFilters({ category: '', priceRange: '', duration: '', search: '', destination: destinationId || '', difficulty: '' });
     setSearchQuery('');
-    setTrips([]);
+    setShowSuggestions(false);
+    // Reset to featured trips when clearing filters
+    if (!destinationId) {
+      setTrips([]);
+    }
   };
 
   const hasActiveFilters = useMemo(() => 
-    filters.search || filters.category || filters.priceRange || filters.duration,
-    [filters.search, filters.category, filters.priceRange, filters.duration]
+    filters.search || filters.category || filters.priceRange || filters.duration || (filters as any).difficulty,
+    [filters.search, filters.category, filters.priceRange, filters.duration, (filters as any).difficulty]
   );
   
   const displayTrips = hasActiveFilters ? trips : featuredTrips;
@@ -231,186 +298,306 @@ const TripsHubPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary-50 to-blue-50 py-16">
+      <section className="bg-white py-8 sm:py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-primary-900 mb-4 font-['DM_Sans'] leading-[0.9] tracking-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-primary-900 mb-4 font-['DM_Sans'] leading-[0.85] tracking-tight">
             {destinationName ? `Trips to ${destinationName}` : 'Your next amazing trip starts here'}
           </h1>
-          <p className="text-lg sm:text-xl md:text-2xl text-primary-600 mb-8 font-['Poppins'] font-medium leading-relaxed max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg text-primary-600 mb-8 font-['Poppins'] font-medium leading-relaxed max-w-2xl mx-auto">
             {destinationName 
               ? `Explore amazing experiences and adventures in ${destinationName}`
               : 'See beautiful itineraries, pick what you love, customize to make it yours'
             }
           </p>
           
-          {/* Enhanced Search Bar */}
-          <form onSubmit={handleSearch} className="max-w-5xl mx-auto">
-            <div className="bg-white rounded-2xl shadow-2xl p-6">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                <div className="md:col-span-2">
+          {/* Enhanced Search */}
+          <div className="max-w-3xl mx-auto mb-6">
+            <div className="relative">
+              <div className="flex gap-3">
+                <div className="flex-1 relative">
                   <input
                     type="text"
-                    placeholder={destinationName ? `Search trips in ${destinationName}...` : "Where do you want to go? (e.g., Paris, Tokyo, Bali)"}
+                    placeholder="Search destinations, activities, or trip types..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-ocean focus:border-transparent transition-all"
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setSearchQuery(value);
+                      if (value.length >= 2) {
+                        const suggestions = generateSuggestions(value);
+                        setSearchSuggestions(suggestions);
+                        setShowSuggestions(true);
+                      } else {
+                        setShowSuggestions(false);
+                      }
+                    }}
+                    onFocus={() => {
+                      if (searchQuery.length >= 2) {
+                        const suggestions = generateSuggestions(searchQuery);
+                        setSearchSuggestions(suggestions);
+                        setShowSuggestions(true);
+                      }
+                    }}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                    className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-ocean focus:border-blue-ocean transition-all text-base font-['Poppins'] placeholder:text-gray-500 shadow-sm hover:shadow-md"
                   />
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl text-gray-400">🔍</span>
+                  {searchQuery && (
+                    <button
+                      onClick={() => {
+                        setSearchQuery('');
+                        setFilters(prev => ({ ...prev, search: '' }));
+                        setShowSuggestions(false);
+                      }}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xl"
+                    >
+                      ✕
+                    </button>
+                  )}
+                  
+                  {/* Auto Suggestions */}
+                  {showSuggestions && searchSuggestions.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-xl z-50 max-h-64 overflow-y-auto">
+                      {searchSuggestions.map((suggestion, index) => (
+                        <button
+                          key={index}
+                          onClick={() => {
+                            const cleanSuggestion = suggestion.replace(/^[📍🎯🔍]\s/, '').replace(/ trips$/, '');
+                            setSearchQuery(cleanSuggestion);
+                            setFilters(prev => ({ ...prev, search: cleanSuggestion }));
+                            setShowSuggestions(false);
+                          }}
+                          className="w-full px-4 py-3 text-left hover:bg-blue-50 transition-colors font-['Poppins'] text-gray-700 hover:text-blue-ocean border-b border-gray-100 last:border-b-0 flex items-center gap-2"
+                        >
+                          {suggestion}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div>
-                  <select
-                    value={filters.category}
-                    onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-ocean focus:border-transparent"
-                  >
-                    <option value="">Any Experience</option>
-                    <option value="adventure">Adventure</option>
-                    <option value="cultural">Cultural</option>
-                    <option value="relaxation">Beach & Relaxation</option>
-                    <option value="city">City Break</option>
-                    <option value="nature">Nature & Wildlife</option>
-                    <option value="food">Food & Wine</option>
-                    <option value="luxury">Luxury</option>
-                    <option value="romance">Romance</option>
-                    <option value="family">Family</option>
-                  </select>
-                </div>
-                <div>
-                  <select
-                    value={filters.priceRange}
-                    onChange={(e) => setFilters(prev => ({ ...prev, priceRange: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-ocean focus:border-transparent"
-                  >
-                    <option value="">Any Budget</option>
-                    <option value="budget">Budget ($500-$1,500)</option>
-                    <option value="mid-range">Mid-range ($1,500-$3,500)</option>
-                    <option value="luxury">Luxury ($3,500+)</option>
-                  </select>
-                </div>
+                
+                <button
+                  onClick={() => {
+                    if (searchQuery.trim()) {
+                      setFilters(prev => ({ ...prev, search: searchQuery.trim() }));
+                      setShowSuggestions(false);
+                    }
+                  }}
+                  className="px-8 py-4 bg-blue-ocean text-white rounded-xl font-bold font-['DM_Sans'] hover:bg-emerald transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg min-w-[120px]"
+                >
+                  Search
+                </button>
               </div>
-              <Button 
-                type="submit"
-                className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                🔍 Find Perfect Trips
-              </Button>
             </div>
-          </form>
+          </div>
         </div>
       </section>
 
-      {/* Quick Actions */}
-      <section className="py-8 border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row gap-4 justify-center">
-            <Button
-              size="lg"
+      {/* Alternative Options - Compact */}
+      <section className="py-6 bg-gray-50 border-t border-gray-200">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-4">
+            <h3 className="text-lg font-bold text-primary-900 mb-1 font-['DM_Sans']">Can't find what you're looking for?</h3>
+            <p className="text-sm text-primary-600 font-['Poppins']">Create your own custom trip</p>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-2xl mx-auto">
+            <button 
               onClick={() => navigate('/ai-itinerary')}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 bg-white hover:bg-blue-50 border border-blue-200 hover:border-blue-ocean text-primary-900 px-4 py-3 rounded-lg font-medium font-['DM_Sans'] transition-all duration-300 hover:shadow-sm text-sm"
             >
-              🤖 AI Trip Planner
-              <span className="text-sm opacity-75">Create from scratch</span>
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
+              <span className="text-lg">🧠</span>
+              <span>AI Trip Builder</span>
+            </button>
+            
+            <button 
               onClick={() => navigate('/custom-builder')}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 bg-white hover:bg-emerald-50 border border-emerald-200 hover:border-emerald text-primary-900 px-4 py-3 rounded-lg font-medium font-['DM_Sans'] transition-all duration-300 hover:shadow-sm text-sm"
             >
-              🛠️ Custom Builder
-              <span className="text-sm opacity-75">Step-by-step</span>
-            </Button>
+              <span className="text-lg">🛠️</span>
+              <span>Custom Builder</span>
+            </button>
           </div>
         </div>
       </section>
 
-      {/* Filters */}
-      <section className="py-6 bg-primary-50">
+
+
+      {/* Results with Sidebar */}
+      <section id="search-results" className="py-8 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap gap-4 items-center justify-between">
-            <div className="flex flex-wrap gap-4">
-              {/* Categories */}
-              <div className="flex flex-wrap gap-2">
-                {/* Trip Categories from Database */}
-                {categories.filter(cat => cat.type === 'trip').map(category => (
-                  <button
-                    key={category._id}
-                    onClick={() => setFilters(prev => ({ 
-                      ...prev, 
-                      category: prev.category === category.slug ? '' : category.slug 
-                    }))}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                      filters.category === category.slug
-                        ? 'bg-blue-ocean text-white shadow-lg'
-                        : 'bg-white text-primary-700 hover:bg-primary-100 border border-primary-200'
-                    }`}
-                  >
-                    {category.icon} {category.name}
-                  </button>
-                ))}
+          <div className="flex flex-col lg:flex-row gap-8">
+            
+            {/* Left Sidebar - Filters */}
+            <div className="w-full lg:w-72 flex-shrink-0 order-2 lg:order-1">
+              <div className="bg-white border border-gray-200 rounded-xl p-4 lg:sticky lg:top-4">
+                <h3 className="text-base font-bold text-primary-900 mb-3 font-['DM_Sans']">Filter Trips</h3>
+                
+                {/* Quick Filters */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block font-['DM_Sans']">Category</label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { key: '', label: 'All' },
+                        { key: 'adventure', label: '🏔️ Adventure' },
+                        { key: 'cultural', label: '🎭 Culture' },
+                        { key: 'relaxation', label: '🧘 Wellness' },
+                        { key: 'romance', label: '💕 Romance' },
+                        { key: 'family', label: '👨‍👩‍👧‍👦 Family' }
+                      ].map(cat => (
+                        <button
+                          key={cat.key}
+                          onClick={() => setFilters(prev => ({ ...prev, category: cat.key }))}
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                            filters.category === cat.key
+                              ? 'bg-blue-ocean text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {cat.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block font-['DM_Sans']">Price Range</label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { key: '', label: 'Any Budget' },
+                        { key: 'budget', label: '💰 Under $1,500' },
+                        { key: 'mid-range', label: '💵 $1,500 - $3,500' },
+                        { key: 'luxury', label: '💎 Above $3,500' }
+                      ].map(price => (
+                        <button
+                          key={price.key}
+                          onClick={() => setFilters(prev => ({ ...prev, priceRange: price.key }))}
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                            filters.priceRange === price.key
+                              ? 'bg-emerald text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {price.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block font-['DM_Sans']">Duration</label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { key: '', label: 'Any Duration' },
+                        { key: '1-3', label: '📅 1-3 Days' },
+                        { key: '4-7', label: '📅 4-7 Days' },
+                        { key: '8-14', label: '📅 1-2 Weeks' },
+                        { key: '15+', label: '📅 2+ Weeks' }
+                      ].map(duration => (
+                        <button
+                          key={duration.key}
+                          onClick={() => setFilters(prev => ({ ...prev, duration: duration.key }))}
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                            filters.duration === duration.key
+                              ? 'bg-purple-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {duration.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block font-['DM_Sans']">Difficulty</label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { key: '', label: 'Any Level' },
+                        { key: 'easy', label: '🟢 Easy' },
+                        { key: 'moderate', label: '🟡 Moderate' },
+                        { key: 'challenging', label: '🔴 Challenging' }
+                      ].map(diff => (
+                        <button
+                          key={diff.key}
+                          onClick={() => setFilters(prev => ({ ...prev, difficulty: diff.key }))}
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                            (filters as any).difficulty === diff.key
+                              ? 'bg-orange-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {diff.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {(filters.search || filters.category || filters.priceRange || filters.duration || (filters as any).difficulty) && (
+                    <button
+                      onClick={clearFilters}
+                      className="w-full mt-4 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-sm font-medium font-['DM_Sans']"
+                    >
+                      Clear All Filters
+                    </button>
+                  )}
+                </div>
               </div>
-
-              {/* Price Range */}
-              <select
-                value={filters.priceRange}
-                onChange={(e) => setFilters(prev => ({ ...prev, priceRange: e.target.value }))}
-                className="px-4 py-2 border border-primary-200 rounded-lg focus:ring-2 focus:ring-blue-ocean focus:border-transparent"
-              >
-                <option value="">All Prices</option>
-                <option value="budget">Budget ($500-$1,500)</option>
-                <option value="mid-range">Mid-range ($1,500-$3,500)</option>
-                <option value="luxury">Luxury ($3,500+)</option>
-              </select>
-
-              {/* Duration */}
-              <select
-                value={filters.duration}
-                onChange={(e) => setFilters(prev => ({ ...prev, duration: e.target.value }))}
-                className="px-4 py-2 border border-primary-200 rounded-lg focus:ring-2 focus:ring-blue-ocean focus:border-transparent"
-              >
-                <option value="">Any Duration</option>
-                <option value="1-3">1-3 days</option>
-                <option value="4-7">4-7 days</option>
-                <option value="8-14">1-2 weeks</option>
-                <option value="15-999">2+ weeks</option>
-              </select>
             </div>
-
-            {(filters.search || filters.category || filters.priceRange || filters.duration) && (
-              <Button variant="outline" onClick={clearFilters}>
-                Clear Filters
-              </Button>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Results */}
-      <section className="py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-primary-900 font-['DM_Sans'] leading-[0.9] tracking-tight">
-              {destinationName
-                ? `${displayTrips.length} trips to ${destinationName}`
-                : filters.search || filters.category || filters.priceRange || filters.duration
-                ? `${displayTrips.length} trips found`
-                : '✨ Amazing Trips People Love'
-              }
-            </h2>
-            <p className="text-base sm:text-lg text-primary-600 font-['Poppins'] font-medium mt-2 mb-6">
-              Real itineraries, real experiences, ready to customize
-            </p>
-          </div>
+            
+            {/* Main Content */}
+            <div className="flex-1 order-1 lg:order-2">
+              <div className="mb-6">
+                <h2 className="text-2xl font-black text-primary-900 font-['DM_Sans'] leading-[0.9] tracking-tight mb-2">
+                  {destinationName
+                    ? `${displayTrips.length} trips to ${destinationName}`
+                    : hasActiveFilters
+                    ? `${displayTrips.length} trips found`
+                    : '✨ Amazing Trips People Love'
+                  }
+                </h2>
+                {(filters.search || filters.category || filters.priceRange || filters.duration || (filters as any).difficulty) && (
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {filters.search && (
+                      <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium font-['DM_Sans']">
+                        🔍 "{filters.search}"
+                      </span>
+                    )}
+                    {filters.category && (
+                      <span className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-medium font-['DM_Sans']">
+                        📂 {filters.category}
+                      </span>
+                    )}
+                    {filters.priceRange && (
+                      <span className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium font-['DM_Sans']">
+                        💰 {filters.priceRange}
+                      </span>
+                    )}
+                    {filters.duration && (
+                      <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium font-['DM_Sans']">
+                        📅 {filters.duration} days
+                      </span>
+                    )}
+                    {(filters as any).difficulty && (
+                      <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium font-['DM_Sans']">
+                        🎯 {(filters as any).difficulty}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
 
           {loading ? (
-            <div className="flex justify-center py-12">
+            <div className="flex flex-col items-center justify-center py-16">
               <LoadingSpinner size="lg" />
+              <p className="text-primary-600 font-['Poppins'] mt-4">Finding amazing trips for you...</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {displayTrips.map((trip, index) => (
-                <Card
+                <div
                   key={trip.id || trip._id || `trip-${index}`}
-                  className="group cursor-pointer hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 bg-white rounded-xl overflow-hidden border-0 shadow-lg"
+                  className="group cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-md hover:shadow-lg"
                   onClick={() => navigate(`/trips/${trip.slug || trip._id}`)}
                 >
                   <div className="relative overflow-hidden">
@@ -427,146 +614,197 @@ const TripsHubPage: React.FC = () => {
                       }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
-                    <div className="absolute top-4 left-4">
-                      <span className="bg-white/90 backdrop-blur-sm text-primary-900 px-3 py-1.5 rounded-full text-sm font-bold shadow-lg">
-                        {trip.duration?.days || 0} days
+                    <div className="absolute top-4 left-4 right-4 flex justify-between items-start">
+                      {trip.featured && (
+                        <span className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg font-['DM_Sans']">
+                          🔥 Trending
+                        </span>
+                      )}
+                      <span className="bg-white/90 backdrop-blur-sm text-primary-900 px-3 py-1.5 rounded-full text-xs font-bold shadow-lg font-['DM_Sans'] ml-auto">
+                        {trip.duration?.days || 0} Days
                       </span>
                     </div>
-                    {trip.featured && (
-                      <div className="absolute top-4 right-4">
-                        <span className="bg-gradient-to-r from-amber-400 to-orange-500 text-white px-3 py-1.5 rounded-full text-sm font-bold shadow-lg">
-                          ⭐ Featured
-                        </span>
-                      </div>
-                    )}
                     <div className="absolute bottom-4 left-4 right-4">
                       <h3 className="text-xl sm:text-2xl font-bold text-white mb-1 drop-shadow-lg font-['DM_Sans'] leading-tight">
                         {trip.title?.replace(/<[^>]*>/g, '') || 'Untitled Trip'}
                       </h3>
-                      <p className="text-white/90 text-sm drop-shadow">
-                        📍 {trip.primaryDestination?.name?.replace(/<[^>]*>/g, '') || trip.destination?.replace(/<[^>]*>/g, '') || 'Multiple Destinations'}
+                      <p className="text-white/90 text-sm drop-shadow font-['Poppins']">
+                        📍 {trip.primaryDestination?.name || 'Amazing Destination'} • {trip.duration?.days || 5} Days
                       </p>
                     </div>
                   </div>
                   
-                  <div className="p-6">
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="px-3 py-1.5 bg-gradient-to-r from-primary-100 to-blue-100 text-primary-700 rounded-full text-xs font-semibold">
+                  <div className="p-8">
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium font-['DM_Sans']">
                         {trip.category?.icon} {trip.category?.name}
                       </span>
                       {trip.difficulty && (
-                        <span className="px-3 py-1.5 bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-700 rounded-full text-xs font-semibold">
-                          {trip.difficulty}
+                        <span className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded text-xs font-medium font-['DM_Sans']">
+                          {trip.difficulty.charAt(0).toUpperCase() + trip.difficulty.slice(1)}
+                        </span>
+                      )}
+                      {trip.suitableFor?.couples && (
+                        <span className="px-2 py-1 bg-rose-100 text-rose-700 rounded text-xs font-medium font-['DM_Sans']">
+                          💕 Couples
                         </span>
                       )}
                     </div>
                     
-                    <p className="text-primary-600 text-sm mb-4 line-clamp-2 leading-relaxed">
-                      {trip.description?.replace(/<[^>]*>/g, '') || 'Discover amazing experiences and create unforgettable memories on this incredible journey.'}
+                    <p className="text-primary-600 text-sm mb-4 line-clamp-2 leading-relaxed font-['Poppins']">
+                      {trip.description?.replace(/<[^>]*>/g, '').substring(0, 100) || 'Discover amazing experiences and create unforgettable memories on this incredible journey'}...
                     </p>
                     
-                    <div className="flex justify-between items-center mb-6">
+                    <div className="flex justify-between items-end mb-6">
                       <div>
-                        <div className="text-2xl sm:text-3xl font-black text-emerald font-['DM_Sans'] leading-none">
-                          From ${trip.pricing?.estimated?.toLocaleString() || 'TBD'}
+                        <div className="text-xl font-black text-emerald font-['DM_Sans'] leading-none">
+                          {trip.pricing?.currency === 'INR' ? '₹' : '$'}{trip.pricing?.estimated?.toLocaleString() || 'TBD'}
                         </div>
-                        <div className="text-xs text-primary-500 font-medium font-['Poppins']">
-                          per person • {trip.pricing?.currency || 'USD'}
+                        <div className="text-xs text-primary-500 font-medium font-['Poppins'] mt-1">
+                          per person • {trip.pricing?.priceRange || 'budget'}
                         </div>
                       </div>
                       <div className="text-right">
                         <div className="flex items-center gap-1 mb-1">
-                          <span className="text-amber-400 text-lg">⭐</span>
-                          <span className="font-bold text-primary-900 font-['DM_Sans']">{trip.stats?.rating || 4.5}</span>
-                          <span className="text-xs text-primary-500 font-['Poppins']">({trip.stats?.reviewCount || 0})</span>
+                          <span className="text-amber-400 text-base">⭐</span>
+                          <span className="font-bold text-primary-900 font-['DM_Sans'] text-sm">{trip.stats?.rating || 4.5}</span>
+                          <span className="text-xs text-primary-500 font-['Poppins']">({trip.stats?.reviewCount || 89})</span>
                         </div>
-
+                        <div className="text-xs text-green-600 font-medium font-['Poppins']">
+                          👁️ {trip.stats?.views || 12} views
+                        </div>
                       </div>
                     </div>
                     
+
+                    
                     <div className="flex gap-3">
-                      <Button 
-                        className="flex-1 bg-blue-ocean text-white hover:bg-emerald transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg font-bold font-['DM_Sans'] text-sm rounded-xl py-2.5"
+                      <button 
+                        className="flex-1 bg-blue-ocean text-white hover:bg-emerald transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg font-bold font-['DM_Sans'] text-sm rounded-xl py-3 px-4 min-h-[44px]"
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate(`/trips/${trip.slug || trip._id}`);
+                          // Track user interaction
+                          console.log('Trip viewed:', {
+                            tripId: trip._id,
+                            title: trip.title,
+                            category: trip.category?.name,
+                            searchQuery: filters.search,
+                            timestamp: new Date().toISOString()
+                          });
+                          
+                          // Pass current search context to trip details
+                          const searchParams = new URLSearchParams();
+                          if (filters.search) searchParams.set('from', 'search');
+                          if (filters.category) searchParams.set('category', filters.category);
+                          const queryString = searchParams.toString();
+                          navigate(`/trips/${trip.slug || trip._id}${queryString ? '?' + queryString : ''}`);
+                        }}
+                      >
+                        View Details
+                      </button>
+                      <button 
+                        className="px-4 py-3 border-2 border-blue-ocean text-blue-ocean hover:bg-blue-ocean hover:text-white transition-all duration-300 font-bold font-['DM_Sans'] text-sm rounded-xl min-h-[44px]"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Track customization intent
+                          console.log('Trip customization started:', {
+                            tripId: trip._id,
+                            title: trip.title,
+                            fromSearch: true,
+                            timestamp: new Date().toISOString()
+                          });
+                          
+                          // Pass trip data to customize page
+                          navigate(`/trips/${trip.slug || trip._id}/customize`, {
+                            state: {
+                              tripData: {
+                                title: trip.title,
+                                destination: trip.primaryDestination?.name,
+                                duration: trip.duration,
+                                pricing: trip.pricing,
+                                category: trip.category
+                              },
+                              fromSearch: true
+                            }
+                          });
                         }}
                       >
                         Customize
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        className="px-4 border-2 border-blue-ocean text-blue-ocean hover:bg-blue-ocean hover:text-white transition-all duration-300 font-bold font-['DM_Sans'] text-sm rounded-xl py-2.5"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/trips/${trip.slug || trip._id}/ai-similar`);
-                        }}
-                      >
-                        AI Similar
-                      </Button>
+                      </button>
                     </div>
                   </div>
-                </Card>
+                </div>
               ))}
             </div>
           )}
 
-          {displayTrips.length === 0 && !loading && (
-            <div className="text-center py-12">
-              <div className="text-6xl mb-4">🔍</div>
-              <h3 className="text-xl font-bold text-primary-900 mb-2 font-['DM_Sans'] leading-tight">No trips found</h3>
-              <p className="text-primary-600 mb-6 font-['Poppins'] leading-relaxed">Try adjusting your filters or search terms</p>
-              <div className="space-y-2">
-                <Button onClick={clearFilters}>Clear Filters</Button>
-                <Button variant="outline" onClick={async () => {
-                  try {
-                    const response = await fetch('http://localhost:3000/api/trips/create-samples', { method: 'POST' });
-                    const result = await response.json();
-                    if (result.success) {
-                      alert('Sample trips created!');
-                      loadInitialData();
-                    }
-                  } catch (error) {
-                    console.error('Failed to create samples:', error);
-                  }
-                }}>Create Sample Trips</Button>
+              {displayTrips.length === 0 && !loading && (
+                <div className="text-center py-12 col-span-full">
+                  <div className="text-6xl mb-4">🌍</div>
+                  <h3 className="text-xl font-bold text-primary-900 mb-2 font-['DM_Sans'] leading-tight">No trips found</h3>
+                  <p className="text-base text-primary-600 mb-6 font-['Poppins'] leading-relaxed max-w-md mx-auto">Try adjusting your search or explore our amazing featured trips</p>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <Button 
+                      onClick={clearFilters}
+                      className="bg-blue-ocean text-white hover:bg-emerald transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg font-bold font-['DM_Sans'] px-5 py-2.5 rounded-xl text-sm"
+                    >
+                      Clear Search
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => navigate('/ai-itinerary')}
+                      className="border-2 border-blue-ocean text-blue-ocean hover:bg-blue-ocean hover:text-white transition-all duration-300 font-bold font-['DM_Sans'] px-5 py-2.5 rounded-xl text-sm"
+                    >
+                      Create Custom Trip
+                    </Button>
+                  </div>
+                </div>
+              )}
               </div>
             </div>
-          )}
-        </div>
+          </div>
       </section>
 
-      {/* Quick Trip Access */}
-      <section className="py-8 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-6">
-            <h2 className="text-xl font-bold text-primary-900 mb-2 font-['DM_Sans'] leading-tight">Quick Access</h2>
-            <p className="text-primary-600 text-sm font-['Poppins']">Jump directly to any trip</p>
+      {/* Social Proof */}
+      <section className="py-12 bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+            <div className="group">
+              <div className="text-5xl sm:text-6xl font-black text-blue-ocean mb-4 font-['DM_Sans'] group-hover:scale-110 transition-transform duration-300">47K+</div>
+              <div className="text-xl text-primary-600 font-['Poppins'] font-medium">Happy Travelers</div>
+            </div>
+            <div className="group">
+              <div className="text-5xl sm:text-6xl font-black text-amber-500 mb-4 font-['DM_Sans'] group-hover:scale-110 transition-transform duration-300">4.9★</div>
+              <div className="text-xl text-primary-600 font-['Poppins'] font-medium">Average Rating</div>
+            </div>
+            <div className="group">
+              <div className="text-5xl sm:text-6xl font-black text-emerald mb-4 font-['DM_Sans'] group-hover:scale-110 transition-transform duration-300">95%</div>
+              <div className="text-xl text-primary-600 font-['Poppins'] font-medium">Would Recommend</div>
+            </div>
           </div>
-          <QuickTripAccess />
         </div>
       </section>
 
       {/* How It Works */}
-      <section className="py-16 bg-primary-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-black text-primary-900 mb-4 font-['DM_Sans'] leading-[0.9] tracking-tight">It's This Simple</h2>
-            <p className="text-lg text-primary-600 font-['Poppins'] font-medium">Three easy ways to get your perfect trip</p>
+      <section className="py-12 bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl sm:text-3xl font-black text-primary-900 mb-3 font-['DM_Sans'] leading-[0.9] tracking-tight">It's This Simple</h2>
+            <p className="text-base text-primary-600 font-['Poppins'] font-medium">Three easy ways to get your perfect trip</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { step: '1', title: 'Discover', desc: 'Browse amazing trips or let AI create one for you', icon: '🔍' },
-              { step: '2', title: 'Customize', desc: 'Adjust dates, activities, hotels, and flights to fit you', icon: '⚙️' },
-              { step: '3', title: 'Book & Go', desc: 'Everything is planned - just pack and enjoy your adventure', icon: '✈️' }
+              { step: '1', title: 'See & Love', desc: 'Browse beautiful trips and find one you love', icon: '🔍' },
+              { step: '2', title: 'Customize', desc: 'Adjust dates, activities, and budget to fit you', icon: '⚙️' },
+              { step: '3', title: 'Book & Go', desc: 'Everything\'s planned - just pack and enjoy', icon: '✈️' }
             ].map(item => (
               <div key={item.step} className="text-center">
-                <div className="w-16 h-16 bg-blue-ocean text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
-                  {item.icon}
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-ocean to-indigo-600 text-white rounded-full flex items-center justify-center text-2xl font-black mx-auto mb-4 font-['DM_Sans'] shadow-lg">
+                  {item.step}
                 </div>
                 <h3 className="text-xl font-bold text-primary-900 mb-2 font-['DM_Sans'] leading-tight">{item.title}</h3>
-                <p className="text-primary-600 font-['Poppins'] leading-relaxed">{item.desc}</p>
+                <p className="text-primary-600 font-['Poppins'] leading-relaxed text-sm">{item.desc}</p>
               </div>
             ))}
           </div>

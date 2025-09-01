@@ -173,15 +173,20 @@ router.get('/:identifier', async (req, res) => {
     const { Trip } = require('../models');
     const { identifier } = req.params;
     
+    // Validate identifier
+    if (!identifier || identifier.length > 100) {
+      return res.status(400).json({ success: false, error: { message: 'Invalid trip identifier' } });
+    }
+    
     let trip;
     
     // Check if identifier is a valid ObjectId
     if (identifier.match(/^[0-9a-fA-F]{24}$/)) {
-      // It's an ObjectId
-      trip = await Trip.findById(identifier);
+      trip = await Trip.findById(identifier).select('-__v -createdAt -updatedAt');
     } else {
-      // It's a slug
-      trip = await Trip.findOne({ slug: identifier, status: 'published' });
+      // Sanitize slug input
+      const sanitizedSlug = identifier.replace(/[^a-zA-Z0-9-]/g, '');
+      trip = await Trip.findOne({ slug: sanitizedSlug, status: 'published' }).select('-__v -createdAt -updatedAt');
     }
     
     if (!trip) {
@@ -198,15 +203,26 @@ router.get('/:identifier', async (req, res) => {
       ]);
     } catch (populateError) {
       console.warn('Populate error for trip:', trip._id, populateError.message);
-      // Continue without populate if there are invalid references
     }
     
-    // Increment view count
-    await Trip.findByIdAndUpdate(trip._id, { $inc: { 'stats.views': 1 } });
+    // Increment view count asynchronously
+    Trip.findByIdAndUpdate(trip._id, { $inc: { 'stats.views': 1 } }).catch(err => 
+      console.warn('Failed to increment view count:', err.message)
+    );
+    
+    // Set cache headers with mobile optimization
+    res.set({
+      'Cache-Control': 'public, max-age=300, stale-while-revalidate=600', // 5 minutes cache, 10 minutes stale
+      'ETag': `"${trip._id}-${trip.updatedAt?.getTime() || Date.now()}"`,
+      'Vary': 'Accept-Encoding, User-Agent', // Vary by device type
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY'
+    });
     
     res.json({ success: true, data: { trip } });
   } catch (error) {
-    res.status(500).json({ success: false, error: { message: error.message } });
+    console.error('Trip details error:', error);
+    res.status(500).json({ success: false, error: { message: 'Internal server error' } });
   }
 });
 
