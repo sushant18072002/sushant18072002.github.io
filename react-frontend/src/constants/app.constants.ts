@@ -1,12 +1,25 @@
 // App Constants
 export const APP_CONSTANTS = {
-  APP_NAME: 'TravelAI',
-  APP_DESCRIPTION: 'AI-powered travel platform that creates perfect trips from your dreams',
+  APP_NAME: 'TurnTapTravel',
+  APP_DESCRIPTION: 'Turn your travel dreams into reality with just a tap',
+  LOGO_PATH: '/asserts/logo.png',
+  LOGO_TEXT_PATH: '/asserts/text.png',
   
   // Default Values
   DEFAULT_CURRENCY: 'USD',
   DEFAULT_LANGUAGE: 'en',
   DEFAULT_COUNTRY: 'US',
+  
+  // Currency Symbols
+  CURRENCY_SYMBOLS: {
+    USD: '$',
+    EUR: '€',
+    GBP: '£',
+    INR: '₹',
+    JPY: '¥',
+    CAD: 'C$',
+    AUD: 'A$',
+  } as const,
   
   // Pagination
   DEFAULT_PAGE_SIZE: 20,
@@ -24,6 +37,8 @@ export const APP_CONSTANTS = {
   TOAST_DURATION_MS: 4000,
   
   // Images
+  MAX_IMAGES: 10,
+  MAX_IMAGE_SIZE_MB: 5,
   FALLBACK_IMAGES: {
     AIRLINE: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=80&h=60&fit=crop&auto=format',
     FLIGHT_HERO: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1920&h=1080&fit=crop&auto=format',
@@ -66,5 +81,10 @@ export const FORM_CONSTANTS = {
   MIN_PRICE: 0,
   MAX_PRICE: 100000,
 } as const;
+
+// Helper function to get currency symbol
+export const getCurrencySymbol = (currency: string): string => {
+  return APP_CONSTANTS.CURRENCY_SYMBOLS[currency as keyof typeof APP_CONSTANTS.CURRENCY_SYMBOLS] || currency;
+};
 
 export default APP_CONSTANTS;

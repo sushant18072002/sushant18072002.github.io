@@ -38,17 +38,20 @@ interface ItineraryBuilderProps {
 }
 
 const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ initialItinerary = { overview: '', days: [] }, tripDuration = 7, onSave }) => {
-  const [itinerary, setItinerary] = useState(initialItinerary);
   const [days] = useState(tripDuration);
   const [selectedDay, setSelectedDay] = useState(1);
   const [showActivityForm, setShowActivityForm] = useState(false);
   const [editingActivity, setEditingActivity] = useState<number | null>(null);
-
-  const initializeItinerary = () => {
+  
+  // Initialize itinerary state properly
+  const [currentItinerary, setCurrentItinerary] = useState<ItineraryDay[]>(() => {
     const newItinerary: ItineraryDay[] = [];
-    for (let i = 1; i <= days; i++) {
-      const existingDay = itinerary.days?.find((d: any) => d.day === i);
-      newItinerary.push(existingDay || {
+    for (let i = 1; i <= tripDuration; i++) {
+      const existingDay = initialItinerary.days?.find((d: any) => d.day === i);
+      newItinerary.push(existingDay ? {
+        ...existingDay,
+        location: existingDay.locationName || existingDay.location || ''
+      } : {
         day: i,
         title: `Day ${i}`,
         description: '',
@@ -59,9 +62,8 @@ const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ initialItinerary = 
       });
     }
     return newItinerary;
-  };
+  });
 
-  const currentItinerary = initializeItinerary();
   const currentDay = currentItinerary.find(d => d.day === selectedDay) || {
     day: selectedDay,
     title: `Day ${selectedDay}`,
@@ -83,8 +85,7 @@ const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ initialItinerary = 
         ? { ...day, activities: [...day.activities, newActivity] }
         : day
     );
-    const updatedData = { ...itinerary, days: updatedItinerary };
-    setItinerary(updatedData);
+    setCurrentItinerary(updatedItinerary);
     setShowActivityForm(false);
   };
 
@@ -94,8 +95,7 @@ const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ initialItinerary = 
         ? { ...day, ...updates }
         : day
     );
-    const updatedData = { ...itinerary, days: updatedItinerary };
-    setItinerary(updatedData);
+    setCurrentItinerary(updatedItinerary);
   };
 
   const updateActivity = (activityIndex: number, updatedActivity: Activity) => {
@@ -109,8 +109,7 @@ const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ initialItinerary = 
           }
         : day
     );
-    const updatedData = { ...itinerary, days: updatedItinerary };
-    setItinerary(updatedData);
+    setCurrentItinerary(updatedItinerary);
     setEditingActivity(null);
     setShowActivityForm(false);
   };
@@ -121,13 +120,12 @@ const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ initialItinerary = 
         ? { ...day, activities: day.activities.filter((_, i) => i !== index) }
         : day
     );
-    const updatedData = { ...itinerary, days: updatedItinerary };
-    setItinerary(updatedData);
+    setCurrentItinerary(updatedItinerary);
   };
 
   const handleSave = async () => {
     const validatedItinerary = {
-      ...itinerary,
+      overview: initialItinerary.overview || '',
       days: currentItinerary.map((day, index) => ({
         day: day.day || index + 1,
         title: day.title || `Day ${index + 1}`,
@@ -141,6 +139,7 @@ const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ initialItinerary = 
         tips: day.tips || []
       }))
     };
+    
     await onSave(validatedItinerary);
   };
 

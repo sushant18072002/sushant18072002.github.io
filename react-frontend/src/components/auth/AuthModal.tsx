@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Button from '@/components/common/Button';
 import { useAuthStore } from '@/store/authStore';
+import { APP_CONSTANTS } from '@/constants/app.constants';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -118,7 +119,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'l
 
         <div className="text-center mb-6">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-            {mode === 'login' ? 'Welcome back!' : 'Join TravelAI'}
+            {mode === 'login' ? 'Welcome back!' : `Join ${APP_CONSTANTS.APP_NAME}`}
           </h2>
           <p className="text-gray-600">
             {mode === 'login' ? 'Sign in to continue your journey' : 'Start planning amazing trips today'}

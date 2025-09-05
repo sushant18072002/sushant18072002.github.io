@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, Bell, User, Menu, X } from 'lucide-react';
+import { Search, Bell, Menu, X } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import Button from '@/components/common/Button';
 import AuthModal from '@/components/auth/AuthModal';
 import { notificationService, Notification } from '@/services/notification.service';
+import { APP_CONSTANTS } from '@/constants/app.constants';
 
 const Header: React.FC = () => {
   const location = useLocation();
@@ -14,7 +15,7 @@ const Header: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
 
   const navLinks = [
@@ -43,9 +44,26 @@ const Header: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center">
-            <span className="text-2xl font-bold bg-gradient-to-r from-blue-governor to-blue-mirage bg-clip-text text-transparent">
-              TravelAI
+          <Link to="/" className="flex items-center gap-2">
+            <img 
+              src={APP_CONSTANTS.LOGO_PATH} 
+              alt={APP_CONSTANTS.APP_NAME}
+              className="h-10 w-auto"
+            />
+            <img 
+              src={APP_CONSTANTS.LOGO_TEXT_PATH} 
+              alt={APP_CONSTANTS.APP_NAME}
+              className="h-8 w-auto"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                if (nextElement) {
+                  nextElement.style.display = 'inline';
+                }
+              }}
+            />
+            <span className="text-2xl font-bold bg-gradient-to-r from-blue-governor to-blue-mirage bg-clip-text text-transparent hidden">
+              {APP_CONSTANTS.APP_NAME}
             </span>
           </Link>
 

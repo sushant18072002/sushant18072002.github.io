@@ -15,6 +15,7 @@ import HotelsPage from '@/pages/HotelsPage';
 import HotelDetailsPage from '@/pages/HotelDetailsPage';
 import TripsHubPage from '@/pages/TripsHubPage';
 import TripDetailsPage from '@/pages/TripDetailsPage';
+import TripDetailsPageEnhanced from '@/pages/TripDetailsPageEnhanced';
 import TripCustomizationPage from '@/pages/TripCustomizationPage';
 import AIItineraryPage from '@/pages/AIItineraryPage';
 import CustomBuilderPage from '@/pages/CustomBuilderPage';
@@ -36,6 +37,7 @@ import { useAuthStore } from '@/store/authStore';
 
 // Styles
 import '@/styles/globals.css';
+import '@/types/trip.types.ts';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -71,6 +73,7 @@ function App() {
               <Route path="/hotels/:id" element={<HotelDetailsPage />} />
               <Route path="/trips" element={<TripsHubPage />} />
               <Route path="/trips/:id" element={<TripDetailsPage />} />
+              <Route path="/tripsn/:id" element={<TripDetailsPageEnhanced />} />
               <Route path="/trips/:id/customize" element={<TripCustomizationPage />} />
               <Route path="/ai-itinerary" element={<AIItineraryPage />} />
               <Route path="/itineraries/ai" element={<AIItineraryPage />} />

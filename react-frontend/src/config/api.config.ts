@@ -1,6 +1,6 @@
 // API Configuration
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api',
+  BASE_URL: (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:3000/api',
   TIMEOUT: 10000,
   RETRY_ATTEMPTS: 3,
   RETRY_DELAY: 1000,
@@ -32,7 +32,7 @@ export const API_ENDPOINTS = {
   MASTER_CATEGORIES: '/master/categories',
   
   // Trips
-  TRIPS: '/trips',
+  TRIPS: '/admin/trips',
   TRIPS_FEATURED: '/trips/featured',
   
   // Destinations
@@ -46,6 +46,10 @@ export const API_ENDPOINTS = {
   // Bookings
   BOOKINGS: '/bookings',
   BOOKING_CONFIRMATION: '/bookings/confirmation',
+  
+  // Upload
+  UPLOAD_MULTIPLE: '/upload/multiple',
+  UPLOAD_DELETE: (filename: string) => `/upload/${filename}`,
 } as const;
 
 export default API_CONFIG;

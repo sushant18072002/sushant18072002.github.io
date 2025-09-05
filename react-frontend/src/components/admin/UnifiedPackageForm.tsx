@@ -5,6 +5,8 @@ import Button from '@/components/common/Button';
 import ItineraryBuilder from './ItineraryBuilder';
 import ImageUpload from './ImageUpload';
 import { apiService } from '@/services/api';
+import { API_ENDPOINTS } from '@/config/api.config';
+import { APP_CONSTANTS, TRIP_CONSTANTS, FORM_CONSTANTS, getCurrencySymbol } from '@/constants/app.constants';
 
 interface PackageFormData {
   title: string;
@@ -99,17 +101,16 @@ interface PackageFormData {
 
 interface UnifiedPackageFormProps {
   packageId?: string; // If provided, it's edit mode
-  onSubmit: (data: any) => void;
   onClose: () => void;
 }
 
-const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSubmit, onClose }) => {
+const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onClose }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [createdPackageId, setCreatedPackageId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [itinerary, setItinerary] = useState({ overview: '', days: [] });
-  const [tripDuration, setTripDuration] = useState(7);
+  const [itinerary, setItinerary] = useState<{ overview: string; days: any[] }>({ overview: '', days: [] });
+  const [tripDuration, setTripDuration] = useState(FORM_CONSTANTS.MIN_DURATION_DAYS || 7);
   const [uploadedImages, setUploadedImages] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -117,7 +118,14 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
   const [countries, setCountries] = useState<any[]>([]);
   const [selectedDestinations, setSelectedDestinations] = useState<string[]>([]);
   const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
-  const [includedServices, setIncludedServices] = useState({
+  const [includedServices, setIncludedServices] = useState<{
+    flights: string[];
+    hotels: string[];
+    activities: string[];
+    transport: string[];
+    meals: string[];
+    guides: boolean;
+  }>({
     flights: [],
     hotels: [],
     activities: [],
@@ -129,20 +137,54 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
   const isEditMode = !!packageId;
   const form = useForm<PackageFormData>({
     defaultValues: {
-      currency: 'USD',
+      currency: APP_CONSTANTS.DEFAULT_CURRENCY,
       featured: false
-    },
-    onChange: () => setHasUnsavedChanges(true)
+    }
   });
+
+  // Optimized price calculation function
+  const calculatePricing = () => {
+    const breakdown = {
+      flights: parseFloat(form.getValues('priceBreakdownFlights')) || 0,
+      accommodation: parseFloat(form.getValues('priceBreakdownAccommodation')) || 0,
+      activities: parseFloat(form.getValues('priceBreakdownActivities')) || 0,
+      food: parseFloat(form.getValues('priceBreakdownFood')) || 0,
+      transport: parseFloat(form.getValues('priceBreakdownTransport')) || 0,
+      other: parseFloat(form.getValues('priceBreakdownOther')) || 0
+    };
+    const total = Object.values(breakdown).reduce((sum, val) => sum + val, 0);
+    form.setValue('sellPrice', total);
+    
+    // Auto-calculate profit margin
+    const basePrice = parseFloat(form.getValues('basePrice')) || 0;
+    if (basePrice > 0 && total > 0) {
+      const profitMargin = ((total - basePrice) / basePrice * 100).toFixed(1);
+      form.setValue('profitMargin', parseFloat(profitMargin));
+    }
+    
+    // Auto-calculate final price
+    const discountPercent = parseFloat(form.getValues('discountPercent')) || 0;
+    const discountAmount = parseFloat(form.getValues('discountAmount')) || 0;
+    let finalPrice = total;
+    
+    if (discountPercent > 0) {
+      finalPrice = total - (total * discountPercent / 100);
+      form.setValue('discountAmount', parseFloat((total * discountPercent / 100).toFixed(2)));
+    } else if (discountAmount > 0) {
+      finalPrice = total - discountAmount;
+      form.setValue('discountPercent', parseFloat((discountAmount / total * 100).toFixed(1)));
+    }
+    
+    form.setValue('finalPrice', parseFloat(finalPrice.toFixed(2)));
+  };
 
   const steps = [
     { id: 1, title: 'Basic Info', icon: '📝' },
-    { id: 2, title: 'Details', icon: '⚙️' },
+    { id: 2, title: 'Pricing', icon: '💰' },
     { id: 3, title: 'Itinerary', icon: '🗓️' },
-    { id: 4, title: 'Services', icon: '🏨' },
-    { id: 5, title: 'Travel Info', icon: 'ℹ️' },
-    { id: 6, title: 'Settings', icon: '⚙️' },
-    { id: 7, title: 'Images', icon: '📸' }
+    { id: 4, title: 'Travel Info', icon: 'ℹ️' },
+    { id: 5, title: 'Settings', icon: '⚙️' },
+    { id: 6, title: 'Images', icon: '📸' }
   ];
 
   useEffect(() => {
@@ -155,21 +197,21 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
   const loadCategories = async () => {
     try {
       const [categoriesResponse, citiesResponse, countriesResponse] = await Promise.all([
-        apiService.get('/master/categories?type=trip'),
-        apiService.get('/locations/cities?limit=200'),
-        apiService.get('/master/countries')
+        apiService.get(`${API_ENDPOINTS.MASTER_CATEGORIES}?type=trip`),
+        apiService.get(`/locations/cities?limit=${APP_CONSTANTS.DEFAULT_PAGE_SIZE * 10}`),
+        apiService.get(API_ENDPOINTS.MASTER_COUNTRIES)
       ]);
       
       if (categoriesResponse.success) {
-        setCategories(categoriesResponse.data.categories || []);
+        setCategories((categoriesResponse.data as any)?.categories || []);
       }
       
       if (citiesResponse.success) {
-        setCities(citiesResponse.data.cities || []);
+        setCities((citiesResponse.data as any)?.cities || []);
       }
       
       if (countriesResponse.success) {
-        setCountries(countriesResponse.data.countries || []);
+        setCountries((countriesResponse.data as any)?.countries || []);
       }
     } catch (error) {
       console.error('Failed to load master data:', error);
@@ -181,157 +223,226 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
   const loadPackageData = async () => {
     setLoading(true);
     try {
-      const response = await apiService.get(`/admin/packages/${packageId}`);
+      const response = await apiService.get(`${API_ENDPOINTS.TRIPS}/${packageId}`);
       if (response.success && response.data) {
-        const pkg = response.data.trip || response.data.package || response.data;
+        const packageData = (response.data as any)?.trip || (response.data as any)?.package || response.data;
         // Use dedicated fields if available, otherwise extract from tags
-        const highlights = pkg.highlights?.join(', ') || 
-          pkg.tags?.filter(tag => 
-            ['5-star', 'luxury', 'villa', 'spa', 'resort', 'private', 'premium'].some(keyword => 
+        const highlights = packageData.highlights?.join(', ') || 
+          packageData.tags?.filter((tag: string) => 
+            ['5-star', 'luxury', 'villa', 'spa', 'resort', 'private', 'premium'].some((keyword: string) => 
               tag.toLowerCase().includes(keyword)
             )
           ).join(', ') || '';
         
-        const includes = pkg.includes?.join(', ') || 
-          pkg.tags?.filter(tag => 
-            ['flights', 'hotels', 'meals', 'tours', 'guide', 'transport', 'accommodation'].some(keyword => 
+        const includes = packageData.includes?.join(', ') || 
+          packageData.tags?.filter((tag: string) => 
+            ['flights', 'hotels', 'meals', 'tours', 'guide', 'transport', 'accommodation'].some((keyword: string) => 
               tag.toLowerCase().includes(keyword)
             )
           ).join(', ') || '';
         
-        const excludes = pkg.excludes?.join(', ') || 
-          pkg.tags?.filter(tag => 
-            ['insurance', 'personal', 'visa', 'tips'].some(keyword => 
+        const excludes = packageData.excludes?.join(', ') || 
+          packageData.tags?.filter((tag: string) => 
+            ['insurance', 'personal', 'visa', 'tips'].some((keyword: string) => 
               tag.toLowerCase().includes(keyword)
             )
           ).join(', ') || '';
         
         form.reset({
-          title: pkg.title || '',
-          description: pkg.description || '',
-          destinations: pkg.primaryDestination?.name ? `${pkg.primaryDestination.name}, ${pkg.primaryDestination.country?.name || ''}` : '',
-          duration: pkg.duration?.days || pkg.duration || 7,
-          price: pkg.pricing?.estimated || pkg.price?.amount || pkg.price || 0,
-          basePrice: pkg.pricing?.basePrice || 0,
-          sellPrice: pkg.pricing?.sellPrice || 0,
-          discountPercent: pkg.pricing?.discountPercent || 0,
-          discountAmount: pkg.pricing?.discountAmount || 0,
-          finalPrice: pkg.pricing?.finalPrice || 0,
-          profitMargin: pkg.pricing?.profitMargin || 0,
-          taxIncluded: pkg.pricing?.taxIncluded !== false,
-          currency: pkg.pricing?.currency || pkg.price?.currency || 'USD',
-          category: pkg.category?.name || pkg.category || '',
+          title: packageData.title || '',
+          description: packageData.description || '',
+          destinations: (() => {
+            const parts = [];
+            if (packageData.primaryDestination?.name) {
+              parts.push(packageData.primaryDestination.name);
+              if (packageData.primaryDestination.country?.name) {
+                parts.push(packageData.primaryDestination.country.name);
+              }
+            }
+            if (packageData.destinations && packageData.destinations.length > 0) {
+              packageData.destinations.forEach((dest: any) => {
+                if (typeof dest === 'string') {
+                  parts.push(dest);
+                } else if (dest.name) {
+                  parts.push(dest.name);
+                }
+              });
+            }
+            return parts.join(', ');
+          })(),
+          duration: packageData.duration?.days || packageData.duration || 7,
+          price: packageData.pricing?.estimated || packageData.price?.amount || packageData.price || 0,
+          basePrice: packageData.pricing?.basePrice || 0,
+          sellPrice: packageData.pricing?.sellPrice || 0,
+          discountPercent: packageData.pricing?.discountPercent || 0,
+          discountAmount: packageData.pricing?.discountAmount || 0,
+          finalPrice: packageData.pricing?.finalPrice || 0,
+          profitMargin: packageData.pricing?.profitMargin || 0,
+          taxIncluded: packageData.pricing?.taxIncluded !== false,
+          currency: packageData.pricing?.currency || packageData.price?.currency || 'USD',
+          category: packageData.category?.name || packageData.category || '',
           highlights,
           includes,
           excludes,
-          featured: pkg.featured || false,
-          quickAccess: pkg.quickAccess || false,
-          template: pkg.template || false,
-          priority: pkg.priority || 0,
-          status: pkg.status || 'draft',
-          type: pkg.type || 'custom',
-          tags: pkg.tags?.join(', ') || '',
-          travelStyle: pkg.travelStyle || 'cultural',
-          difficulty: pkg.difficulty || 'moderate',
-          couples: pkg.suitableFor?.couples || false,
-          families: pkg.suitableFor?.families || false,
-          soloTravelers: pkg.suitableFor?.soloTravelers || false,
-          groups: pkg.suitableFor?.groups || false,
-          minGroupSize: pkg.groupSize?.min || 1,
-          maxGroupSize: pkg.groupSize?.max || 20,
-          recommendedGroupSize: pkg.groupSize?.recommended || 4,
-          fitnessLevel: pkg.physicalRequirements?.fitnessLevel || 'low',
-          walkingDistance: pkg.physicalRequirements?.walkingDistance || 0,
-          altitude: pkg.physicalRequirements?.altitude || 0,
-          specialNeeds: pkg.physicalRequirements?.specialNeeds?.join(', ') || '',
-          priceRange: pkg.pricing?.priceRange || 'mid-range',
-          priceBreakdownFlights: pkg.pricing?.breakdown?.flights || 0,
-          priceBreakdownAccommodation: pkg.pricing?.breakdown?.accommodation || 0,
-          priceBreakdownActivities: pkg.pricing?.breakdown?.activities || 0,
-          priceBreakdownFood: pkg.pricing?.breakdown?.food || 0,
-          priceBreakdownTransport: pkg.pricing?.breakdown?.transport || 0,
-          priceBreakdownOther: pkg.pricing?.breakdown?.other || 0,
-          instantBook: pkg.bookingInfo?.instantBook || false,
-          requiresApproval: pkg.bookingInfo?.requiresApproval !== false,
-          advanceBooking: pkg.bookingInfo?.advanceBooking || 7,
-          cancellationPolicy: pkg.bookingInfo?.cancellationPolicy || '',
-          paymentTerms: pkg.bookingInfo?.paymentTerms || '',
-          depositRequired: pkg.bookingInfo?.depositRequired || 50,
-          finalPaymentDue: pkg.bookingInfo?.finalPaymentDue || 30,
+          featured: packageData.featured || false,
+          quickAccess: packageData.quickAccess || false,
+          template: packageData.template || false,
+          priority: packageData.priority || 0,
+          status: packageData.status || 'draft',
+          type: packageData.type || 'custom',
+          tags: packageData.tags?.join(', ') || '',
+          travelStyle: packageData.travelStyle || 'cultural',
+          difficulty: packageData.difficulty || 'moderate',
+          couples: packageData.suitableFor?.couples || false,
+          families: packageData.suitableFor?.families || false,
+          soloTravelers: packageData.suitableFor?.soloTravelers || false,
+          groups: packageData.suitableFor?.groups || false,
+          minGroupSize: packageData.groupSize?.min || 1,
+          maxGroupSize: packageData.groupSize?.max || 20,
+          recommendedGroupSize: packageData.groupSize?.recommended || 4,
+          fitnessLevel: packageData.physicalRequirements?.fitnessLevel || 'low',
+          walkingDistance: packageData.physicalRequirements?.walkingDistance || 0,
+          altitude: packageData.physicalRequirements?.altitude || 0,
+          specialNeeds: packageData.physicalRequirements?.specialNeeds?.join(', ') || '',
+          priceRange: packageData.pricing?.priceRange || 'mid-range',
+          priceBreakdownFlights: packageData.pricing?.breakdown?.flights || 0,
+          priceBreakdownAccommodation: packageData.pricing?.breakdown?.accommodation || 0,
+          priceBreakdownActivities: packageData.pricing?.breakdown?.activities || 0,
+          priceBreakdownFood: packageData.pricing?.breakdown?.food || 0,
+          priceBreakdownTransport: packageData.pricing?.breakdown?.transport || 0,
+          priceBreakdownOther: packageData.pricing?.breakdown?.other || 0,
+          instantBook: packageData.bookingInfo?.instantBook || false,
+          requiresApproval: packageData.bookingInfo?.requiresApproval !== false,
+          advanceBooking: packageData.bookingInfo?.advanceBooking || 7,
+          cancellationPolicy: packageData.bookingInfo?.cancellationPolicy || '',
+          paymentTerms: packageData.bookingInfo?.paymentTerms || '',
+          depositRequired: packageData.bookingInfo?.depositRequired || 50,
+          finalPaymentDue: packageData.bookingInfo?.finalPaymentDue || 30,
           // Travel Info
-          bestTimeMonths: pkg.travelInfo?.bestTimeToVisit?.months?.join(', ') || '',
-          weather: pkg.travelInfo?.bestTimeToVisit?.weather || '',
-          minTemp: pkg.travelInfo?.bestTimeToVisit?.temperature?.min || 0,
-          maxTemp: pkg.travelInfo?.bestTimeToVisit?.temperature?.max || 0,
-          rainfall: pkg.travelInfo?.bestTimeToVisit?.rainfall || '',
-          visaRequired: pkg.travelInfo?.visaRequirements?.required || false,
-          visaCountries: pkg.travelInfo?.visaRequirements?.countries?.join(', ') || '',
-          visaProcessingTime: pkg.travelInfo?.visaRequirements?.processingTime || '',
-          visaCost: pkg.travelInfo?.visaRequirements?.cost || 0,
-          healthInsurance: pkg.travelInfo?.healthRequirements?.healthInsurance || false,
-          vaccinations: pkg.travelInfo?.healthRequirements?.vaccinations?.join(', ') || '',
-          medicalFacilities: pkg.travelInfo?.healthRequirements?.medicalFacilities || '',
-          safetyLevel: pkg.travelInfo?.safetyInformation?.level || 'low',
-          safetyWarnings: pkg.travelInfo?.safetyInformation?.warnings?.join(', ') || '',
-          emergencyContacts: pkg.travelInfo?.safetyInformation?.emergencyContacts?.join(', ') || '',
-          languages: pkg.travelInfo?.localCulture?.language?.join(', ') || '',
-          localCurrency: pkg.travelInfo?.localCulture?.currency || '',
-          customs: pkg.travelInfo?.localCulture?.customs?.join(', ') || '',
-          etiquette: pkg.travelInfo?.localCulture?.etiquette?.join(', ') || '',
-          packingEssentials: pkg.travelInfo?.packingList?.essentials?.join(', ') || '',
-          packingClothing: pkg.travelInfo?.packingList?.clothing?.join(', ') || '',
-          packingEquipment: pkg.travelInfo?.packingList?.equipment?.join(', ') || '',
-          packingOptional: pkg.travelInfo?.packingList?.optional?.join(', ') || '',
+          bestTimeMonths: Array.isArray(packageData.travelInfo?.bestTimeToVisit?.months) 
+            ? packageData.travelInfo.bestTimeToVisit.months.join(', ') 
+            : packageData.travelInfo?.bestTimeToVisit?.months || '',
+          weather: packageData.travelInfo?.bestTimeToVisit?.weather || '',
+          minTemp: packageData.travelInfo?.bestTimeToVisit?.temperature?.min || 0,
+          maxTemp: packageData.travelInfo?.bestTimeToVisit?.temperature?.max || 0,
+          rainfall: packageData.travelInfo?.bestTimeToVisit?.rainfall || '',
+          visaRequired: packageData.travelInfo?.visaRequirements?.required || false,
+          visaCountries: Array.isArray(packageData.travelInfo?.visaRequirements?.countries)
+            ? packageData.travelInfo.visaRequirements.countries.join(', ')
+            : packageData.travelInfo?.visaRequirements?.countries || '',
+          visaProcessingTime: packageData.travelInfo?.visaRequirements?.processingTime || '',
+          visaCost: packageData.travelInfo?.visaRequirements?.cost || 0,
+          healthInsurance: packageData.travelInfo?.healthRequirements?.healthInsurance || false,
+          vaccinations: Array.isArray(packageData.travelInfo?.healthRequirements?.vaccinations)
+            ? packageData.travelInfo.healthRequirements.vaccinations.join(', ')
+            : packageData.travelInfo?.healthRequirements?.vaccinations || '',
+          medicalFacilities: packageData.travelInfo?.healthRequirements?.medicalFacilities || '',
+          safetyLevel: packageData.travelInfo?.safetyInformation?.level || 'low',
+          safetyWarnings: Array.isArray(packageData.travelInfo?.safetyInformation?.warnings)
+            ? packageData.travelInfo.safetyInformation.warnings.join(', ')
+            : packageData.travelInfo?.safetyInformation?.warnings || '',
+          emergencyContacts: Array.isArray(packageData.travelInfo?.safetyInformation?.emergencyContacts)
+            ? packageData.travelInfo.safetyInformation.emergencyContacts.join(', ')
+            : packageData.travelInfo?.safetyInformation?.emergencyContacts || '',
+          languages: Array.isArray(packageData.travelInfo?.localCulture?.language)
+            ? packageData.travelInfo.localCulture.language.join(', ')
+            : packageData.travelInfo?.localCulture?.language || '',
+          localCurrency: packageData.travelInfo?.localCulture?.currency || '',
+          customs: Array.isArray(packageData.travelInfo?.localCulture?.customs)
+            ? packageData.travelInfo.localCulture.customs.join(', ')
+            : packageData.travelInfo?.localCulture?.customs || '',
+          etiquette: Array.isArray(packageData.travelInfo?.localCulture?.etiquette)
+            ? packageData.travelInfo.localCulture.etiquette.join(', ')
+            : packageData.travelInfo?.localCulture?.etiquette || '',
+          packingEssentials: Array.isArray(packageData.travelInfo?.packingList?.essentials)
+            ? packageData.travelInfo.packingList.essentials.join(', ')
+            : packageData.travelInfo?.packingList?.essentials || '',
+          packingClothing: Array.isArray(packageData.travelInfo?.packingList?.clothing)
+            ? packageData.travelInfo.packingList.clothing.join(', ')
+            : packageData.travelInfo?.packingList?.clothing || '',
+          packingEquipment: Array.isArray(packageData.travelInfo?.packingList?.equipment)
+            ? packageData.travelInfo.packingList.equipment.join(', ')
+            : packageData.travelInfo?.packingList?.equipment || '',
+          packingOptional: Array.isArray(packageData.travelInfo?.packingList?.optional)
+            ? packageData.travelInfo.packingList.optional.join(', ')
+            : packageData.travelInfo?.packingList?.optional || '',
           // Availability & Sharing
-          maxBookings: pkg.availability?.maxBookings || 20,
-          seasonal: pkg.availability?.seasonal || false,
-          isPublic: pkg.sharing?.isPublic !== false,
-          allowCopy: pkg.sharing?.allowCopy !== false,
-          allowComments: pkg.sharing?.allowComments !== false,
+          maxBookings: packageData.availability?.maxBookings || 20,
+          seasonal: packageData.availability?.seasonal || false,
+          isPublic: packageData.sharing?.isPublic !== false,
+          allowCopy: packageData.sharing?.allowCopy !== false,
+          allowComments: packageData.sharing?.allowComments !== false,
           // Customization
-          customizableDuration: pkg.customizable?.duration !== false,
-          customizableActivities: pkg.customizable?.activities !== false,
-          customizableAccommodation: pkg.customizable?.accommodation !== false,
-          customizableDates: pkg.customizable?.dates !== false,
-          customizableGroupSize: pkg.customizable?.groupSize !== false
+          customizableDuration: packageData.customizable?.duration !== false,
+          customizableActivities: packageData.customizable?.activities !== false,
+          customizableAccommodation: packageData.customizable?.accommodation !== false,
+          customizableDates: packageData.customizable?.dates !== false,
+          customizableGroupSize: packageData.customizable?.groupSize !== false
         });
         
         // Initialize selected destinations and countries
-        if (pkg.primaryDestination) {
-          setSelectedDestinations([pkg.primaryDestination._id || pkg.primaryDestination]);
+        const destIds = [];
+        if (packageData.primaryDestination) {
+          destIds.push(packageData.primaryDestination._id || packageData.primaryDestination);
         }
-        if (pkg.destinations) {
-          setSelectedDestinations(pkg.destinations.map(d => d._id || d));
+        if (packageData.destinations && packageData.destinations.length > 0) {
+          destIds.push(...packageData.destinations.map((d: any) => d._id || d));
         }
-        if (pkg.countries) {
-          setSelectedCountries(pkg.countries.map(c => c._id || c));
+        setSelectedDestinations(destIds);
+        
+        if (packageData.countries && packageData.countries.length > 0) {
+          setSelectedCountries(packageData.countries.map((c: any) => c._id || c));
         }
         
-        if (pkg.itinerary) {
-          const itineraryData = Array.isArray(pkg.itinerary) ? { overview: '', days: pkg.itinerary } : pkg.itinerary;
+        if (packageData.itinerary) {
+          let itineraryData;
+          if (Array.isArray(packageData.itinerary)) {
+            // Handle array format (days only)
+            itineraryData = { overview: '', days: packageData.itinerary };
+          } else if (packageData.itinerary.days) {
+            // Handle object format with days array
+            itineraryData = packageData.itinerary;
+          } else {
+            // Handle other formats
+            itineraryData = { overview: '', days: [] };
+          }
+          
+          // Ensure each day has proper locationName field
+          if (itineraryData.days) {
+            itineraryData.days = itineraryData.days.map((day: any) => ({
+              ...day,
+              locationName: day.locationName || day.location || '',
+              estimatedCost: {
+                ...day.estimatedCost,
+                currency: day.estimatedCost?.currency || packageData.pricing?.currency || 'USD'
+              }
+            }));
+          }
+          
           setItinerary(itineraryData);
-          setTripDuration(pkg.duration?.days || itineraryData.days?.length || 7);
+          setTripDuration(packageData.duration?.days || itineraryData.days?.length || 7);
         } else {
-          setTripDuration(pkg.duration?.days || 7);
+          setTripDuration(packageData.duration?.days || 7);
         }
         
-        if (pkg.includedServices) {
+        if (packageData.includedServices) {
           setIncludedServices({
-            flights: pkg.includedServices.flights || [],
-            hotels: pkg.includedServices.hotels || [],
-            activities: pkg.includedServices.activities || [],
-            transport: pkg.includedServices.transport || [],
-            meals: pkg.includedServices.meals || [],
-            guides: pkg.includedServices.guides || false
+            flights: packageData.includedServices.flights || [],
+            hotels: packageData.includedServices.hotels || [],
+            activities: packageData.includedServices.activities || [],
+            transport: packageData.includedServices.transport || [],
+            meals: packageData.includedServices.meals || [],
+            guides: packageData.includedServices.guides || false
           });
         }
         
-        if (pkg.images) {
-          setUploadedImages(pkg.images);
+        if (packageData.images) {
+          setUploadedImages(packageData.images);
         }
       }
     } catch (error) {
-      console.error('Failed to load package:', error);
+      console.error('Failed to load package data', { error, packageId });
+      // TODO: Replace with proper toast notification
       alert('Failed to load package data');
     } finally {
       setLoading(false);
@@ -346,42 +457,59 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
       let categoryId = null;
       
       if (!primaryDestination) {
+        console.error('Form validation failed: No primary destination selected');
+        // TODO: Replace with proper toast notification
         alert('Please select a primary destination');
+        setSaving(false);
         return;
       }
       
       // Get category
-      if (data.category) {
-        try {
-          const catResponse = await apiService.get('/master/categories?type=trip');
-          if (catResponse.success && catResponse.data.categories?.length > 0) {
-            const category = catResponse.data.categories.find(c => c.name.toLowerCase() === data.category.toLowerCase());
-            if (category) categoryId = category._id;
-          }
-        } catch (error) {
-          console.warn('Failed to resolve category:', error);
-        }
+      if (data.category && categories.length > 0) {
+        const category = categories.find(c => c.name.toLowerCase() === data.category.toLowerCase());
+        if (category) categoryId = category._id;
       }
       
 
+      
+      // Validate pricing logic
+      const basePrice = parseFloat(data.basePrice?.toString()) || 0;
+      const sellPrice = parseFloat(data.sellPrice?.toString()) || 0;
+      const finalPrice = parseFloat(data.finalPrice?.toString()) || 0;
+      
+      if (basePrice >= sellPrice && basePrice > 0) {
+        console.warn('Pricing validation failed: Sell price not higher than base price', { basePrice, sellPrice });
+        // TODO: Replace with proper toast notification
+        alert('Sell price must be higher than base price');
+        setSaving(false);
+        return;
+      }
+      
+      if (finalPrice > sellPrice && sellPrice > 0) {
+        console.warn('Pricing validation failed: Final price exceeds sell price', { finalPrice, sellPrice });
+        // TODO: Replace with proper toast notification
+        alert('Final price cannot be higher than sell price');
+        setSaving(false);
+        return;
+      }
       
       const transformedData = {
         title: data.title,
         description: data.description,
         primaryDestination: primaryDestination,
-        destinations: selectedDestinations,
+        destinations: selectedDestinations.slice(1), // Additional destinations (excluding primary)
         countries: selectedCountries,
         duration: {
           days: parseInt(data.duration.toString()),
           nights: parseInt(data.duration.toString()) - 1
         },
         pricing: {
-          basePrice: parseFloat(data.basePrice?.toString()) || 0,
-          sellPrice: parseFloat(data.sellPrice?.toString()) || 0,
+          basePrice: basePrice,
+          sellPrice: sellPrice,
           discountPercent: parseFloat(data.discountPercent?.toString()) || 0,
           discountAmount: parseFloat(data.discountAmount?.toString()) || 0,
-          finalPrice: parseFloat(data.finalPrice?.toString()) || parseFloat(data.price?.toString()) || 0,
-          profitMargin: parseFloat(data.profitMargin?.toString()) || 0,
+          finalPrice: finalPrice,
+          profitMargin: parseFloat(data.profitMargin?.toString()) || ((sellPrice - basePrice) / basePrice * 100),
           taxIncluded: data.taxIncluded !== false,
           estimated: parseFloat(data.price?.toString()) || parseFloat(data.finalPrice?.toString()) || 0,
           currency: data.currency || 'USD',
@@ -396,12 +524,12 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
           }
         },
         category: categoryId,
-        tags: [
+        tags: Array.from(new Set([
           ...(data.tags ? data.tags.split(',').map(item => item.trim()).filter(item => item) : []),
           ...(data.highlights ? data.highlights.split(',').map(item => item.trim()).filter(item => item) : []),
           ...(data.includes ? data.includes.split(',').map(item => item.trim()).filter(item => item) : []),
           ...(data.excludes ? data.excludes.split(',').map(item => item.trim()).filter(item => item) : [])
-        ],
+        ])),
         highlights: data.highlights ? data.highlights.split(',').map(item => item.trim()).filter(item => item) : [],
         includes: data.includes ? data.includes.split(',').map(item => item.trim()).filter(item => item) : [],
         excludes: data.excludes ? data.excludes.split(',').map(item => item.trim()).filter(item => item) : [],
@@ -486,26 +614,34 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
 
       if (isEditMode) {
         // Update existing package
-        const response = await apiService.put(`/admin/packages/${packageId}`, transformedData);
+        const response = await apiService.put(`${API_ENDPOINTS.TRIPS}/${packageId}`, transformedData);
         if (response.success) {
+          console.info('Package updated successfully', { packageId });
+          // TODO: Replace with proper toast notification
           alert('Package updated successfully!');
           // Don't close form, let user navigate
         } else {
-          alert('Failed to update package: ' + (response.error?.message || 'Unknown error'));
+          console.error('Failed to update package', { packageId, error: response.errors });
+          // TODO: Replace with proper toast notification
+          alert('Failed to update package: ' + (Array.isArray(response.errors) ? response.errors[0] : response.errors || 'Unknown error'));
         }
       } else {
         // Create new package
-        const response = await apiService.post('/admin/packages', transformedData);
+        const response = await apiService.post(API_ENDPOINTS.TRIPS, transformedData);
         if (response.success) {
-          const createdId = response.data.trip?._id || response.data.package?._id || response.data._id;
+          const createdId = (response.data as any)?.trip?._id || (response.data as any)?.package?._id || (response.data as any)?._id;
+          console.info('Package created successfully', { createdId });
           setCreatedPackageId(createdId);
           setCurrentStep(2);
         } else {
-          alert('Failed to create package: ' + (response.error?.message || 'Unknown error'));
+          console.error('Failed to create package', { error: response.errors });
+          // TODO: Replace with proper toast notification
+          alert('Failed to create package: ' + (Array.isArray(response.errors) ? response.errors[0] : response.errors || 'Unknown error'));
         }
       }
     } catch (error) {
-      console.error('Save error:', error);
+      console.error('Package save operation failed', { error, isEditMode, packageId });
+      // TODO: Replace with proper toast notification
       alert('Failed to save package. Please try again.');
     } finally {
       setSaving(false);
@@ -518,29 +654,37 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
     
     try {
       // Ensure itinerary has proper structure with day numbers
-      const formattedItinerary = itineraryData.days?.map((day: any, index: number) => ({
-        day: day.day || index + 1,
-        title: day.title || `Day ${index + 1}`,
-        description: day.description || '',
-        locationName: day.location || '',
-        activities: (day.activities || []).map(activity => ({
-          ...activity,
-          location: typeof activity.location === 'string' ? activity.location : activity.location || ''
-        })),
-        estimatedCost: day.estimatedCost || { currency: 'USD', amount: 0 },
-        tips: day.tips || []
-      })) || [];
+      const formattedItinerary = itineraryData.days?.map((day: any, index: number) => {
+        const dayNumber = day.day || index + 1;
+        return {
+          day: Number(dayNumber),
+          title: day.title || `Day ${dayNumber}`,
+          description: day.description || '',
+          locationName: day.locationName || day.location || '',
+          activities: (day.activities || []).map((activity: any) => ({
+            ...activity,
+            location: typeof activity.location === 'string' ? activity.location : activity.location || ''
+          })),
+          estimatedCost: day.estimatedCost || { currency: form.getValues('currency') || 'USD', amount: 0 },
+          tips: day.tips || []
+        };
+      }) || [];
       
-      await apiService.put(`/admin/packages/${targetPackageId}`, { itinerary: formattedItinerary });
+      await apiService.put(`${API_ENDPOINTS.TRIPS}/${targetPackageId}`, { 
+        itinerary: formattedItinerary
+      });
       setItinerary({ ...itineraryData, days: formattedItinerary });
       if (isEditMode) {
+        console.info('Itinerary updated successfully', { targetPackageId });
+        // TODO: Replace with proper toast notification
         alert('Itinerary updated successfully!');
         // Stay on itinerary tab
       } else {
-        setCurrentStep(3);
+        setCurrentStep(4);
       }
     } catch (error) {
-      console.error('Itinerary save error:', error);
+      console.error('Itinerary save operation failed', { error, targetPackageId, isEditMode });
+      // TODO: Replace with proper toast notification
       alert('Failed to save itinerary');
     }
   };
@@ -550,7 +694,10 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
     const targetPackageId = isEditMode ? packageId : createdPackageId;
     
     if (!targetPackageId) {
+      console.warn('Save current tab failed: No target package ID available');
+      // TODO: Replace with proper toast notification
       alert('Please complete basic info first');
+      setSaving(false);
       return;
     }
     
@@ -559,25 +706,38 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
       const updateData = {
         travelInfo: {
           bestTimeToVisit: {
-            months: data.bestTimeMonths ? data.bestTimeMonths.split(',').map(m => m.trim()) : [],
+            months: data.bestTimeMonths ? data.bestTimeMonths.split(',').map(m => m.trim()).filter(m => m) : [],
             weather: data.weather || '',
-            temperature: { min: data.minTemp || 0, max: data.maxTemp || 0 }
+            temperature: { min: data.minTemp || 0, max: data.maxTemp || 0 },
+            rainfall: data.rainfall || ''
           },
           visaRequirements: {
             required: data.visaRequired || false,
+            countries: data.visaCountries ? data.visaCountries.split(',').map(c => c.trim()).filter(c => c) : [],
+            processingTime: data.visaProcessingTime || '',
             cost: data.visaCost || 0
           },
           healthRequirements: {
             healthInsurance: data.healthInsurance || false,
-            vaccinations: data.vaccinations ? data.vaccinations.split(',').map(v => v.trim()) : []
+            vaccinations: data.vaccinations ? data.vaccinations.split(',').map(v => v.trim()).filter(v => v) : [],
+            medicalFacilities: data.medicalFacilities || ''
           },
           safetyInformation: {
-            level: data.safetyLevel || 'low'
+            level: data.safetyLevel || 'low',
+            warnings: data.safetyWarnings ? data.safetyWarnings.split(',').map(w => w.trim()).filter(w => w) : [],
+            emergencyContacts: data.emergencyContacts ? data.emergencyContacts.split(',').map(e => e.trim()).filter(e => e) : []
           },
           localCulture: {
-            language: data.languages ? data.languages.split(',').map(l => l.trim()) : [],
+            language: data.languages ? data.languages.split(',').map(l => l.trim()).filter(l => l) : [],
             currency: data.localCurrency || '',
-            customs: data.customs ? data.customs.split(',').map(c => c.trim()) : []
+            customs: data.customs ? data.customs.split(',').map(c => c.trim()).filter(c => c) : [],
+            etiquette: data.etiquette ? data.etiquette.split(',').map(e => e.trim()).filter(e => e) : []
+          },
+          packingList: {
+            essentials: data.packingEssentials ? data.packingEssentials.split(',').map(e => e.trim()).filter(e => e) : [],
+            clothing: data.packingClothing ? data.packingClothing.split(',').map(c => c.trim()).filter(c => c) : [],
+            equipment: data.packingEquipment ? data.packingEquipment.split(',').map(e => e.trim()).filter(e => e) : [],
+            optional: data.packingOptional ? data.packingOptional.split(',').map(o => o.trim()).filter(o => o) : []
           }
         },
         availability: {
@@ -589,14 +749,24 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
           allowCopy: data.allowCopy !== false,
           allowComments: data.allowComments !== false
         },
+        customizable: {
+          duration: data.customizableDuration !== false,
+          activities: data.customizableActivities !== false,
+          accommodation: data.customizableAccommodation !== false,
+          dates: data.customizableDates !== false,
+          groupSize: data.customizableGroupSize !== false
+        },
         includedServices: includedServices
       };
       
-      await apiService.put(`/admin/packages/${targetPackageId}`, updateData);
+      await apiService.put(`${API_ENDPOINTS.TRIPS}/${targetPackageId}`, updateData);
       setHasUnsavedChanges(false);
+      console.info('Tab changes saved successfully', { targetPackageId });
+      // TODO: Replace with proper toast notification
       alert('Changes saved successfully!');
     } catch (error) {
-      console.error('Save error:', error);
+      console.error('Tab save operation failed', { error, targetPackageId });
+      // TODO: Replace with proper toast notification
       alert('Failed to save changes');
     } finally {
       setSaving(false);
@@ -611,21 +781,15 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
     const targetPackageId = isEditMode ? packageId : createdPackageId;
     if (targetPackageId) {
       try {
-        await apiService.put(`/admin/packages/${targetPackageId}`, { images: newImages });
-        console.log('Images saved to trip');
+        await apiService.put(`${API_ENDPOINTS.TRIPS}/${targetPackageId}`, { images: newImages });
+        console.info('Images saved to trip successfully', { targetPackageId, imageCount: newImages.length });
       } catch (error) {
-        console.error('Failed to save images to trip:', error);
+        console.error('Failed to save images to trip', { error, targetPackageId, imageCount: newImages.length });
       }
     }
   };
 
-  const handleFinalSubmit = () => {
-    onSubmit({
-      packageId: isEditMode ? packageId : createdPackageId,
-      itinerary,
-      images: uploadedImages
-    });
-  };
+
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -700,8 +864,10 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
         {/* Content */}
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
           {loading ? (
-            <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-ocean"></div>
+            <div className="flex flex-col items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-ocean mb-4"></div>
+              <p className="text-primary-600 font-medium">Loading trip data...</p>
+              <p className="text-primary-400 text-sm mt-1">Please wait while we fetch the details</p>
             </div>
           ) : (
             <>
@@ -743,11 +909,16 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
                         }))}
                         value={selectedDestinations.slice(0, 1)}
                         onChange={(values) => {
-                          setSelectedDestinations(values);
+                          setSelectedDestinations([...values, ...selectedDestinations.slice(1)]);
                           if (values.length > 0) {
                             const selectedCity = cities.find(c => c._id === values[0]);
                             if (selectedCity) {
                               form.setValue('destinations', `${selectedCity.name}, ${selectedCity.country?.name || ''}`);
+                              
+                              // Auto-populate country if not already selected
+                              if (selectedCity.country?._id && !selectedCountries.includes(selectedCity.country._id)) {
+                                setSelectedCountries([...selectedCountries, selectedCity.country._id]);
+                              }
                             }
                           }
                         }}
@@ -767,6 +938,16 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
                         onChange={(values) => {
                           const primary = selectedDestinations[0];
                           setSelectedDestinations(primary ? [primary, ...values] : values);
+                          
+                          // Auto-populate countries from additional destinations
+                          const newCountries = [...selectedCountries];
+                          values.forEach(destId => {
+                            const city = cities.find(c => c._id === destId);
+                            if (city?.country?._id && !newCountries.includes(city.country._id)) {
+                              newCountries.push(city.country._id);
+                            }
+                          });
+                          setSelectedCountries(newCountries);
                         }}
                         placeholder="Select additional destinations..."
                         searchable={true}
@@ -788,7 +969,7 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                     <div>
                       <label className="block text-sm font-semibold text-primary-900 mb-2">Duration (days) *</label>
                       <input {...form.register('duration', { required: 'Duration required' })} 
@@ -813,7 +994,7 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
                               estimatedCost: { currency: 'USD', amount: 0 },
                               tips: []
                             }));
-                            newDays = [...currentDays, ...additionalDays];
+                            newDays = [...currentDays, ...additionalDays] as any[];
                           } else {
                             // Remove excess days
                             newDays = currentDays.slice(0, days);
@@ -822,83 +1003,9 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
                           setItinerary({ overview: itinerary.overview || '', days: newDays });
                         }} />
                     </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-primary-900 mb-2">Legacy Price (for compatibility)</label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-600">$</span>
-                        <input {...form.register('price')} 
-                          type="number" min="0" step="0.01" className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" 
-                          placeholder="2499" />
-                      </div>
-                    </div>
                   </div>
 
-                  {/* Comprehensive Pricing */}
-                  <div>
-                    <h4 className="text-lg font-semibold text-primary-900 mb-3">💰 Pricing Details</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-primary-900 mb-2">Base Price (Cost) *</label>
-                        <div className="relative">
-                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-600">$</span>
-                          <input {...form.register('basePrice', { required: 'Base price required' })} 
-                            type="number" min="0" step="0.01" className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" 
-                            placeholder="1800" />
-                        </div>
-                        <p className="text-xs text-primary-500 mt-1">Your cost for this trip</p>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-primary-900 mb-2">Sell Price *</label>
-                        <div className="relative">
-                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-600">$</span>
-                          <input {...form.register('sellPrice', { required: 'Sell price required' })} 
-                            type="number" min="0" step="0.01" className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" 
-                            placeholder="2500" />
-                        </div>
-                        <p className="text-xs text-primary-500 mt-1">Price before discount</p>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-primary-900 mb-2">Final Price *</label>
-                        <div className="relative">
-                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-600">$</span>
-                          <input {...form.register('finalPrice', { required: 'Final price required' })} 
-                            type="number" min="0" step="0.01" className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" 
-                            placeholder="2250" />
-                        </div>
-                        <p className="text-xs text-primary-500 mt-1">Customer pays this amount</p>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-primary-900 mb-2">Discount %</label>
-                        <input {...form.register('discountPercent')} 
-                          type="number" min="0" max="100" step="0.1" className="w-full px-4 py-3 border border-primary-200 rounded-lg" 
-                          placeholder="10" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-primary-900 mb-2">Discount Amount</label>
-                        <div className="relative">
-                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-600">$</span>
-                          <input {...form.register('discountAmount')} 
-                            type="number" min="0" step="0.01" className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" 
-                            placeholder="250" />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-primary-900 mb-2">Profit Margin %</label>
-                        <input {...form.register('profitMargin')} 
-                          type="number" min="0" step="0.1" className="w-full px-4 py-3 border border-primary-200 rounded-lg" 
-                          placeholder="25" />
-                      </div>
-                      <div className="flex items-center">
-                        <label className="flex items-center">
-                          <input type="checkbox" {...form.register('taxIncluded')} defaultChecked className="mr-2" />
-                          <span className="text-sm font-semibold text-primary-900">Tax Included</span>
-                        </label>
-                      </div>
-                    </div>
-                  </div>
+
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
@@ -925,19 +1032,17 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
                     <div>
                       <label className="block text-sm font-semibold text-primary-900 mb-2">Travel Style</label>
                       <select {...form.register('travelStyle')} className="w-full px-4 py-3 border border-primary-200 rounded-lg">
-                        <option value="cultural">Cultural</option>
-                        <option value="adventure">Adventure</option>
-                        <option value="luxury">Luxury</option>
-                        <option value="relaxed">Relaxed</option>
-                        <option value="business">Business</option>
+                        {TRIP_CONSTANTS.CATEGORIES.map(style => (
+                          <option key={style} value={style}>{style.charAt(0).toUpperCase() + style.slice(1)}</option>
+                        ))}
                       </select>
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-primary-900 mb-2">Difficulty</label>
                       <select {...form.register('difficulty')} className="w-full px-4 py-3 border border-primary-200 rounded-lg">
-                        <option value="easy">Easy</option>
-                        <option value="moderate">Moderate</option>
-                        <option value="challenging">Challenging</option>
+                        {TRIP_CONSTANTS.DIFFICULTY_LEVELS.map(level => (
+                          <option key={level} value={level}>{level.charAt(0).toUpperCase() + level.slice(1)}</option>
+                        ))}
                       </select>
                     </div>
                     <div>
@@ -952,9 +1057,9 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
                     <div>
                       <label className="block text-sm font-semibold text-primary-900 mb-2">Price Range</label>
                       <select {...form.register('priceRange')} className="w-full px-4 py-3 border border-primary-200 rounded-lg">
-                        <option value="budget">Budget</option>
-                        <option value="mid-range">Mid-range</option>
-                        <option value="luxury">Luxury</option>
+                        {TRIP_CONSTANTS.BUDGET_RANGES.map(range => (
+                          <option key={range} value={range}>{range.charAt(0).toUpperCase() + range.slice(1).replace('-', ' ')}</option>
+                        ))}
                       </select>
                     </div>
                   </div>
@@ -963,10 +1068,9 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
                     <div>
                       <label className="block text-sm font-semibold text-primary-900 mb-2">Trip Type</label>
                       <select {...form.register('type')} className="w-full px-4 py-3 border border-primary-200 rounded-lg">
-                        <option value="featured">Featured</option>
-                        <option value="custom">Custom</option>
-                        <option value="ai-generated">AI Generated</option>
-                        <option value="user-created">User Created</option>
+                        {TRIP_CONSTANTS.TYPES.map(type => (
+                          <option key={type} value={type}>{type.charAt(0).toUpperCase() + type.slice(1).replace('-', ' ')}</option>
+                        ))}
                       </select>
                     </div>
                     <div>
@@ -1015,19 +1119,31 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
                       placeholder="adventure, culture, food, luxury" />
                   </div>
                   
-                  <div className="flex items-center space-x-6">
-                    <label className="flex items-center">
-                      <input type="checkbox" {...form.register('featured')} className="mr-2" />
-                      <span className="text-sm font-semibold text-primary-900">⭐ Featured Trip</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input type="checkbox" {...form.register('quickAccess')} className="mr-2" />
-                      <span className="text-sm font-semibold text-primary-900">🚀 Quick Access</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input type="checkbox" {...form.register('template')} className="mr-2" />
-                      <span className="text-sm font-semibold text-primary-900">📋 Template</span>
-                    </label>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h4 className="text-sm font-semibold text-primary-900 mb-3">Special Settings</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <label className="flex items-center p-3 bg-white rounded-lg border border-primary-200 hover:border-blue-ocean transition-colors cursor-pointer">
+                        <input type="checkbox" {...form.register('featured')} className="mr-3" />
+                        <div>
+                          <span className="text-sm font-semibold text-primary-900">⭐ Featured Trip</span>
+                          <p className="text-xs text-primary-500">Show in featured section</p>
+                        </div>
+                      </label>
+                      <label className="flex items-center p-3 bg-white rounded-lg border border-primary-200 hover:border-blue-ocean transition-colors cursor-pointer">
+                        <input type="checkbox" {...form.register('quickAccess')} className="mr-3" />
+                        <div>
+                          <span className="text-sm font-semibold text-primary-900">🚀 Quick Access</span>
+                          <p className="text-xs text-primary-500">Add to quick access menu</p>
+                        </div>
+                      </label>
+                      <label className="flex items-center p-3 bg-white rounded-lg border border-primary-200 hover:border-blue-ocean transition-colors cursor-pointer">
+                        <input type="checkbox" {...form.register('template')} className="mr-3" />
+                        <div>
+                          <span className="text-sm font-semibold text-primary-900">📋 Template</span>
+                          <p className="text-xs text-primary-500">Use as template for new trips</p>
+                        </div>
+                      </label>
+                    </div>
                   </div>
 
                   <div className="flex justify-end gap-4 pt-4">
@@ -1037,7 +1153,12 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
                       </Button>
                     )}
                     <Button type="submit" disabled={saving}>
-                      {saving ? 'Saving...' : isEditMode ? 'Save Changes' : 'Next: Itinerary'}
+                      {saving ? (
+                        <div className="flex items-center gap-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          <span>Saving...</span>
+                        </div>
+                      ) : isEditMode ? 'Save Changes' : 'Next: Pricing →'}
                     </Button>
                   </div>
                 </form>
@@ -1045,97 +1166,182 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
 
               {currentStep === 2 && (
                 <form onSubmit={form.handleSubmit(handleBasicInfoSubmit)} className="space-y-6">
-                  <h3 className="text-xl font-bold text-primary-900 mb-4">Trip Details & Requirements</h3>
-                  
-                  {/* Group Size */}
+                  <h3 className="text-xl font-bold text-primary-900 mb-4">💰 Complete Pricing Setup</h3>
+
+                  {/* Step 1: Your Cost */}
                   <div>
-                    <h4 className="text-lg font-semibold text-primary-900 mb-3">Group Size</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <h4 className="text-lg font-semibold text-primary-900 mb-3">💰 Step 1: Your Total Cost</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                       <div>
-                        <label className="block text-sm font-semibold text-primary-900 mb-2">Minimum</label>
-                        <input {...form.register('minGroupSize')} type="number" min="1" defaultValue="1" 
-                          className="w-full px-4 py-3 border border-primary-200 rounded-lg" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-primary-900 mb-2">Maximum</label>
-                        <input {...form.register('maxGroupSize')} type="number" min="1" defaultValue="20" 
-                          className="w-full px-4 py-3 border border-primary-200 rounded-lg" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-primary-900 mb-2">Recommended</label>
-                        <input {...form.register('recommendedGroupSize')} type="number" min="1" defaultValue="4" 
-                          className="w-full px-4 py-3 border border-primary-200 rounded-lg" />
+                        <label className="block text-sm font-semibold text-primary-900 mb-2">Your Total Cost (What you pay) *</label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-600">{getCurrencySymbol(form.watch('currency') || APP_CONSTANTS.DEFAULT_CURRENCY)}</span>
+                          <input {...form.register('basePrice', { required: 'Total cost required' })} 
+                            type="number" min="0" step="0.01" className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" 
+                            placeholder="800" 
+                            onChange={() => {
+                              const basePrice = parseFloat(form.getValues('basePrice')) || 0;
+                              const sellPrice = parseFloat(form.getValues('sellPrice')) || 0;
+                              if (basePrice > 0 && sellPrice > 0) {
+                                const profitMargin = ((sellPrice - basePrice) / basePrice * 100).toFixed(1);
+                                form.setValue('profitMargin', parseFloat(profitMargin));
+                              }
+                            }} />
+                        </div>
+                        <p className="text-xs text-primary-500 mt-1">Include flights, hotels, guides, permits, etc. - everything you pay</p>
                       </div>
                     </div>
                   </div>
 
-                  {/* Physical Requirements */}
+                  {/* Price Breakdown - Auto-calculates Sell Price */}
                   <div>
-                    <h4 className="text-lg font-semibold text-primary-900 mb-3">Physical Requirements</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-primary-900 mb-2">Fitness Level</label>
-                        <select {...form.register('fitnessLevel')} className="w-full px-4 py-3 border border-primary-200 rounded-lg">
-                          <option value="low">Low</option>
-                          <option value="moderate">Moderate</option>
-                          <option value="high">High</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-primary-900 mb-2">Walking Distance (km/day)</label>
-                        <input {...form.register('walkingDistance')} type="number" min="0" step="0.1" 
-                          className="w-full px-4 py-3 border border-primary-200 rounded-lg" placeholder="5" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-primary-900 mb-2">Altitude (meters)</label>
-                        <input {...form.register('altitude')} type="number" min="0" 
-                          className="w-full px-4 py-3 border border-primary-200 rounded-lg" placeholder="1000" />
-                      </div>
-                    </div>
-                    <div className="mt-4">
-                      <label className="block text-sm font-semibold text-primary-900 mb-2">Special Needs (comma separated)</label>
-                      <input {...form.register('specialNeeds')} 
-                        className="w-full px-4 py-3 border border-primary-200 rounded-lg" 
-                        placeholder="Wheelchair accessible, Dietary restrictions" />
-                    </div>
-                  </div>
-
-                  {/* Price Breakdown */}
-                  <div>
-                    <h4 className="text-lg font-semibold text-primary-900 mb-3">Price Breakdown</h4>
-                    <p className="text-sm text-primary-600 mb-4">Break down the total price into components (should add up to total price)</p>
+                    <h4 className="text-lg font-semibold text-primary-900 mb-3">💸 Step 2: Customer Price Breakdown</h4>
+                    <p className="text-sm text-primary-600 mb-4">Set what customers pay for each component - total becomes your sell price</p>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       <div>
                         <label className="block text-sm font-semibold text-primary-900 mb-2">Flights</label>
-                        <input {...form.register('priceBreakdownFlights')} type="number" min="0" 
-                          className="w-full px-4 py-3 border border-primary-200 rounded-lg" placeholder="800" />
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-600">{getCurrencySymbol(form.watch('currency') || APP_CONSTANTS.DEFAULT_CURRENCY)}</span>
+                          <input {...form.register('priceBreakdownFlights')} type="number" min="0" 
+                            className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" placeholder="400" 
+                            onChange={() => setTimeout(calculatePricing, 100)} />
+                        </div>
                       </div>
                       <div>
                         <label className="block text-sm font-semibold text-primary-900 mb-2">Accommodation</label>
-                        <input {...form.register('priceBreakdownAccommodation')} type="number" min="0" 
-                          className="w-full px-4 py-3 border border-primary-200 rounded-lg" placeholder="600" />
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-600">{getCurrencySymbol(form.watch('currency') || APP_CONSTANTS.DEFAULT_CURRENCY)}</span>
+                          <input {...form.register('priceBreakdownAccommodation')} type="number" min="0" 
+                            className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" placeholder="700" 
+                            onChange={() => setTimeout(calculatePricing, 100)} />
+                        </div>
                       </div>
                       <div>
                         <label className="block text-sm font-semibold text-primary-900 mb-2">Activities</label>
-                        <input {...form.register('priceBreakdownActivities')} type="number" min="0" 
-                          className="w-full px-4 py-3 border border-primary-200 rounded-lg" placeholder="300" />
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-600">{getCurrencySymbol(form.watch('currency') || APP_CONSTANTS.DEFAULT_CURRENCY)}</span>
+                          <input {...form.register('priceBreakdownActivities')} type="number" min="0" 
+                            className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" placeholder="10" 
+                            onChange={() => setTimeout(calculatePricing, 100)} />
+                        </div>
                       </div>
                       <div>
                         <label className="block text-sm font-semibold text-primary-900 mb-2">Food</label>
-                        <input {...form.register('priceBreakdownFood')} type="number" min="0" 
-                          className="w-full px-4 py-3 border border-primary-200 rounded-lg" placeholder="200" />
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-600">{getCurrencySymbol(form.watch('currency') || APP_CONSTANTS.DEFAULT_CURRENCY)}</span>
+                          <input {...form.register('priceBreakdownFood')} type="number" min="0" 
+                            className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" placeholder="30" 
+                            onChange={() => setTimeout(calculatePricing, 100)} />
+                        </div>
                       </div>
                       <div>
                         <label className="block text-sm font-semibold text-primary-900 mb-2">Transport</label>
-                        <input {...form.register('priceBreakdownTransport')} type="number" min="0" 
-                          className="w-full px-4 py-3 border border-primary-200 rounded-lg" placeholder="100" />
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-600">{getCurrencySymbol(form.watch('currency') || APP_CONSTANTS.DEFAULT_CURRENCY)}</span>
+                          <input {...form.register('priceBreakdownTransport')} type="number" min="0" 
+                            className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" placeholder="10" 
+                            onChange={() => setTimeout(calculatePricing, 100)} />
+                        </div>
                       </div>
                       <div>
                         <label className="block text-sm font-semibold text-primary-900 mb-2">Other</label>
-                        <input {...form.register('priceBreakdownOther')} type="number" min="0" 
-                          className="w-full px-4 py-3 border border-primary-200 rounded-lg" placeholder="50" />
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-600">{getCurrencySymbol(form.watch('currency') || APP_CONSTANTS.DEFAULT_CURRENCY)}</span>
+                          <input {...form.register('priceBreakdownOther')} type="number" min="0" 
+                            className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" placeholder="40" 
+                            onChange={() => setTimeout(calculatePricing, 100)} />
+                        </div>
                       </div>
                     </div>
+                    
+                    {/* Auto-calculated Sell Price */}
+                    <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="font-semibold text-primary-900">Sell Price (Auto-calculated):</span>
+                        <span className="font-bold text-2xl text-green-600">
+                          {getCurrencySymbol(form.watch('currency') || APP_CONSTANTS.DEFAULT_CURRENCY)}
+                          {(() => {
+                            const total = (form.watch('priceBreakdownFlights') || 0) +
+                              (form.watch('priceBreakdownAccommodation') || 0) +
+                              (form.watch('priceBreakdownActivities') || 0) +
+                              (form.watch('priceBreakdownFood') || 0) +
+                              (form.watch('priceBreakdownTransport') || 0) +
+                              (form.watch('priceBreakdownOther') || 0);
+                            
+                            setTimeout(calculatePricing, 100);
+                            return total.toFixed(2);
+                          })()}
+                        </span>
+                      </div>
+                      <p className="text-sm text-green-700">This is what customers see as the original price</p>
+                    </div>
+                  </div>
+                  
+                  {/* Step 3: Discount & Final Price */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-primary-900 mb-3">🎯 Step 3: Discount & Final Price</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-primary-900 mb-2">Discount %</label>
+                        <input {...form.register('discountPercent')} 
+                          type="number" min="0" max="100" step="0.1" className="w-full px-4 py-3 border border-primary-200 rounded-lg" 
+                          placeholder="10" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-primary-900 mb-2">OR Discount Amount</label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-600">{getCurrencySymbol(form.watch('currency') || APP_CONSTANTS.DEFAULT_CURRENCY)}</span>
+                          <input {...form.register('discountAmount')} 
+                            type="number" min="0" step="0.01" className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" 
+                            placeholder="100" />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-primary-900 mb-2">Final Price (Auto)</label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-600">{getCurrencySymbol(form.watch('currency') || APP_CONSTANTS.DEFAULT_CURRENCY)}</span>
+                          <input {...form.register('finalPrice')} 
+                            type="number" className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg bg-gray-50" 
+                            readOnly />
+                        </div>
+                        <p className="text-xs text-primary-500 mt-1">What customer actually pays</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Profit Analysis */}
+                  <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                    <h5 className="font-semibold text-primary-900 mb-3">📊 Profit Analysis</h5>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div className="text-center p-4 bg-red-50 rounded-lg border border-red-200">
+                        <div className="text-xl font-bold text-red-600">{getCurrencySymbol(form.watch('currency') || APP_CONSTANTS.DEFAULT_CURRENCY)}{Number(form.watch('basePrice') || 0)}</div>
+                        <div className="text-xs text-red-600 font-medium mt-1">Your Cost</div>
+                      </div>
+                      <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <div className="text-xl font-bold text-blue-600">{getCurrencySymbol(form.watch('currency') || APP_CONSTANTS.DEFAULT_CURRENCY)}{Number(form.watch('sellPrice') || 0)}</div>
+                        <div className="text-xs text-blue-600 font-medium mt-1">Sell Price</div>
+                      </div>
+                      <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
+                        <div className="text-xl font-bold text-green-600">{getCurrencySymbol(form.watch('currency') || APP_CONSTANTS.DEFAULT_CURRENCY)}{Number(form.watch('finalPrice') || 0)}</div>
+                        <div className="text-xs text-green-600 font-medium mt-1">Customer Pays</div>
+                      </div>
+                      <div className="text-center p-4 bg-purple-50 rounded-lg border border-purple-200">
+                        <div className="text-xl font-bold text-purple-600">{Number(form.watch('profitMargin') || 0)}%</div>
+                        <div className="text-xs text-purple-600 font-medium mt-1">Profit Margin</div>
+                      </div>
+                    </div>
+                    
+                    {/* Validation */}
+                    {Number(form.watch('basePrice') || 0) >= Number(form.watch('sellPrice') || 0) && Number(form.watch('basePrice') || 0) > 0 && (
+                      <div className="bg-red-100 border border-red-300 text-red-700 px-3 py-2 rounded text-sm mt-3">
+                        ⚠️ Warning: Your sell price should be higher than your cost!
+                      </div>
+                    )}
+                    {Number(form.watch('profitMargin') || 0) < 10 && Number(form.watch('profitMargin') || 0) >= 0 && (
+                      <div className="bg-yellow-100 border border-yellow-300 text-yellow-700 px-3 py-2 rounded text-sm mt-3">
+                        💡 Low profit margin. Consider increasing your prices.
+                      </div>
+                    )}
                   </div>
 
                   {/* Booking Settings */}
@@ -1184,9 +1390,11 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
                   <div className="flex justify-between pt-4">
                     <Button variant="outline" type="button" onClick={() => setCurrentStep(1)}>← Previous</Button>
                     <div className="flex gap-2">
-                      <Button type="submit" disabled={saving}>
-                        {saving ? 'Saving...' : '💾 Save'}
-                      </Button>
+                      {isEditMode && (
+                        <Button type="submit" disabled={saving}>
+                          {saving ? 'Saving...' : '💾 Save Pricing'}
+                        </Button>
+                      )}
                       <Button type="button" variant="outline" onClick={() => setCurrentStep(3)}>
                         Next: Itinerary →
                       </Button>
@@ -1204,137 +1412,26 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
                   />
                   <div className="flex justify-between pt-4">
                     <Button variant="outline" onClick={() => setCurrentStep(2)}>← Previous</Button>
-                    <Button onClick={() => setCurrentStep(4)}>Next: Services →</Button>
+                    <div className="flex gap-2">
+                      {isEditMode && (
+                        <Button onClick={async () => {
+                          const targetPackageId = isEditMode ? packageId : createdPackageId;
+                          if (targetPackageId && itinerary.days && itinerary.days.length > 0) {
+                            await handleItinerarySave(itinerary);
+                          }
+                        }} disabled={saving}>
+                          {saving ? 'Saving...' : '💾 Save Itinerary'}
+                        </Button>
+                      )}
+                      <Button onClick={() => setCurrentStep(4)}>Next: Travel Info →</Button>
+                    </div>
                   </div>
                 </div>
               )}
 
               {currentStep === 4 && (
                 <form onSubmit={form.handleSubmit(handleBasicInfoSubmit)} className="space-y-6">
-                  <h3 className="text-xl font-bold text-primary-900 mb-4">Included Services</h3>
-                  <p className="text-primary-600 mb-4">What's included in the trip price</p>
-                  
-                  {/* Transport & Meals */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <h4 className="font-semibold text-primary-900 mb-3">🚗 Transportation</h4>
-                      <div className="space-y-2">
-                        {['Airport transfers', 'Local transport', 'Private car', 'Public transport', 'Taxi/Uber credits'].map(transport => (
-                          <label key={transport} className="flex items-center">
-                            <input 
-                              type="checkbox" 
-                              className="mr-2"
-                              checked={includedServices.transport.includes(transport)}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setIncludedServices(prev => ({
-                                    ...prev,
-                                    transport: [...prev.transport, transport]
-                                  }));
-                                } else {
-                                  setIncludedServices(prev => ({
-                                    ...prev,
-                                    transport: prev.transport.filter(t => t !== transport)
-                                  }));
-                                }
-                              }}
-                            />
-                            <span className="text-sm">{transport}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <h4 className="font-semibold text-primary-900 mb-3">🍽️ Meals</h4>
-                      <div className="space-y-2">
-                        {['Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Welcome drink', 'Cooking class'].map(meal => (
-                          <label key={meal} className="flex items-center">
-                            <input 
-                              type="checkbox" 
-                              className="mr-2"
-                              checked={includedServices.meals.includes(meal)}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setIncludedServices(prev => ({
-                                    ...prev,
-                                    meals: [...prev.meals, meal]
-                                  }));
-                                } else {
-                                  setIncludedServices(prev => ({
-                                    ...prev,
-                                    meals: prev.meals.filter(m => m !== meal)
-                                  }));
-                                }
-                              }}
-                            />
-                            <span className="text-sm">{meal}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Other Services */}
-                  <div>
-                    <h4 className="font-semibold text-primary-900 mb-3">👥 Other Services</h4>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      <label className="flex items-center">
-                        <input 
-                          type="checkbox" 
-                          className="mr-2"
-                          checked={includedServices.guides}
-                          onChange={(e) => setIncludedServices(prev => ({ ...prev, guides: e.target.checked }))}
-                        />
-                        <span className="text-sm">👨‍🏫 Tour Guide</span>
-                      </label>
-                      <label className="flex items-center">
-                        <input type="checkbox" className="mr-2" />
-                        <span className="text-sm">📷 Photography</span>
-                      </label>
-                      <label className="flex items-center">
-                        <input type="checkbox" className="mr-2" />
-                        <span className="text-sm">🎁 Welcome kit</span>
-                      </label>
-                      <label className="flex items-center">
-                        <input type="checkbox" className="mr-2" />
-                        <span className="text-sm">📱 SIM card</span>
-                      </label>
-                      <label className="flex items-center">
-                        <input type="checkbox" className="mr-2" />
-                        <span className="text-sm">🌍 Travel insurance</span>
-                      </label>
-                      <label className="flex items-center">
-                        <input type="checkbox" className="mr-2" />
-                        <span className="text-sm">📞 24/7 support</span>
-                      </label>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <p className="text-sm text-blue-800">
-                      💡 <strong>Note:</strong> Flights and hotels are managed separately. 
-                      Day-specific activities are added in the Itinerary tab.
-                    </p>
-                  </div>
-                  
-                  <div className="flex justify-between pt-4">
-                    <Button variant="outline" type="button" onClick={() => setCurrentStep(3)}>← Previous</Button>
-                    <div className="flex gap-2">
-                      <Button type="submit" disabled={saving}>
-                        {saving ? 'Saving...' : '💾 Save'}
-                      </Button>
-                      <Button type="button" variant="outline" onClick={() => setCurrentStep(5)}>
-                        Next →
-                      </Button>
-                    </div>
-                  </div>
-                </form>
-              )}
-
-              {currentStep === 5 && (
-                <form onSubmit={form.handleSubmit(handleBasicInfoSubmit)} className="space-y-6">
-                  <h3 className="text-xl font-bold text-primary-900 mb-4">Travel Information</h3>
+                  <h3 className="text-xl font-bold text-primary-900 mb-4">Travel Information & Requirements</h3>
                   
                   {/* Best Time to Visit */}
                   <div>
@@ -1504,104 +1601,219 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
                     </div>
                   </div>
 
+                  {/* Included Services */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-primary-900 mb-3">Included Services</h4>
+                    <p className="text-primary-600 mb-4">What's included in the trip price</p>
+                  
+                  {/* Transport & Meals */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <h4 className="font-semibold text-primary-900 mb-3">🚗 Transportation</h4>
+                      <div className="space-y-2">
+                        {['Airport transfers', 'Local transport', 'Private car', 'Public transport', 'Taxi/Uber credits'].map(transport => (
+                          <label key={transport} className="flex items-center">
+                            <input 
+                              type="checkbox" 
+                              className="mr-2"
+                              checked={includedServices.transport.includes(transport)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setIncludedServices(prev => ({
+                                    ...prev,
+                                    transport: [...prev.transport, transport]
+                                  }));
+                                } else {
+                                  setIncludedServices(prev => ({
+                                    ...prev,
+                                    transport: prev.transport.filter(t => t !== transport)
+                                  }));
+                                }
+                              }}
+                            />
+                            <span className="text-sm">{transport}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-semibold text-primary-900 mb-3">🍽️ Meals</h4>
+                      <div className="space-y-2">
+                        {['Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Welcome drink', 'Cooking class'].map(meal => (
+                          <label key={meal} className="flex items-center">
+                            <input 
+                              type="checkbox" 
+                              className="mr-2"
+                              checked={includedServices.meals.includes(meal)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setIncludedServices(prev => ({
+                                    ...prev,
+                                    meals: [...prev.meals, meal]
+                                  }));
+                                } else {
+                                  setIncludedServices(prev => ({
+                                    ...prev,
+                                    meals: prev.meals.filter(m => m !== meal)
+                                  }));
+                                }
+                              }}
+                            />
+                            <span className="text-sm">{meal}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Other Services */}
+                  <div>
+                    <h4 className="font-semibold text-primary-900 mb-3">👥 Other Services</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      <label className="flex items-center">
+                        <input 
+                          type="checkbox" 
+                          className="mr-2"
+                          checked={includedServices.guides}
+                          onChange={(e) => setIncludedServices(prev => ({ ...prev, guides: e.target.checked }))}
+                        />
+                        <span className="text-sm">👨‍🏫 Tour Guide</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input type="checkbox" className="mr-2" />
+                        <span className="text-sm">📷 Photography</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input type="checkbox" className="mr-2" />
+                        <span className="text-sm">🎁 Welcome kit</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input type="checkbox" className="mr-2" />
+                        <span className="text-sm">📱 SIM card</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input type="checkbox" className="mr-2" />
+                        <span className="text-sm">🌍 Travel insurance</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input type="checkbox" className="mr-2" />
+                        <span className="text-sm">📞 24/7 support</span>
+                      </label>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <p className="text-sm text-blue-800">
+                      💡 <strong>Note:</strong> Flights and hotels are managed separately. 
+                      Day-specific activities are added in the Itinerary tab.
+                    </p>
+                  </div>
+                  </div>
+                  
+                  <div className="flex justify-between pt-4">
+                    <Button variant="outline" type="button" onClick={() => setCurrentStep(3)}>← Previous</Button>
+                    <div className="flex gap-2">
+                      {isEditMode && (
+                        <Button type="submit" disabled={saving}>
+                          {saving ? 'Saving...' : '💾 Save Travel Info'}
+                        </Button>
+                      )}
+                      <Button type="button" variant="outline" onClick={() => setCurrentStep(5)}>
+                        Next: Settings →
+                      </Button>
+                    </div>
+                  </div>
+                </form>
+              )}
+
+              {currentStep === 5 && (
+                <form onSubmit={form.handleSubmit(handleBasicInfoSubmit)} className="space-y-6">
+                  <h3 className="text-xl font-bold text-primary-900 mb-4">Trip Settings & Customization</h3>
+                  
+                  {/* Availability & Sharing */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-primary-900 mb-3">Availability & Sharing</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-primary-900 mb-2">Max Bookings</label>
+                        <input {...form.register('maxBookings')} type="number" min="1" 
+                          className="w-full px-4 py-3 border border-primary-200 rounded-lg" 
+                          placeholder="20" />
+                      </div>
+                      <div className="flex items-center space-y-4">
+                        <label className="flex items-center">
+                          <input type="checkbox" {...form.register('seasonal')} className="mr-2" />
+                          <span className="text-sm font-semibold text-primary-900">🌍 Seasonal Trip</span>
+                        </label>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                      <label className="flex items-center p-3 bg-gray-50 rounded-lg border border-primary-200 hover:border-blue-ocean hover:bg-blue-50 transition-all cursor-pointer">
+                        <input type="checkbox" {...form.register('isPublic')} className="mr-3" defaultChecked />
+                        <div>
+                          <span className="text-sm font-semibold text-primary-900">🌐 Public Trip</span>
+                          <p className="text-xs text-primary-500">Visible to all users</p>
+                        </div>
+                      </label>
+                      <label className="flex items-center p-3 bg-gray-50 rounded-lg border border-primary-200 hover:border-blue-ocean hover:bg-blue-50 transition-all cursor-pointer">
+                        <input type="checkbox" {...form.register('allowCopy')} className="mr-3" defaultChecked />
+                        <div>
+                          <span className="text-sm font-semibold text-primary-900">📋 Allow Copy</span>
+                          <p className="text-xs text-primary-500">Users can copy this trip</p>
+                        </div>
+                      </label>
+                      <label className="flex items-center p-3 bg-gray-50 rounded-lg border border-primary-200 hover:border-blue-ocean hover:bg-blue-50 transition-all cursor-pointer">
+                        <input type="checkbox" {...form.register('allowComments')} className="mr-3" defaultChecked />
+                        <div>
+                          <span className="text-sm font-semibold text-primary-900">💬 Allow Comments</span>
+                          <p className="text-xs text-primary-500">Users can comment on trip</p>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                  
+                  {/* Customization Options */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-primary-900 mb-3">Customization Options</h4>
+                    <p className="text-primary-600 mb-4">Allow customers to customize trip elements</p>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      <label className="flex items-center p-3 bg-gray-50 rounded-lg border border-primary-200 hover:border-blue-ocean hover:bg-blue-50 transition-all cursor-pointer">
+                        <input type="checkbox" {...form.register('customizableDuration')} className="mr-3" defaultChecked />
+                        <span className="text-sm font-medium">📅 Duration</span>
+                      </label>
+                      <label className="flex items-center p-3 bg-gray-50 rounded-lg border border-primary-200 hover:border-blue-ocean hover:bg-blue-50 transition-all cursor-pointer">
+                        <input type="checkbox" {...form.register('customizableActivities')} className="mr-3" defaultChecked />
+                        <span className="text-sm font-medium">🎯 Activities</span>
+                      </label>
+                      <label className="flex items-center p-3 bg-gray-50 rounded-lg border border-primary-200 hover:border-blue-ocean hover:bg-blue-50 transition-all cursor-pointer">
+                        <input type="checkbox" {...form.register('customizableAccommodation')} className="mr-3" defaultChecked />
+                        <span className="text-sm font-medium">🏨 Hotels</span>
+                      </label>
+                      <label className="flex items-center p-3 bg-gray-50 rounded-lg border border-primary-200 hover:border-blue-ocean hover:bg-blue-50 transition-all cursor-pointer">
+                        <input type="checkbox" {...form.register('customizableDates')} className="mr-3" defaultChecked />
+                        <span className="text-sm font-medium">📆 Dates</span>
+                      </label>
+                      <label className="flex items-center p-3 bg-gray-50 rounded-lg border border-primary-200 hover:border-blue-ocean hover:bg-blue-50 transition-all cursor-pointer">
+                        <input type="checkbox" {...form.register('customizableGroupSize')} className="mr-3" defaultChecked />
+                        <span className="text-sm font-medium">👥 Group Size</span>
+                      </label>
+                    </div>
+                  </div>
+
                   <div className="flex justify-between pt-4">
                     <Button variant="outline" onClick={() => setCurrentStep(4)}>← Previous</Button>
                     <div className="flex gap-2">
                       <Button onClick={handleSaveCurrentTab} disabled={saving}>
-                        {saving ? 'Saving...' : '💾 Save'}
+                        {saving ? 'Saving...' : '💾 Save Settings'}
                       </Button>
-                      {!isEditMode && (
-                        <Button variant="outline" onClick={() => setCurrentStep(6)}>Next →</Button>
-                      )}
+                      <Button variant="outline" onClick={() => setCurrentStep(6)}>Next: Images →</Button>
                     </div>
                   </div>
                 </form>
               )}
 
-              {currentStep === 6 && (
-                <form onSubmit={form.handleSubmit(handleBasicInfoSubmit)} className="space-y-6">
-                  <h3 className="text-xl font-bold text-primary-900 mb-4">Trip Settings</h3>
-                  
-                  {/* Availability Settings */}
-                  <div>
-                    <h4 className="text-lg font-semibold text-primary-900 mb-3">Availability</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-primary-900 mb-2">Max Bookings</label>
-                        <input {...form.register('maxBookings')} type="number" min="1" defaultValue="20" 
-                          className="w-full px-4 py-3 border border-primary-200 rounded-lg" />
-                      </div>
-                      <div className="flex items-center">
-                        <label className="flex items-center">
-                          <input type="checkbox" {...form.register('seasonal')} className="mr-2" />
-                          <span className="text-sm font-semibold text-primary-900">🌿 Seasonal Trip</span>
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Sharing Settings */}
-                  <div>
-                    <h4 className="text-lg font-semibold text-primary-900 mb-3">Sharing & Privacy</h4>
-                    <div className="space-y-4">
-                      <label className="flex items-center">
-                        <input type="checkbox" {...form.register('isPublic')} className="mr-2" defaultChecked />
-                        <span className="text-sm font-semibold text-primary-900">🌍 Public Trip (visible to everyone)</span>
-                      </label>
-                      <label className="flex items-center">
-                        <input type="checkbox" {...form.register('allowCopy')} className="mr-2" defaultChecked />
-                        <span className="text-sm font-semibold text-primary-900">📋 Allow others to copy this trip</span>
-                      </label>
-                      <label className="flex items-center">
-                        <input type="checkbox" {...form.register('allowComments')} className="mr-2" defaultChecked />
-                        <span className="text-sm font-semibold text-primary-900">💬 Allow comments and reviews</span>
-                      </label>
-                    </div>
-                  </div>
-
-                  {/* Customization Settings */}
-                  <div>
-                    <h4 className="text-lg font-semibold text-primary-900 mb-3">Customization Options</h4>
-                    <p className="text-sm text-primary-600 mb-3">Allow customers to customize these aspects of the trip</p>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      <label className="flex items-center">
-                        <input type="checkbox" {...form.register('customizableDuration')} defaultChecked className="mr-2" />
-                        <span className="text-sm">📅 Duration</span>
-                      </label>
-                      <label className="flex items-center">
-                        <input type="checkbox" {...form.register('customizableActivities')} defaultChecked className="mr-2" />
-                        <span className="text-sm">🎭 Activities</span>
-                      </label>
-                      <label className="flex items-center">
-                        <input type="checkbox" {...form.register('customizableAccommodation')} defaultChecked className="mr-2" />
-                        <span className="text-sm">🏨 Hotels</span>
-                      </label>
-                      <label className="flex items-center">
-                        <input type="checkbox" {...form.register('customizableDates')} defaultChecked className="mr-2" />
-                        <span className="text-sm">📅 Dates</span>
-                      </label>
-                      <label className="flex items-center">
-                        <input type="checkbox" {...form.register('customizableGroupSize')} defaultChecked className="mr-2" />
-                        <span className="text-sm">👥 Group Size</span>
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between pt-4">
-                    <Button variant="outline" onClick={() => setCurrentStep(5)}>← Previous</Button>
-                    <div className="flex gap-2">
-                      <Button onClick={handleSaveCurrentTab} disabled={saving}>
-                        {saving ? 'Saving...' : '💾 Save'}
-                      </Button>
-                      {!isEditMode && (
-                        <Button variant="outline" onClick={() => setCurrentStep(7)}>Next →</Button>
-                      )}
-                    </div>
-                  </div>
-                </form>
-              )}
-
-              {currentStep === 7 && (createdPackageId || isEditMode) && (
+              {currentStep === 6 && (createdPackageId || isEditMode) && (
                 <div>
                   <h3 className="text-lg font-semibold text-primary-900 mb-4">Upload Package Images</h3>
                   <ImageUpload 
@@ -1612,39 +1824,26 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onSu
                     packageId={isEditMode ? packageId! : createdPackageId!}
                   />
                   
-                  {uploadedImages.length > 0 && (
-                    <div className="mt-6">
-                      <h4 className="text-md font-semibold text-primary-900 mb-3">Uploaded Images ({uploadedImages.length})</h4>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {uploadedImages.map((image, index) => (
-                          <div key={index} className="relative">
-                            <img 
-                              src={image.url?.startsWith('http') ? image.url : `http://localhost:3000${image.url}`} 
-                              alt={image.alt} 
-                              className="w-full h-24 object-cover rounded-lg"
-                              onError={(e) => {
-                                e.currentTarget.src = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop';
-                              }}
-                            />
-                            {image.isPrimary && (
-                              <div className="absolute top-1 left-1 bg-blue-ocean text-white text-xs px-2 py-1 rounded">
-                                Primary
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  
+                
                   <div className="flex justify-between pt-6">
-                    <Button variant="outline" onClick={() => setCurrentStep(6)}>← Previous</Button>
-                    <Button onClick={onClose}>💾 Save & Close</Button>
+                    <Button variant="outline" onClick={() => setCurrentStep(5)}>← Previous</Button>
+                    <div className="flex gap-2">
+                      <Button onClick={async () => {
+                        if (uploadedImages.length > 0) {
+                          await handleImagesUploaded([]);
+                        }
+                        const targetPackageId = isEditMode ? packageId : createdPackageId;
+                        console.info('Trip saved successfully', { targetPackageId });
+                        // TODO: Replace with proper toast notification
+                        alert('Trip saved successfully!');
+                      }} disabled={saving}>
+                        {saving ? 'Saving...' : '💾 Save Images'}
+                      </Button>
+                      <Button variant="outline" onClick={onClose}>Close</Button>
+                    </div>
                   </div>
                 </div>
               )}
-
-
             </>
           )}
         </div>

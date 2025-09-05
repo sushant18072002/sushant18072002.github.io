@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '@/components/common/Button';
 import Card from '@/components/common/Card';
+import { APP_CONSTANTS } from '@/constants/app.constants';
 
 const AboutPage: React.FC = () => {
   const navigate = useNavigate();
@@ -25,7 +26,7 @@ const AboutPage: React.FC = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold text-primary-900 mb-6">🎯 Our Mission</h2>
           <p className="text-xl text-primary-600 leading-relaxed">
-            At TravelAI, we believe that every journey should be as unique as the traveler. Our AI-powered platform combines cutting-edge technology with human expertise to create personalized travel experiences that exceed expectations.
+            At {APP_CONSTANTS.APP_NAME}, we believe that every journey should be as unique as the traveler. {APP_CONSTANTS.APP_DESCRIPTION} by combining cutting-edge technology with human expertise to create personalized travel experiences that exceed expectations.
           </p>
         </div>
       </section>
@@ -100,7 +101,7 @@ const AboutPage: React.FC = () => {
       <section className="py-20 bg-primary-50 text-center">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-primary-900 mb-4">Ready to Start Your Journey?</h2>
-          <p className="text-xl text-primary-600 mb-8">Join thousands of travelers who trust TravelAI for their perfect trips</p>
+          <p className="text-xl text-primary-600 mb-8">Join thousands of travelers who trust {APP_CONSTANTS.APP_NAME} for their perfect trips</p>
           <Button size="lg" onClick={() => navigate('/')}>
             Start Planning Today
           </Button>

@@ -114,6 +114,28 @@ const getFeaturedContent = async (req, res) => {
       }
     ];
 
+    // How it works steps
+    const howItWorksSteps = [
+      {
+        id: 1,
+        title: 'Search & Discover',
+        description: 'Find your perfect trip using our AI-powered search or browse curated packages',
+        image: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=256&h=269&fit=crop'
+      },
+      {
+        id: 2,
+        title: 'Book with Confidence',
+        description: 'Secure booking with flexible cancellation and 24/7 customer support',
+        image: 'https://images.unsplash.com/photo-1551632811-1312ad7a1e3e?w=256&h=269&fit=crop'
+      },
+      {
+        id: 3,
+        title: 'Travel & Enjoy',
+        description: 'Experience your dream trip with our comprehensive travel support',
+        image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=256&h=269&fit=crop'
+      }
+    ];
+
     // Adventure section content
     const adventureSection = {
       title: heroSettings?.value?.adventureTitle || "Let's go on an adventure",
@@ -131,6 +153,7 @@ const getFeaturedContent = async (req, res) => {
         adventureSection,
         blogPosts,
         quickAccessTrips,
+        howItWorksSteps,
         // Hero content from database or defaults
         heroTitle: heroSettings?.value?.heroTitle || 'Discover Your Dream Journey',
         heroSubtitle: heroSettings?.value?.heroSubtitle || 'AI-powered travel planning made simple and magical',

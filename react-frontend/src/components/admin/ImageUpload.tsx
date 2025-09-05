@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import Button from '@/components/common/Button';
+import { API_CONFIG } from '@/config/api.config';
+import { APP_CONSTANTS } from '@/constants/app.constants';
 
 interface ImageUploadProps {
   images?: any[];
@@ -14,7 +16,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   images = [], 
   onImagesChange, 
   onImagesUploaded,
-  maxImages = 10, 
+  maxImages = APP_CONSTANTS.MAX_IMAGES || 10, 
   category = 'general',
   packageId
 }) => {
@@ -38,7 +40,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     });
     
     try {
-      const response = await fetch('http://localhost:3000/api/upload/multiple', {
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.UPLOAD_MULTIPLE}`, {
         method: 'POST',
         body: formData
       });
@@ -66,7 +68,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     
     try {
       // Delete from server
-      await fetch(`http://localhost:3000/api/upload/${imageToRemove.filename}`, {
+      await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.UPLOAD_DELETE(imageToRemove.filename)}`, {
         method: 'DELETE'
       });
       
@@ -130,7 +132,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
               {/* Image */}
               <div className="relative aspect-video">
                 <img
-                  src={image.url.startsWith('http') ? image.url : `http://localhost:3000${image.url}`}
+                  src={image.url.startsWith('http') ? image.url : `${API_CONFIG.BASE_URL.replace('/api', '')}${image.url}`}
                   alt={image.alt}
                   className="w-full h-full object-cover"
                 />
@@ -183,11 +185,12 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                     onChange={(e) => updateImageDetails(index, 'category', e.target.value)}
                     className="w-full px-2 py-1 text-xs border border-primary-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-ocean"
                   >
-                    <option value="aircraft">Aircraft</option>
-                    <option value="cabin">Cabin</option>
-                    <option value="meal">Meal</option>
-                    <option value="seat-map">Seat Map</option>
-                    <option value="amenity">Amenity</option>
+                    <option value="trip">Trip</option>
+                    <option value="destination">Destination</option>
+                    <option value="activity">Activity</option>
+                    <option value="accommodation">Accommodation</option>
+                    <option value="food">Food</option>
+                    <option value="transport">Transport</option>
                     <option value="other">Other</option>
                   </select>
                 </div>

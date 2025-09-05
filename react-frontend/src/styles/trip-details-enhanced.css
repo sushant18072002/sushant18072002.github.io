@@ -1,0 +1,229 @@
+/* Enhanced Trip Details Page Styles */
+
+/* Typography Enhancements */
+.font-dm-sans {
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.font-poppins {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Custom Color Variables */
+:root {
+  --color-blue-ocean: #3B71FE;
+  --color-emerald: #58C27D;
+  --color-amber-premium: #FFD166;
+  --color-primary-900: #23262F;
+  --color-primary-700: #353945;
+  --color-primary-600: #777E90;
+  --color-primary-500: #B1B5C3;
+  --color-gray-100: #E6E8EC;
+  --color-gray-50: #F4F5F6;
+  --color-white: #FCFCFD;
+}
+
+/* Smooth Animations */
+.smooth-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced Hover Effects */
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--color-primary-500);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary-600);
+}
+
+/* Glass Morphism Effect */
+.glass-morphism {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Enhanced Button Styles */
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-blue-ocean) 0%, var(--color-emerald) 100%);
+  border: none;
+  color: white;
+  font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px rgba(59, 113, 254, 0.3);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Card Hover Effects */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* Image Gallery Enhancements */
+.image-overlay {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.1) 50%,
+    rgba(0, 0, 0, 0.3) 100%
+  );
+}
+
+/* Modal Animations */
+.modal-enter {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.modal-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: all 0.3s ease-out;
+}
+
+.modal-exit {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.modal-exit-active {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: all 0.3s ease-in;
+}
+
+/* Responsive Typography */
+@media (max-width: 768px) {
+  .responsive-title {
+    font-size: 2rem;
+    line-height: 1.2;
+  }
+  
+  .responsive-subtitle {
+    font-size: 1.125rem;
+    line-height: 1.4;
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-title {
+    font-size: 3rem;
+    line-height: 1.1;
+  }
+  
+  .responsive-subtitle {
+    font-size: 1.25rem;
+    line-height: 1.5;
+  }
+}
+
+/* Loading Skeleton Animations */
+@keyframes shimmer {
+  0% {
+    background-position: -468px 0;
+  }
+  100% {
+    background-position: 468px 0;
+  }
+}
+
+.skeleton {
+  animation: shimmer 1.2s ease-in-out infinite;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 400% 100%;
+}
+
+/* Touch-friendly Mobile Interactions */
+@media (max-width: 768px) {
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .mobile-padding {
+    padding: 1rem;
+  }
+  
+  .mobile-text {
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+}
+
+/* Accessibility Enhancements */
+.focus-visible:focus-visible {
+  outline: 2px solid var(--color-blue-ocean);
+  outline-offset: 2px;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .card-hover {
+    border: 2px solid var(--color-primary-900);
+  }
+  
+  .btn-primary {
+    border: 2px solid var(--color-primary-900);
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .smooth-transition,
+  .card-hover,
+  .btn-primary,
+  .modal-enter-active,
+  .modal-exit-active {
+    transition: none;
+  }
+  
+  .skeleton {
+    animation: none;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-friendly {
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+  }
+}

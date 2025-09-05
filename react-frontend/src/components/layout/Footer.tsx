@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { APP_CONSTANTS } from '@/constants/app.constants';
 
 const Footer: React.FC = () => {
   const footerSections = [
@@ -38,13 +39,30 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand Section */}
           <div className="lg:col-span-1">
-            <Link to="/" className="flex items-center mb-4">
-              <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-                TravelAI
+            <Link to="/" className="flex items-center gap-2 mb-4">
+              <img 
+                src={APP_CONSTANTS.LOGO_PATH} 
+                alt={APP_CONSTANTS.APP_NAME}
+                className="h-10 w-auto"
+              />
+              <img 
+                src={APP_CONSTANTS.LOGO_TEXT_PATH} 
+                alt={APP_CONSTANTS.APP_NAME}
+                className="h-8 w-auto"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                  if (nextElement) {
+                    nextElement.style.display = 'inline';
+                  }
+                }}
+              />
+              <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent hidden">
+                {APP_CONSTANTS.APP_NAME}
               </span>
             </Link>
             <p className="text-primary-300 mb-6">
-              Turn your travel dreams into reality with AI-powered trip planning.
+              {APP_CONSTANTS.APP_DESCRIPTION}
             </p>
             
             {/* Social Links */}
@@ -125,7 +143,7 @@ const Footer: React.FC = () => {
         {/* Bottom Bar */}
         <div className="border-t border-primary-800 mt-8 pt-8 flex flex-col lg:flex-row items-center justify-between">
           <p className="text-primary-400 text-sm mb-4 lg:mb-0">
-            © 2024 TravelAI. All rights reserved.
+            © 2024 {APP_CONSTANTS.APP_NAME}. All rights reserved.
           </p>
           
           <div className="flex items-center space-x-6 text-sm text-primary-400">

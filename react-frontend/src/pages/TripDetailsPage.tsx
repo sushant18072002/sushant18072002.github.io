@@ -3,19 +3,16 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { apiService } from '@/services/api.service';
 import { TripData } from '@/types/trip.types';
 import { sanitizeHtml, sanitizeUrl } from '@/utils/sanitize';
-import Button from '@/components/common/Button';
-import Card from '@/components/common/Card';
-import LoadingSpinner from '@/components/common/LoadingSpinner';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:3000';
+const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:3000';
 
 const TripDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [searchParams] = useSearchParams();
+  const [/* searchParams */] = useSearchParams();
   const navigate = useNavigate();
   const [trip, setTrip] = useState<TripData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [/* selectedImageIndex */, /* setSelectedImageIndex */] = useState(0);
   const [showImageModal, setShowImageModal] = useState(false);
   const [modalImageIndex, setModalImageIndex] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -84,7 +81,7 @@ const TripDetailsPage: React.FC = () => {
     try {
       const data = await apiService.get(`/trips/${id}`);
       if (data.success) {
-        setTrip(data.data.trip || data.data);
+        setTrip((data as any).data.trip || (data as any).data);
       }
     } catch (error) {
       console.error('Failed to load trip details:', error);
@@ -101,26 +98,38 @@ const TripDetailsPage: React.FC = () => {
     }
   };
 
-  const handleCustomizeTrip = () => {
-    if (trip) {
-      navigate(`/trips/${trip._id || trip.id}/customize`);
-    }
-  };
+  // const handleCustomizeTrip = () => {
+  //   if (trip) {
+  //     navigate(`/trips/${trip._id || trip.id}/customize`);
+  //   }
+  // };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-gradient-to-b from-[#FCFCFD] to-white">
         <div className="animate-pulse">
-          <div className="h-96 bg-gray-200"></div>
-          <div className="max-w-7xl mx-auto px-4 py-12">
+          {/* Hero Skeleton */}
+          <div className="h-[70vh] bg-gradient-to-r from-gray-200 to-gray-300 relative">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+            <div className="absolute bottom-8 left-8 right-8">
+              <div className="h-8 bg-white/20 rounded-lg w-3/4 mb-4"></div>
+              <div className="h-12 bg-white/20 rounded-lg w-1/2"></div>
+            </div>
+          </div>
+          
+          {/* Content Skeleton */}
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-20 py-16">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2 space-y-6">
-                <div className="h-8 bg-gray-200 rounded w-3/4"></div>
-                <div className="h-4 bg-gray-200 rounded w-full"></div>
-                <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-                <div className="space-y-4">
+              <div className="lg:col-span-2 space-y-8">
+                <div className="h-10 bg-gray-200 rounded-lg w-2/3"></div>
+                <div className="space-y-3">
+                  <div className="h-4 bg-gray-200 rounded w-full"></div>
+                  <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                  <div className="h-4 bg-gray-200 rounded w-4/5"></div>
+                </div>
+                <div className="space-y-6">
                   {[...Array(3)].map((_, i) => (
-                    <div key={i} className="border rounded-xl p-6">
+                    <div key={i} className="bg-white rounded-2xl p-6 shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-gray-100">
                       <div className="h-6 bg-gray-200 rounded w-1/2 mb-4"></div>
                       <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
                       <div className="h-4 bg-gray-200 rounded w-3/4"></div>
@@ -129,10 +138,10 @@ const TripDetailsPage: React.FC = () => {
                 </div>
               </div>
               <div className="lg:col-span-1">
-                <div className="border rounded-2xl p-6">
-                  <div className="h-12 bg-gray-200 rounded mb-4"></div>
-                  <div className="h-10 bg-gray-200 rounded mb-4"></div>
-                  <div className="h-10 bg-gray-200 rounded"></div>
+                <div className="bg-white rounded-2xl p-6 shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-gray-100">
+                  <div className="h-12 bg-gray-200 rounded-lg mb-6"></div>
+                  <div className="h-10 bg-gray-200 rounded-lg mb-4"></div>
+                  <div className="h-10 bg-gray-200 rounded-lg"></div>
                 </div>
               </div>
             </div>
@@ -144,40 +153,40 @@ const TripDetailsPage: React.FC = () => {
 
   if (!trip) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="text-center max-w-sm mx-auto">
-          <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4 sm:mb-6 bg-gray-200 rounded-full flex items-center justify-center">
-            <span className="text-3xl sm:text-4xl text-gray-400">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#FCFCFD] to-white px-4">
+        <div className="text-center max-w-md mx-auto">
+          <div className="w-24 h-24 mx-auto mb-8 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center shadow-lg">
+            <span className="text-4xl">
               {error ? '⚠️' : '🏔️'}
             </span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-primary-900 mb-3 sm:mb-4 font-['DM_Sans']">
+          <h2 className="text-3xl sm:text-4xl font-black text-[#23262F] mb-4 font-['DM_Sans'] leading-tight">
             {error ? 'Connection Error' : 'Trip Not Found'}
           </h2>
-          <p className="text-primary-600 mb-6 sm:mb-8 font-['Poppins'] text-sm sm:text-base">
+          <p className="text-[#777E90] mb-8 font-['Poppins'] text-base leading-relaxed">
             {error || 'The trip you\'re looking for doesn\'t exist or has been removed.'}
           </p>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {error && (
               <button 
                 onClick={() => {
                   setError(null);
                   loadTripDetails();
                 }}
-                className="w-full bg-emerald text-white py-3 rounded-xl font-bold font-['DM_Sans'] hover:bg-blue-ocean transition-colors active:scale-95 touch-manipulation"
+                className="w-full bg-[#58C27D] text-white py-4 rounded-2xl font-bold font-['DM_Sans'] hover:bg-[#3B71FE] transition-all duration-300 hover:shadow-lg active:scale-95 touch-manipulation"
               >
                 🔄 Try Again
               </button>
             )}
-            <Button 
+            <button 
               onClick={() => navigate('/trips')} 
-              className="w-full bg-blue-ocean text-white py-3 rounded-xl font-bold font-['DM_Sans'] hover:bg-emerald transition-colors active:scale-95 touch-manipulation"
+              className="w-full bg-[#3B71FE] text-white py-4 rounded-2xl font-bold font-['DM_Sans'] hover:bg-[#58C27D] transition-all duration-300 hover:shadow-lg active:scale-95 touch-manipulation"
             >
               Browse All Trips
-            </Button>
+            </button>
             <button 
               onClick={() => navigate(-1)} 
-              className="w-full text-primary-600 py-3 font-medium font-['DM_Sans'] hover:text-primary-900 transition-colors active:scale-95 touch-manipulation"
+              className="w-full text-[#777E90] py-4 font-medium font-['DM_Sans'] hover:text-[#23262F] transition-colors active:scale-95 touch-manipulation"
             >
               ← Go Back
             </button>
@@ -190,24 +199,44 @@ const TripDetailsPage: React.FC = () => {
 
 
   return (
-    <div className="min-h-screen bg-white pb-20 lg:pb-0">
+    <div className="min-h-screen bg-gradient-to-b from-[#FCFCFD] to-white">
       {/* Navigation Breadcrumb */}
-      <nav className="bg-white border-b border-gray-200 py-3 sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-20">
+        <div className="flex items-center justify-between py-4 lg:py-6">
+          <div className="flex items-center gap-2 bg-white/95 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-full">
             <button 
-              onClick={() => navigate('/trips')}
-              className="flex items-center gap-2 text-blue-ocean hover:text-emerald transition-colors font-medium font-['DM_Sans'] py-2 px-1 -ml-1 rounded-lg hover:bg-blue-50 active:scale-95 touch-manipulation"
+              onClick={() => navigate('/')}
+              className="flex items-center gap-2 text-[#3B71FE] hover:text-[#58C27D] transition-colors font-bold text-sm font-['DM_Sans'] active:scale-95 touch-manipulation"
             >
-              ← <span className="hidden sm:inline">Go back</span><span className="sm:hidden">Back</span>
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+              </svg>
+              Go home
             </button>
-            <div className="text-xs sm:text-sm text-primary-600 font-['Poppins'] truncate ml-4">
-              <span className="hidden sm:inline">Home › Trips › </span>
-              <span className="text-primary-900 font-medium">{trip.title.length > 20 ? `${trip.title.substring(0, 20)}...` : trip.title}</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 text-[#777E90] text-sm font-['DM_Sans'] font-bold">
+              <span>Home</span>
+              <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 6 10">
+                <path d="M1 1l4 4-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
             </div>
+            <div className="flex items-center gap-2 text-[#777E90] text-sm font-['DM_Sans'] font-bold">
+              <span>Stays</span>
+              <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 6 10">
+                <path d="M1 1l4 4-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <div className="flex items-center gap-2 text-[#777E90] text-sm font-['DM_Sans'] font-bold">
+              <span>New Zealand</span>
+              <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 6 10">
+                <path d="M1 1l4 4-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <span className="text-[#B1B5C3] text-sm font-['DM_Sans'] font-bold">{trip.title.length > 15 ? `${trip.title.substring(0, 15)}...` : trip.title}</span>
           </div>
         </div>
-      </nav>
+      </div>
 
       {/* Hero Section */}
       <section className="relative bg-white h-[60vh] sm:h-[70vh] lg:h-[80vh]">
@@ -395,18 +424,18 @@ const TripDetailsPage: React.FC = () => {
                   </div>
                   
                   {/* Trip Tags */}
-                  {trip.tags?.length > 0 && (
+                  {trip.tags && trip.tags.length > 0 && (
                     <div>
                       <h5 className="font-medium text-primary-900 mb-2 font-['DM_Sans']">Tags</h5>
                       <div className="flex flex-wrap gap-2">
-                        {trip.tags.slice(0, 8).map((tag, index) => (
+                        {trip.tags && trip.tags.slice(0, 8).map((tag, index) => (
                           <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium">
                             {tag}
                           </span>
                         ))}
-                        {trip.tags.length > 8 && (
+                        {trip.tags && trip.tags.length > 8 && (
                           <span className="px-2 py-1 bg-gray-200 text-gray-600 rounded text-xs font-medium">
-                            +{trip.tags.length - 8} more
+                            +{trip.tags && trip.tags.length - 8} more
                           </span>
                         )}
                       </div>
