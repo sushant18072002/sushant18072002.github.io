@@ -158,4 +158,9 @@ router.get('/confirmation/:id', async (req, res) => {
   }
 });
 
+// Trip appointment booking (simplified flow)
+const { createTripAppointment } = require('../controllers/tripAppointmentController');
+const { auth } = require('../middleware/auth');
+router.post('/trip-appointment', auth, createTripAppointment);
+
 module.exports = router;

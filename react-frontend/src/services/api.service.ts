@@ -49,10 +49,14 @@ class ApiService {
   ): Promise<ApiResponse<T>> {
     const url = `${this.baseURL}${endpoint}`;
     
+    // Get token from localStorage
+    const token = localStorage.getItem('token');
+    
     const config: RequestInit = {
       ...options,
       headers: {
         'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }),
         ...options.headers,
       },
     };
@@ -69,6 +73,13 @@ class ApiService {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
+        // Handle 401 Unauthorized specifically
+        if (response.status === 401) {
+          console.error('Unauthorized - token may be invalid or expired');
+          // Clear invalid token
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 

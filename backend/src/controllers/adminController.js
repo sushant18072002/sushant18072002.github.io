@@ -27,8 +27,39 @@ const getDashboard = async (req, res) => {
 // Users
 const getUsers = async (req, res) => {
   try {
-    const users = await User.find().select('-password').sort({ createdAt: -1 });
-    res.json({ success: true, data: { users } });
+    const { page = 1, limit = 10, search, status, role } = req.query;
+    
+    const filter = {};
+    if (search) {
+      filter.$or = [
+        { 'profile.firstName': { $regex: search, $options: 'i' } },
+        { 'profile.lastName': { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } }
+      ];
+    }
+    if (status) filter.status = status;
+    if (role) filter.role = role;
+    
+    const users = await User.find(filter)
+      .select('-password')
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+    
+    const total = await User.countDocuments(filter);
+    
+    res.json({
+      success: true,
+      data: {
+        users,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
   } catch (error) {
     res.status(500).json({ success: false, error: { message: error.message } });
   }
@@ -36,7 +67,19 @@ const getUsers = async (req, res) => {
 
 const updateUser = async (req, res) => {
   try {
-    const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true }).select('-password');
+    const userId = req.params.id;
+    const updateData = { ...req.body, updatedAt: new Date() };
+    
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { $set: updateData },
+      { new: true, runValidators: true }
+    ).select('-password');
+    
+    if (!user) {
+      return res.status(404).json({ success: false, error: { message: 'User not found' } });
+    }
+    
     res.json({ success: true, data: { user } });
   } catch (error) {
     res.status(500).json({ success: false, error: { message: error.message } });
@@ -45,8 +88,26 @@ const updateUser = async (req, res) => {
 
 const deleteUser = async (req, res) => {
   try {
-    await User.findByIdAndDelete(req.params.id);
-    res.json({ success: true, data: { message: 'User deleted' } });
+    const userId = req.params.id;
+    
+    // Soft delete
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { 
+        $set: { 
+          status: 'deleted',
+          deletedAt: new Date(),
+          deletedBy: req.user._id
+        }
+      },
+      { new: true }
+    ).select('-password');
+    
+    if (!user) {
+      return res.status(404).json({ success: false, error: { message: 'User not found' } });
+    }
+    
+    res.json({ success: true, data: { message: 'User deleted successfully' } });
   } catch (error) {
     res.status(500).json({ success: false, error: { message: error.message } });
   }

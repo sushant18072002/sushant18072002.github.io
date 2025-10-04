@@ -12,7 +12,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, adminOnly = f
   const location = useLocation();
 
   if (!isAuthenticated) {
-    return <Navigate to="/" state={{ returnTo: location.pathname }} replace />;
+    return <Navigate to="/auth" state={{ returnTo: location.pathname }} replace />;
   }
 
   if (adminOnly && user?.role !== 'admin') {

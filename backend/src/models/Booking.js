@@ -3,10 +3,10 @@ const mongoose = require('mongoose');
 const bookingSchema = new mongoose.Schema({
   bookingReference: { type: String, required: true, unique: true },
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  type: { type: String, enum: ['flight', 'hotel', 'package', 'activity', 'combo'], required: true },
+  type: { type: String, enum: ['flight', 'hotel', 'package', 'activity', 'combo', 'trip', 'trip-appointment'], required: true },
   status: { 
     type: String, 
-    enum: ['draft', 'pending', 'confirmed', 'completed', 'cancelled', 'refunded'], 
+    enum: ['draft', 'pending', 'confirmed', 'completed', 'cancelled', 'refunded', 'appointment-scheduled', 'consultation-completed', 'appointment-cancelled', 'appointment-rescheduled', 'booking-confirmed'], 
     default: 'draft' 
   },
   
@@ -41,12 +41,34 @@ const bookingSchema = new mongoose.Schema({
     },
     total: Number
   },
-  paymentStatus: { type: String, enum: ['pending', 'completed', 'failed'], default: 'pending' },
+  paymentStatus: { type: String, enum: ['pending', 'completed', 'failed', 'pending-consultation'], default: 'pending' },
   paymentMethod: String,
 
+  // Trip appointment fields
+  trip: {
+    tripId: String,
+    title: String,
+    destination: String,
+    duration: mongoose.Schema.Types.Mixed,
+    estimatedPrice: Number
+  },
+  
+  appointment: {
+    preferredDate: Date,
+    timeSlot: String,
+    travelers: { type: Number, default: 1 },
+    specialRequests: String,
+    status: { type: String, enum: ['scheduled', 'completed', 'cancelled', 'rescheduled', 'converted'], default: 'scheduled' },
+    scheduledAt: Date,
+    lastUpdated: Date,
+    notes: String,
+    followUpDate: Date,
+    convertedAt: Date
+  },
   
   // Booking metadata
-  source: { type: String, enum: ['web', 'mobile', 'api', 'admin'], default: 'web' },
+  source: { type: String, enum: ['web', 'mobile', 'api', 'admin', 'website'], default: 'web' },
+  metadata: mongoose.Schema.Types.Mixed,
   notes: String,
   
   // System fields

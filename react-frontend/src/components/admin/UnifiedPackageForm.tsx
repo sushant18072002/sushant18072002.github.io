@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import MultiSelect from '@/components/common/MultiSelect';
 import Button from '@/components/common/Button';
@@ -114,6 +114,7 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
   const [uploadedImages, setUploadedImages] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [errors, setErrors] = useState<string[]>([]);
   const [cities, setCities] = useState<any[]>([]);
   const [countries, setCountries] = useState<any[]>([]);
   const [selectedDestinations, setSelectedDestinations] = useState<string[]>([]);
@@ -142,8 +143,8 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
     }
   });
 
-  // Optimized price calculation function
-  const calculatePricing = () => {
+  const calculatePricing = useCallback(() => {
+    // Calculate sellPrice from breakdown components (schema-compliant)
     const breakdown = {
       flights: parseFloat(form.getValues('priceBreakdownFlights')) || 0,
       accommodation: parseFloat(form.getValues('priceBreakdownAccommodation')) || 0,
@@ -153,16 +154,16 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
       other: parseFloat(form.getValues('priceBreakdownOther')) || 0
     };
     const total = Object.values(breakdown).reduce((sum, val) => sum + val, 0);
-    form.setValue('sellPrice', total);
+    form.setValue('sellPrice', total); // sellPrice = breakdown total
     
-    // Auto-calculate profit margin
+    // Calculate profit margin: (sellPrice - basePrice) / basePrice * 100
     const basePrice = parseFloat(form.getValues('basePrice')) || 0;
     if (basePrice > 0 && total > 0) {
       const profitMargin = ((total - basePrice) / basePrice * 100).toFixed(1);
       form.setValue('profitMargin', parseFloat(profitMargin));
     }
     
-    // Auto-calculate final price
+    // Calculate finalPrice: sellPrice - discount = what customer pays
     const discountPercent = parseFloat(form.getValues('discountPercent')) || 0;
     const discountAmount = parseFloat(form.getValues('discountAmount')) || 0;
     let finalPrice = total;
@@ -176,7 +177,7 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
     }
     
     form.setValue('finalPrice', parseFloat(finalPrice.toFixed(2)));
-  };
+  }, [form]);
 
   const steps = [
     { id: 1, title: 'Basic Info', icon: '📝' },
@@ -192,6 +193,11 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
     if (isEditMode && packageId) {
       loadPackageData();
     }
+    
+    return () => {
+      setErrors([]);
+      setHasUnsavedChanges(false);
+    };
   }, [isEditMode, packageId]);
   
   const loadCategories = async () => {
@@ -442,8 +448,6 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
       }
     } catch (error) {
       console.error('Failed to load package data', { error, packageId });
-      // TODO: Replace with proper toast notification
-      alert('Failed to load package data');
     } finally {
       setLoading(false);
     }
@@ -451,6 +455,7 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
 
   const handleBasicInfoSubmit = async (data: PackageFormData) => {
     setSaving(true);
+    setErrors([]);
     try {
       // Get destination and category
       let primaryDestination = selectedDestinations[0] || null;
@@ -458,8 +463,7 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
       
       if (!primaryDestination) {
         console.error('Form validation failed: No primary destination selected');
-        // TODO: Replace with proper toast notification
-        alert('Please select a primary destination');
+        setErrors(['Please select a primary destination']);
         setSaving(false);
         return;
       }
@@ -472,23 +476,24 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
       
 
       
-      // Validate pricing logic
+      // Validate pricing logic - ensure schema compliance
+      // basePrice: your cost, sellPrice: breakdown total, finalPrice: customer pays
       const basePrice = parseFloat(data.basePrice?.toString()) || 0;
       const sellPrice = parseFloat(data.sellPrice?.toString()) || 0;
       const finalPrice = parseFloat(data.finalPrice?.toString()) || 0;
       
+      // Business logic validation: sellPrice must be higher than basePrice for profit
       if (basePrice >= sellPrice && basePrice > 0) {
         console.warn('Pricing validation failed: Sell price not higher than base price', { basePrice, sellPrice });
-        // TODO: Replace with proper toast notification
-        alert('Sell price must be higher than base price');
+        setErrors(['Sell price must be higher than base price to ensure profit margin']);
         setSaving(false);
         return;
       }
       
+      // Schema validation: finalPrice should not exceed sellPrice (discount logic)
       if (finalPrice > sellPrice && sellPrice > 0) {
         console.warn('Pricing validation failed: Final price exceeds sell price', { finalPrice, sellPrice });
-        // TODO: Replace with proper toast notification
-        alert('Final price cannot be higher than sell price');
+        setErrors(['Final price cannot be higher than sell price (check discount calculation)']);
         setSaving(false);
         return;
       }
@@ -504,11 +509,13 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
           nights: parseInt(data.duration.toString()) - 1
         },
         pricing: {
+          // Schema-compliant pricing structure
+          // basePrice: what you pay, sellPrice: breakdown total, finalPrice: customer pays
           basePrice: basePrice,
-          sellPrice: sellPrice,
+          sellPrice: sellPrice, // This should equal breakdown total
           discountPercent: parseFloat(data.discountPercent?.toString()) || 0,
           discountAmount: parseFloat(data.discountAmount?.toString()) || 0,
-          finalPrice: finalPrice,
+          finalPrice: finalPrice, // sellPrice - discount = finalPrice
           profitMargin: parseFloat(data.profitMargin?.toString()) || ((sellPrice - basePrice) / basePrice * 100),
           taxIncluded: data.taxIncluded !== false,
           estimated: parseFloat(data.price?.toString()) || parseFloat(data.finalPrice?.toString()) || 0,
@@ -617,13 +624,9 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
         const response = await apiService.put(`${API_ENDPOINTS.TRIPS}/${packageId}`, transformedData);
         if (response.success) {
           console.info('Package updated successfully', { packageId });
-          // TODO: Replace with proper toast notification
-          alert('Package updated successfully!');
-          // Don't close form, let user navigate
         } else {
           console.error('Failed to update package', { packageId, error: response.errors });
-          // TODO: Replace with proper toast notification
-          alert('Failed to update package: ' + (Array.isArray(response.errors) ? response.errors[0] : response.errors || 'Unknown error'));
+          setErrors(Array.isArray(response.errors) ? response.errors : [response.errors || 'Failed to update package']);
         }
       } else {
         // Create new package
@@ -635,14 +638,12 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
           setCurrentStep(2);
         } else {
           console.error('Failed to create package', { error: response.errors });
-          // TODO: Replace with proper toast notification
-          alert('Failed to create package: ' + (Array.isArray(response.errors) ? response.errors[0] : response.errors || 'Unknown error'));
+          setErrors(Array.isArray(response.errors) ? response.errors : [response.errors || 'Failed to create package']);
         }
       }
     } catch (error) {
       console.error('Package save operation failed', { error, isEditMode, packageId });
-      // TODO: Replace with proper toast notification
-      alert('Failed to save package. Please try again.');
+      setErrors(['Failed to save package. Please try again.']);
     } finally {
       setSaving(false);
     }
@@ -676,16 +677,11 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
       setItinerary({ ...itineraryData, days: formattedItinerary });
       if (isEditMode) {
         console.info('Itinerary updated successfully', { targetPackageId });
-        // TODO: Replace with proper toast notification
-        alert('Itinerary updated successfully!');
-        // Stay on itinerary tab
       } else {
         setCurrentStep(4);
       }
     } catch (error) {
       console.error('Itinerary save operation failed', { error, targetPackageId, isEditMode });
-      // TODO: Replace with proper toast notification
-      alert('Failed to save itinerary');
     }
   };
 
@@ -695,8 +691,6 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
     
     if (!targetPackageId) {
       console.warn('Save current tab failed: No target package ID available');
-      // TODO: Replace with proper toast notification
-      alert('Please complete basic info first');
       setSaving(false);
       return;
     }
@@ -762,12 +756,8 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
       await apiService.put(`${API_ENDPOINTS.TRIPS}/${targetPackageId}`, updateData);
       setHasUnsavedChanges(false);
       console.info('Tab changes saved successfully', { targetPackageId });
-      // TODO: Replace with proper toast notification
-      alert('Changes saved successfully!');
     } catch (error) {
       console.error('Tab save operation failed', { error, targetPackageId });
-      // TODO: Replace with proper toast notification
-      alert('Failed to save changes');
     } finally {
       setSaving(false);
     }
@@ -1146,6 +1136,20 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
                     </div>
                   </div>
 
+                  {errors.length > 0 && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-red-600">⚠️</span>
+                        <span className="font-medium text-red-800">Please fix the following errors:</span>
+                      </div>
+                      <ul className="list-disc list-inside text-red-700 text-sm space-y-1">
+                        {errors.map((error, index) => (
+                          <li key={index}>{error}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
                   <div className="flex justify-end gap-4 pt-4">
                     {isEditMode && (
                       <Button variant="outline" onClick={onClose}>
@@ -1204,7 +1208,7 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
                           <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-600">{getCurrencySymbol(form.watch('currency') || APP_CONSTANTS.DEFAULT_CURRENCY)}</span>
                           <input {...form.register('priceBreakdownFlights')} type="number" min="0" 
                             className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" placeholder="400" 
-                            onChange={() => setTimeout(calculatePricing, 100)} />
+                            onChange={calculatePricing} />
                         </div>
                       </div>
                       <div>
@@ -1213,7 +1217,7 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
                           <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-600">{getCurrencySymbol(form.watch('currency') || APP_CONSTANTS.DEFAULT_CURRENCY)}</span>
                           <input {...form.register('priceBreakdownAccommodation')} type="number" min="0" 
                             className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" placeholder="700" 
-                            onChange={() => setTimeout(calculatePricing, 100)} />
+                            onChange={calculatePricing} />
                         </div>
                       </div>
                       <div>
@@ -1222,7 +1226,7 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
                           <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-600">{getCurrencySymbol(form.watch('currency') || APP_CONSTANTS.DEFAULT_CURRENCY)}</span>
                           <input {...form.register('priceBreakdownActivities')} type="number" min="0" 
                             className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" placeholder="10" 
-                            onChange={() => setTimeout(calculatePricing, 100)} />
+                            onChange={calculatePricing} />
                         </div>
                       </div>
                       <div>
@@ -1231,7 +1235,7 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
                           <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-600">{getCurrencySymbol(form.watch('currency') || APP_CONSTANTS.DEFAULT_CURRENCY)}</span>
                           <input {...form.register('priceBreakdownFood')} type="number" min="0" 
                             className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" placeholder="30" 
-                            onChange={() => setTimeout(calculatePricing, 100)} />
+                            onChange={calculatePricing} />
                         </div>
                       </div>
                       <div>
@@ -1240,7 +1244,7 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
                           <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-600">{getCurrencySymbol(form.watch('currency') || APP_CONSTANTS.DEFAULT_CURRENCY)}</span>
                           <input {...form.register('priceBreakdownTransport')} type="number" min="0" 
                             className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" placeholder="10" 
-                            onChange={() => setTimeout(calculatePricing, 100)} />
+                            onChange={calculatePricing} />
                         </div>
                       </div>
                       <div>
@@ -1249,7 +1253,7 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
                           <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-600">{getCurrencySymbol(form.watch('currency') || APP_CONSTANTS.DEFAULT_CURRENCY)}</span>
                           <input {...form.register('priceBreakdownOther')} type="number" min="0" 
                             className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" placeholder="40" 
-                            onChange={() => setTimeout(calculatePricing, 100)} />
+                            onChange={calculatePricing} />
                         </div>
                       </div>
                     </div>
@@ -1259,8 +1263,11 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
                       <div className="flex justify-between items-center mb-3">
                         <span className="font-semibold text-primary-900">Sell Price (Auto-calculated):</span>
                         <span className="font-bold text-2xl text-green-600">
-                          {getCurrencySymbol(form.watch('currency') || APP_CONSTANTS.DEFAULT_CURRENCY)}
                           {(() => {
+                            const currency = form.watch('currency') || 'USD';
+                            const symbol = currency === 'INR' ? '₹' : 
+                                         currency === 'EUR' ? '€' : 
+                                         currency === 'GBP' ? '£' : '$';
                             const total = (form.watch('priceBreakdownFlights') || 0) +
                               (form.watch('priceBreakdownAccommodation') || 0) +
                               (form.watch('priceBreakdownActivities') || 0) +
@@ -1268,8 +1275,8 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
                               (form.watch('priceBreakdownTransport') || 0) +
                               (form.watch('priceBreakdownOther') || 0);
                             
-                            setTimeout(calculatePricing, 100);
-                            return total.toFixed(2);
+                            calculatePricing();
+                            return `${symbol}${total.toFixed(2)}`;
                           })()}
                         </span>
                       </div>
@@ -1314,15 +1321,39 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
                     <h5 className="font-semibold text-primary-900 mb-3">📊 Profit Analysis</h5>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       <div className="text-center p-4 bg-red-50 rounded-lg border border-red-200">
-                        <div className="text-xl font-bold text-red-600">{getCurrencySymbol(form.watch('currency') || APP_CONSTANTS.DEFAULT_CURRENCY)}{Number(form.watch('basePrice') || 0)}</div>
+                        <div className="text-xl font-bold text-red-600">
+                          {(() => {
+                            const currency = form.watch('currency') || 'USD';
+                            const symbol = currency === 'INR' ? '₹' : 
+                                         currency === 'EUR' ? '€' : 
+                                         currency === 'GBP' ? '£' : '$';
+                            return `${symbol}${Number(form.watch('basePrice') || 0)}`;
+                          })()}
+                        </div>
                         <div className="text-xs text-red-600 font-medium mt-1">Your Cost</div>
                       </div>
                       <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
-                        <div className="text-xl font-bold text-blue-600">{getCurrencySymbol(form.watch('currency') || APP_CONSTANTS.DEFAULT_CURRENCY)}{Number(form.watch('sellPrice') || 0)}</div>
+                        <div className="text-xl font-bold text-blue-600">
+                          {(() => {
+                            const currency = form.watch('currency') || 'USD';
+                            const symbol = currency === 'INR' ? '₹' : 
+                                         currency === 'EUR' ? '€' : 
+                                         currency === 'GBP' ? '£' : '$';
+                            return `${symbol}${Number(form.watch('sellPrice') || 0)}`;
+                          })()}
+                        </div>
                         <div className="text-xs text-blue-600 font-medium mt-1">Sell Price</div>
                       </div>
                       <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
-                        <div className="text-xl font-bold text-green-600">{getCurrencySymbol(form.watch('currency') || APP_CONSTANTS.DEFAULT_CURRENCY)}{Number(form.watch('finalPrice') || 0)}</div>
+                        <div className="text-xl font-bold text-green-600">
+                          {(() => {
+                            const currency = form.watch('currency') || 'USD';
+                            const symbol = currency === 'INR' ? '₹' : 
+                                         currency === 'EUR' ? '€' : 
+                                         currency === 'GBP' ? '£' : '$';
+                            return `${symbol}${Number(form.watch('finalPrice') || 0)}`;
+                          })()}
+                        </div>
                         <div className="text-xs text-green-600 font-medium mt-1">Customer Pays</div>
                       </div>
                       <div className="text-center p-4 bg-purple-50 rounded-lg border border-purple-200">
@@ -1834,8 +1865,6 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
                         }
                         const targetPackageId = isEditMode ? packageId : createdPackageId;
                         console.info('Trip saved successfully', { targetPackageId });
-                        // TODO: Replace with proper toast notification
-                        alert('Trip saved successfully!');
                       }} disabled={saving}>
                         {saving ? 'Saving...' : '💾 Save Images'}
                       </Button>

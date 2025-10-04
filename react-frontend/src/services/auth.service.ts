@@ -24,7 +24,7 @@ export interface AuthResponse {
 class AuthService {
   async login(credentials: LoginCredentials) {
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch('http://localhost:3000/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -40,52 +40,17 @@ class AuthService {
           firstName: data.data.user.profile?.firstName || data.data.user.firstName,
           lastName: data.data.user.profile?.lastName || data.data.user.lastName
         };
+        console.log('Storing real token:', data.data.token);
         localStorage.setItem('token', data.data.token);
         localStorage.setItem('refreshToken', data.data.refreshToken);
         localStorage.setItem('user', JSON.stringify(user));
         return { ...data, data: { ...data.data, user } };
       } else {
-        throw new Error(data.error?.message || 'Login failed');
+        throw new Error(data.message || data.error?.message || 'Login failed');
       }
     } catch (error: any) {
-      // Fallback to mock for development
-      console.warn('Using mock auth - backend not available:', error.message);
-      
-      const mockUser: User = {
-        id: '1',
-        email: credentials.email,
-        firstName: 'John',
-        lastName: 'Doe',
-        phone: '+1234567890',
-        profile: {
-          avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-          dateOfBirth: '1990-01-01',
-          nationality: 'US',
-        },
-        preferences: {
-          currency: 'USD',
-          language: 'en',
-          notifications: { email: true, sms: true, push: true },
-          travelPreferences: {},
-        },
-        loyaltyPoints: 1250,
-        role: 'customer',
-      };
-      
-      const mockResponse = {
-        success: true,
-        data: {
-          user: mockUser,
-          token: 'mock-jwt-token',
-          refreshToken: 'mock-refresh-token'
-        }
-      };
-      
-      localStorage.setItem('token', mockResponse.data.token);
-      localStorage.setItem('refreshToken', mockResponse.data.refreshToken);
-      localStorage.setItem('user', JSON.stringify(mockResponse.data.user));
-      
-      return mockResponse;
+      console.error('Login error:', error);
+      throw error;
     }
   }
 

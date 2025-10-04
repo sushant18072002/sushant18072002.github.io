@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Booking Flow Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .result { background: #f9f9f9; padding: 10px; margin: 5px 0; border-radius: 5px; font-size: 14px; }
+        .error { background: #ffebee; color: #c62828; border-left: 4px solid #c62828; }
+        .success { background: #e8f5e8; color: #2e7d32; border-left: 4px solid #2e7d32; }
+        .warning { background: #fff3e0; color: #f57c00; border-left: 4px solid #f57c00; }
+        .info { background: #e3f2fd; color: #1976d2; border-left: 4px solid #1976d2; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; border: none; border-radius: 5px; background: #1976d2; color: white; }
+        button:hover { background: #1565c0; }
+        input, select { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; }
+        .form-row { display: flex; gap: 10px; align-items: center; margin: 10px 0; }
+        h2 { color: #1976d2; border-bottom: 2px solid #1976d2; padding-bottom: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Final Booking Flow Test</h1>
+        <p>Testing the complete consultation booking system with user data loading</p>
+
+        <div class="test-section">
+            <h2>🔐 Authentication Test</h2>
+            <div class="form-row">
+                <input type="email" id="loginEmail" value="admin@demo.com" placeholder="Email">
+                <input type="password" id="loginPassword" value="admin123" placeholder="Password">
+                <button onclick="testLogin()">Login</button>
+                <button onclick="testLogout()">Logout</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>👤 User Profile Test</h2>
+            <div class="form-row">
+                <button onclick="testGetProfile()">Get User Profile</button>
+                <button onclick="testUpdateProfile()">Update Profile</button>
+            </div>
+            <div class="form-row">
+                <input type="text" id="firstName" placeholder="First Name" value="John">
+                <input type="text" id="lastName" placeholder="Last Name" value="Doe">
+                <input type="tel" id="phone" placeholder="Phone" value="+1234567890">
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🎫 Trip Booking Test</h2>
+            <div class="form-row">
+                <input type="text" id="tripId" value="68b2ea18c06c9dbc8cc82908" placeholder="Trip ID">
+                <button onclick="testGetTrip()">Get Trip</button>
+            </div>
+            <div class="form-row">
+                <input type="date" id="appointmentDate" min="">
+                <select id="timeSlot">
+                    <option value="">Select Time</option>
+                    <option value="09:00 AM - 10:00 AM">09:00 AM - 10:00 AM</option>
+                    <option value="02:00 PM - 03:00 PM">02:00 PM - 03:00 PM</option>
+                </select>
+                <button onclick="testBookAppointment()">Book Appointment</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔄 Complete Flow Test</h2>
+            <div class="form-row">
+                <button onclick="testCompleteFlow()">🚀 Test Complete Flow</button>
+                <button onclick="clearResults()">🗑️ Clear Results</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 Test Results</h2>
+            <div id="results"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        let authToken = null;
+        let currentUser = null;
+        
+        // Set minimum date to tomorrow
+        document.getElementById('appointmentDate').min = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        document.getElementById('appointmentDate').value = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            const timestamp = new Date().toLocaleTimeString();
+            div.innerHTML = `<strong>${timestamp}</strong>: ${message}`;
+            results.appendChild(div);
+            results.scrollTop = results.scrollHeight;
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        async function apiCall(endpoint, options = {}) {
+            try {
+                const headers = {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                };
+                
+                if (authToken) {
+                    headers['Authorization'] = `Bearer ${authToken}`;
+                }
+                
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    headers,
+                    ...options
+                });
+                
+                const data = await response.json();
+                return { response, data, success: response.ok };
+            } catch (error) {
+                return { error: error.message, success: false };
+            }
+        }
+        
+        async function testLogin() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            log('🔐 Testing login...');
+            
+            try {
+                const { response, data, success } = await apiCall('/auth/login', {
+                    method: 'POST',
+                    body: JSON.stringify({ email, password })
+                });
+                
+                if (success && data.success) {
+                    authToken = data.data.token;
+                    currentUser = data.data.user;
+                    log(`✅ Login successful: ${currentUser.email}`, 'success');
+                    log(`👤 User profile: ${currentUser.profile?.firstName || 'No name'} ${currentUser.profile?.lastName || ''}`, 'info');
+                    log(`📞 Phone: ${currentUser.profile?.phone || 'No phone'}`, 'info');
+                } else {
+                    log(`❌ Login failed: ${data.message || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Login error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testLogout() {
+            authToken = null;
+            currentUser = null;
+            log('🚪 Logged out', 'info');
+        }
+        
+        async function testGetProfile() {
+            if (!authToken) {
+                log('❌ Please login first', 'error');
+                return;
+            }
+            
+            log('👤 Getting user profile...');
+            
+            try {
+                const { response, data, success } = await apiCall('/users/profile');
+                
+                if (success && data.success) {
+                    const user = data.data.user || data.data;
+                    log(`✅ Profile loaded: ${user.email}`, 'success');
+                    log(`📝 Name: ${user.profile?.firstName || 'N/A'} ${user.profile?.lastName || 'N/A'}`, 'info');
+                    log(`📞 Phone: ${user.profile?.phone || 'N/A'}`, 'info');
+                    log(`🎯 Role: ${user.role}`, 'info');
+                    
+                    // Update form fields
+                    if (user.profile?.firstName) document.getElementById('firstName').value = user.profile.firstName;
+                    if (user.profile?.lastName) document.getElementById('lastName').value = user.profile.lastName;
+                    if (user.profile?.phone) document.getElementById('phone').value = user.profile.phone;
+                } else {
+                    log(`❌ Profile load failed: ${data.error?.message || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Profile error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testUpdateProfile() {
+            if (!authToken) {
+                log('❌ Please login first', 'error');
+                return;
+            }
+            
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const phone = document.getElementById('phone').value;
+            
+            log('📝 Updating user profile...');
+            
+            try {
+                const { response, data, success } = await apiCall('/users/profile', {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        profile: { firstName, lastName, phone }
+                    })
+                });
+                
+                if (success && data.success) {
+                    log(`✅ Profile updated successfully`, 'success');
+                    currentUser = data.data.user || currentUser;
+                } else {
+                    log(`❌ Profile update failed: ${data.error?.message || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Profile update error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testGetTrip() {
+            const tripId = document.getElementById('tripId').value;
+            
+            log(`🎫 Getting trip details for: ${tripId}...`);
+            
+            try {
+                const { response, data, success } = await apiCall(`/trips/${tripId}`);
+                
+                if (success && data.success) {
+                    const trip = data.data.trip || data.data;
+                    log(`✅ Trip loaded: ${trip.title}`, 'success');
+                    log(`📍 Destination: ${trip.primaryDestination?.name || 'N/A'}`, 'info');
+                    log(`💰 Price: ${trip.pricing?.currency || '$'}${trip.pricing?.finalPrice || trip.pricing?.estimated || 'N/A'}`, 'info');
+                } else {
+                    log(`❌ Trip load failed: ${data.error?.message || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Trip error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testBookAppointment() {
+            if (!authToken) {
+                log('❌ Please login first', 'error');
+                return;
+            }
+            
+            const tripId = document.getElementById('tripId').value;
+            const date = document.getElementById('appointmentDate').value;
+            const slot = document.getElementById('timeSlot').value;
+            
+            if (!date || !slot) {
+                log('❌ Please select date and time slot', 'error');
+                return;
+            }
+            
+            log('📅 Booking appointment...');
+            
+            const appointmentData = {\n                tripId,\n                customerInfo: {\n                    firstName: currentUser?.profile?.firstName || 'Test',\n                    lastName: currentUser?.profile?.lastName || 'User',\n                    email: currentUser?.email || 'test@example.com',\n                    phone: currentUser?.profile?.phone || '+1234567890'\n                },\n                bookingDetails: {\n                    preferredDate: date,\n                    timeSlot: slot,\n                    travelers: 2,\n                    specialRequests: 'Test booking from final flow test'\n                },\n                tripInfo: {\n                    title: 'Test Trip',\n                    destination: 'Test Destination',\n                    price: 999.99\n                }\n            };\n            \n            try {\n                const { response, data, success } = await apiCall('/bookings/trip-appointment', {\n                    method: 'POST',\n                    body: JSON.stringify(appointmentData)\n                });\n                \n                if (success && data.success) {\n                    log(`✅ Appointment booked: ${data.data.appointment.reference}`, 'success');\n                    log(`📅 Date: ${date} at ${slot}`, 'info');\n                    log(`📞 Contact: ${appointmentData.customerInfo.phone}`, 'info');\n                } else {\n                    log(`❌ Appointment booking failed: ${data.message || data.error?.message}`, 'error');\n                }\n            } catch (error) {\n                log(`❌ Booking error: ${error.message}`, 'error');\n            }\n        }\n        \n        async function testCompleteFlow() {\n            log('🚀 Starting complete booking flow test...', 'info');\n            \n            // Step 1: Login\n            await testLogin();\n            await new Promise(resolve => setTimeout(resolve, 500));\n            \n            // Step 2: Get Profile\n            await testGetProfile();\n            await new Promise(resolve => setTimeout(resolve, 500));\n            \n            // Step 3: Get Trip\n            await testGetTrip();\n            await new Promise(resolve => setTimeout(resolve, 500));\n            \n            // Step 4: Book Appointment\n            await testBookAppointment();\n            \n            log('🎉 Complete flow test finished!', 'success');\n        }\n        \n        // Auto-run basic info on page load\n        window.onload = () => {\n            log('🎯 Final Booking Flow Test Initialized', 'info');\n            log('📋 This tests the complete consultation booking system', 'info');\n            log('🔧 Includes: Authentication, Profile Loading, Trip Data, Appointment Booking', 'info');\n        };\n    </script>\n</body>\n</html>

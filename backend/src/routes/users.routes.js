@@ -54,6 +54,26 @@ router.put('/:id', auth, admin, userController.updateUser);
 // @access  Admin
 router.delete('/:id', auth, admin, userController.deleteUser);
 
+// Admin appointment management
+const {
+  updateAppointmentStatus,
+  convertAppointmentToBooking
+} = require('../controllers/tripAppointmentController');
+
+router.put('/appointments/:id/status', auth, admin, updateAppointmentStatus);
+router.post('/appointments/:id/convert', auth, admin, convertAppointmentToBooking);
+
+// Trip appointment endpoints
+const {
+  createTripAppointment,
+  getUserAppointments,
+  getAvailableSlots
+} = require('../controllers/tripAppointmentController');
+
+router.post('/appointments/trip', auth, createTripAppointment);
+router.get('/appointments', auth, getUserAppointments);
+router.get('/appointments/slots', getAvailableSlots);
+
 // Additional user endpoints
 const {
   getUserTrips,

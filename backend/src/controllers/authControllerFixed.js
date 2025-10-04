@@ -192,6 +192,35 @@ const resetPassword = async (req, res) => {
   }
 };
 
+/*
+const resetPassword = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    console.log('✅ User email :', email );
+
+    console.log('✅ User password :', password );
+    
+    const user = await User.findOne({ email, active: true });
+
+    console.log('✅ User with ID:', user);
+
+    if (!user) {
+      return error(res, 'Invalid or expired reset token', 400);
+    }
+
+    user.password = password;
+    user.passwordReset = undefined;
+    await user.save();
+
+    //await Session.updateMany({ userId: user._id }, { isActive: false });
+    
+    return success(res, null, 'Password reset successful');
+  } catch (err) {
+    return error(res, err.message, 500);
+  }
+};
+*/
 const verifyEmail = async (req, res) => {
   try {
     const { token } = req.query;

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Trip Booking Flow</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .error { background: #ffebee; color: #c62828; }
+        .success { background: #e8f5e8; color: #2e7d32; }
+        .warning { background: #fff3e0; color: #f57c00; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        input, select { padding: 8px; margin: 5px; width: 200px; }
+        .form-group { margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Trip Booking Flow Test</h1>
+    
+    <div class="form-group">
+        <h3>Test Trip Appointment Booking</h3>
+        <label>Trip ID:</label><br>
+        <input type="text" id="tripId" value="68b2ea18c06c9dbc8cc82908" placeholder="Enter trip ID">
+    </div>
+    
+    <div class="form-group">
+        <label>Customer Name:</label><br>
+        <input type="text" id="firstName" value="John" placeholder="First Name">
+        <input type="text" id="lastName" value="Doe" placeholder="Last Name">
+    </div>
+    
+    <div class="form-group">
+        <label>Contact Info:</label><br>
+        <input type="email" id="email" value="john.doe@example.com" placeholder="Email">
+        <input type="tel" id="phone" value="+1234567890" placeholder="Phone">
+    </div>
+    
+    <div class="form-group">
+        <label>Appointment Details:</label><br>
+        <input type="date" id="preferredDate" min="" placeholder="Preferred Date">
+        <select id="timeSlot">
+            <option value="">Select Time Slot</option>
+            <option value="09:00 AM - 10:00 AM">09:00 AM - 10:00 AM</option>
+            <option value="10:30 AM - 11:30 AM">10:30 AM - 11:30 AM</option>
+            <option value="02:00 PM - 03:00 PM">02:00 PM - 03:00 PM</option>
+            <option value="03:30 PM - 04:30 PM">03:30 PM - 04:30 PM</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label>Travelers:</label><br>
+        <select id="travelers">
+            <option value="1">1 Traveler</option>
+            <option value="2" selected>2 Travelers</option>
+            <option value="3">3 Travelers</option>
+            <option value="4">4 Travelers</option>
+        </select>
+    </div>
+    
+    <div>
+        <button onclick="testTripAppointment()">Test Trip Appointment</button>
+        <button onclick="testGetAppointments()">Get My Appointments</button>
+        <button onclick="testAvailableSlots()">Check Available Slots</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        
+        // Set minimum date to today
+        document.getElementById('preferredDate').min = new Date().toISOString().split('T')[0];
+        document.getElementById('preferredDate').value = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            results.appendChild(div);
+            results.scrollTop = results.scrollHeight;
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        async function apiCall(endpoint, options = {}) {
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer mock-token', // Mock token for testing
+                        ...options.headers
+                    },
+                    ...options
+                });
+                
+                const data = await response.json();
+                return { response, data };
+            } catch (error) {
+                throw new Error(`Network error: ${error.message}`);
+            }
+        }
+        
+        async function testTripAppointment() {
+            const tripId = document.getElementById('tripId').value;
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const preferredDate = document.getElementById('preferredDate').value;
+            const timeSlot = document.getElementById('timeSlot').value;
+            const travelers = parseInt(document.getElementById('travelers').value);
+            
+            if (!tripId || !firstName || !lastName || !email || !phone || !preferredDate || !timeSlot) {
+                log('❌ Please fill in all required fields', 'error');
+                return;
+            }
+            
+            log('📞 Testing trip appointment booking...');
+            
+            const appointmentData = {
+                tripId,
+                customerInfo: {
+                    firstName,
+                    lastName,
+                    email,
+                    phone
+                },
+                bookingDetails: {
+                    preferredDate,
+                    timeSlot,
+                    travelers,
+                    specialRequests: 'Test appointment booking'
+                },
+                tripInfo: {
+                    title: 'Test Trip - Lala Land',
+                    destination: 'Berlin',
+                    price: 699.97
+                }
+            };
+            
+            try {
+                const { response, data } = await apiCall('/bookings/trip-appointment', {
+                    method: 'POST',
+                    body: JSON.stringify(appointmentData)
+                });
+                
+                if (response.ok && data.success) {
+                    log(`✅ Appointment Booked Successfully!`, 'success');
+                    log(`📋 Reference: ${data.data.appointment.reference}`);
+                    log(`📅 Date: ${data.data.appointment.preferredDate}`);
+                    log(`⏰ Time: ${data.data.appointment.timeSlot}`);
+                    log(`👤 Customer: ${data.data.appointment.customerInfo.name}`);
+                    log(`📞 Phone: ${data.data.appointment.customerInfo.phone}`);
+                } else {
+                    log(`❌ Booking Failed: ${data.message || data.error?.message || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Booking Request Failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testGetAppointments() {
+            log('📋 Getting user appointments...');
+            
+            try {
+                const { response, data } = await apiCall('/users/appointments');
+                
+                if (response.ok && data.success) {
+                    const appointments = data.data.appointments || [];
+                    log(`✅ Found ${appointments.length} appointments`, 'success');
+                    
+                    appointments.forEach((apt, index) => {
+                        log(`${index + 1}. ${apt.bookingReference} - ${apt.appointment?.preferredDate} ${apt.appointment?.timeSlot} (${apt.appointment?.status})`);
+                    });
+                    
+                    if (appointments.length === 0) {
+                        log('ℹ️ No appointments found. Try booking one first!', 'warning');
+                    }
+                } else {
+                    log(`❌ Failed to get appointments: ${data.error?.message || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Request Failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testAvailableSlots() {
+            const date = document.getElementById('preferredDate').value;
+            
+            if (!date) {
+                log('❌ Please select a date first', 'error');
+                return;
+            }
+            
+            log(`🕐 Checking available slots for ${date}...`);
+            
+            try {
+                const { response, data } = await apiCall(`/users/appointments/slots?date=${date}`);
+                
+                if (response.ok && data.success) {
+                    log(`✅ Available Slots for ${data.data.date}:`, 'success');
+                    log(`📊 ${data.data.availableCount} of ${data.data.totalSlots} slots available`);
+                    
+                    data.data.availableSlots.forEach(slot => {
+                        log(`✅ ${slot}`, 'success');
+                    });
+                    
+                    if (data.data.bookedSlots.length > 0) {
+                        log('❌ Booked slots:', 'warning');
+                        data.data.bookedSlots.forEach(slot => {
+                            log(`❌ ${slot}`, 'warning');
+                        });
+                    }
+                } else {
+                    log(`❌ Failed to get slots: ${data.error?.message || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Request Failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-run basic info on page load
+        window.onload = () => {
+            log('🚀 Trip Booking Flow Test Started');
+            log('ℹ️ This tests the new appointment-based booking system', 'warning');
+            log('📝 Fill in the form and click "Test Trip Appointment" to simulate booking');
+        };
+    </script>
+</body>
+</html>

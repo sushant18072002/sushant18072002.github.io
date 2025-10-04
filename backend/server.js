@@ -111,15 +111,15 @@ app.listen(PORT, async () => {
   console.log(`📡 API Base URL: http://localhost:${PORT}/api`);
   console.log(`🔗 Health Check: http://localhost:${PORT}/health`);
   
-  // Seed master data on startup
-  if (process.env.NODE_ENV === 'development') {
-    const { seedMasterData } = require('./src/seeders/masterData');
-    const { seedCities } = require('./src/seeders/cities');
-    const { seedDestinations } = require('./src/seeders/destinations');
-    await seedMasterData();
-    await seedCities();
-    await seedDestinations();
-  }
+  // // Seed master data on startup
+  // if (process.env.NODE_ENV === 'development') {
+  //   const { seedMasterData } = require('./src/seeders/masterData');
+  //   const { seedCities } = require('./src/seeders/cities');
+  //   const { seedDestinations } = require('./src/seeders/destinations');
+  //   await seedMasterData();
+  //   await seedCities();
+  //   await seedDestinations();
+  // }
 });
 
 module.exports = app;

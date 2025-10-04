@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Auth Tokens</title>
+</head>
+<body>
+    <h1>Clear Authentication Tokens</h1>
+    <button onclick="clearAuth()">Clear All Auth Data</button>
+    <div id="result"></div>
+    
+    <script>
+        function clearAuth() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
+            localStorage.removeItem('user');
+            
+            document.getElementById('result').innerHTML = `
+                <p style="color: green;">✅ Cleared all authentication data:</p>
+                <ul>
+                    <li>token</li>
+                    <li>refreshToken</li>
+                    <li>user</li>
+                </ul>
+                <p>Please refresh your app and login again.</p>
+            `;
+        }
+        
+        // Show current tokens
+        window.onload = () => {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            
+            document.getElementById('result').innerHTML = `
+                <h3>Current Auth Data:</h3>
+                <p><strong>Token:</strong> ${token ? token.substring(0, 50) + '...' : 'None'}</p>
+                <p><strong>User:</strong> ${user ? 'Present' : 'None'}</p>
+            `;
+        };
+    </script>
+</body>
+</html>

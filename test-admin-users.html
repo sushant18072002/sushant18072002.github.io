@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Admin Users API</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .error { background: #ffebee; color: #c62828; }
+        .success { background: #e8f5e8; color: #2e7d32; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Admin Users API Test</h1>
+    
+    <div>
+        <button onclick="testGetUsers()">Test Get Users</button>
+        <button onclick="testSearchUsers()">Test Search Users</button>
+        <button onclick="testUpdateUser()">Test Update User Role</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            results.appendChild(div);
+        }
+        
+        async function apiCall(endpoint, options = {}) {
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+                
+                const data = await response.json();
+                return { response, data };
+            } catch (error) {
+                throw new Error(`Network error: ${error.message}`);
+            }
+        }
+        
+        async function testGetUsers() {
+            log('Testing GET /admin/users...');
+            try {
+                const { response, data } = await apiCall('/admin/users');
+                
+                if (response.ok && data.success) {
+                    log(`✅ Success: Found ${data.data.users.length} users`, 'success');
+                    log(`Pagination: Page ${data.data.pagination.page} of ${data.data.pagination.pages}`);
+                    
+                    if (data.data.users.length > 0) {
+                        const user = data.data.users[0];
+                        log(`Sample user: ${user.email} (${user.role})`);
+                    }
+                } else {
+                    log(`❌ API Error: ${data.error?.message || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Request failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testSearchUsers() {
+            log('Testing search users with query "admin"...');
+            try {
+                const { response, data } = await apiCall('/admin/users?search=admin&limit=5');
+                
+                if (response.ok && data.success) {
+                    log(`✅ Search Success: Found ${data.data.users.length} users matching "admin"`, 'success');
+                    
+                    data.data.users.forEach(user => {
+                        log(`- ${user.email} (${user.role})`);
+                    });
+                } else {
+                    log(`❌ Search Error: ${data.error?.message || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Search failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testUpdateUser() {
+            log('Testing update user role...');
+            try {
+                // First get a user to update
+                const { data: usersData } = await apiCall('/admin/users?limit=1');
+                
+                if (!usersData.success || usersData.data.users.length === 0) {
+                    log('❌ No users found to update', 'error');
+                    return;
+                }
+                
+                const user = usersData.data.users[0];
+                const newRole = user.role === 'admin' ? 'user' : 'admin';
+                
+                log(`Updating user ${user.email} role from ${user.role} to ${newRole}...`);
+                
+                const { response, data } = await apiCall(`/admin/users/${user._id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ role: newRole })
+                });
+                
+                if (response.ok && data.success) {
+                    log(`✅ Update Success: User role updated to ${data.data.user.role}`, 'success');
+                } else {
+                    log(`❌ Update Error: ${data.error?.message || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Update failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-run basic test on page load
+        window.onload = () => {
+            log('🚀 Admin Users API Test Started');
+            testGetUsers();
+        };
+    </script>
+</body>
+</html>

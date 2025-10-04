@@ -1,5 +1,6 @@
 // Core Models
 const User = require('./User');
+const Session = require('./Session');
 const Flight = require('./Flight');
 const Hotel = require('./Hotel');
 const Booking = require('./Booking');
@@ -19,11 +20,14 @@ const Activity = require('./Activity');
 
 // New Unified Models
 const Trip = require('./Trip');
+const TripAppointment = require('./TripAppointment');
+const TripBooking = require('./TripBooking');
 const { Country, State, City } = require('./MasterData');
 
 module.exports = {
   // Core Models
   User,
+  Session,
   Flight,
   Hotel,
   Booking,
@@ -41,6 +45,8 @@ module.exports = {
   
   // New Unified Models
   Trip,
+  TripAppointment,
+  TripBooking,
   Category,
   
   // Master Data Models

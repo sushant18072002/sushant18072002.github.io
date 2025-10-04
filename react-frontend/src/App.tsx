@@ -31,6 +31,8 @@ import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import AuthPage from '@/pages/AuthPage';
 import DashboardPage from '@/pages/DashboardPage';
 import BookingPage from '@/pages/BookingPage';
+import TripBookingPage from '@/pages/TripBookingPage';
+import TripsHubPageRedesigned from '@/pages/TripsHubPageRedesigned';
 
 // Store
 import { useAuthStore } from '@/store/authStore';
@@ -72,8 +74,9 @@ function App() {
               <Route path="/hotels" element={<HotelsPage />} />
               <Route path="/hotels/:id" element={<HotelDetailsPage />} />
               <Route path="/trips" element={<TripsHubPage />} />
-              <Route path="/trips/:id" element={<TripDetailsPage />} />
-              <Route path="/tripsn/:id" element={<TripDetailsPageEnhanced />} />
+              <Route path="/tripsold" element={<TripsHubPageRedesigned />} />
+              <Route path="/tripsold/:id" element={<TripDetailsPage />} />
+              <Route path="/trips/:id" element={<TripDetailsPageEnhanced />} />
               <Route path="/trips/:id/customize" element={<TripCustomizationPage />} />
               <Route path="/ai-itinerary" element={<AIItineraryPage />} />
               <Route path="/itineraries/ai" element={<AIItineraryPage />} />
@@ -89,6 +92,11 @@ function App() {
               <Route path="/booking/:type/:id" element={
                 <ProtectedRoute>
                   <BookingPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/trip-booking/:id" element={
+                <ProtectedRoute>
+                  <TripBookingPage />
                 </ProtectedRoute>
               } />
               <Route path="/search" element={<SearchResultsPage />} />
