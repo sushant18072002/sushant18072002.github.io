@@ -2,13 +2,13 @@ const mongoose = require('mongoose');
 
 const tripBookingSchema = new mongoose.Schema({
   // Reference and identification
-  bookingReference: { type: String, required: true, unique: true },
+  bookingReference: { type: String, unique: true },
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   appointmentId: { type: mongoose.Schema.Types.ObjectId, ref: 'TripAppointment' },
 
   // Trip information
   trip: {
-    tripId: { type: mongoose.Schema.Types.ObjectId, ref: 'Trip', required: true },
+    tripId: { type: mongoose.Schema.Types.ObjectId, ref: 'Trip' },
     title: { type: String, required: true },
     destination: { type: String, required: true },
     duration: {
@@ -142,7 +142,7 @@ const tripBookingSchema = new mongoose.Schema({
     }],
 
     totalPaid: { type: Number, default: 0 },
-    remainingAmount: Number,
+
     paymentDeadline: Date,
     refundAmount: { type: Number, default: 0 }
   },
@@ -238,7 +238,7 @@ tripBookingSchema.virtual('customer.fullName').get(function() {
   return `${this.customer.firstName} ${this.customer.lastName}`;
 });
 
-tripBookingSchema.virtual('payment.remainingAmount').get(function() {
+tripBookingSchema.virtual('payment.balance').get(function() {
   return this.pricing.finalAmount - (this.payment.totalPaid || 0);
 });
 
@@ -248,8 +248,7 @@ tripBookingSchema.pre('save', function(next) {
     this.bookingReference = `TRV-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
   }
   
-  // Calculate remaining amount
-  this.payment.remainingAmount = this.pricing.finalAmount - (this.payment.totalPaid || 0);
+
   
   next();
 });

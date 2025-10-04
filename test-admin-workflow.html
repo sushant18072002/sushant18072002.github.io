@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Workflow Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .result { background: #f9f9f9; padding: 10px; margin: 5px 0; border-radius: 5px; font-size: 14px; }
+        .error { background: #ffebee; color: #c62828; border-left: 4px solid #c62828; }
+        .success { background: #e8f5e8; color: #2e7d32; border-left: 4px solid #2e7d32; }
+        .warning { background: #fff3e0; color: #f57c00; border-left: 4px solid #f57c00; }
+        .info { background: #e3f2fd; color: #1976d2; border-left: 4px solid #1976d2; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; border: none; border-radius: 5px; background: #1976d2; color: white; }
+        button:hover { background: #1565c0; }
+        .form-row { display: flex; gap: 10px; align-items: center; margin: 10px 0; flex-wrap: wrap; }
+        h2 { color: #1976d2; border-bottom: 2px solid #1976d2; padding-bottom: 5px; }
+        .workflow-step { background: #f8f9fa; padding: 15px; margin: 10px 0; border-left: 4px solid #1976d2; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>👨💼 Admin Workflow Test</h1>
+        <p>Testing complete admin appointment and booking management workflow</p>
+
+        <div class="test-section">
+            <h2>🔐 Admin Authentication</h2>
+            <div class="form-row">
+                <input type="email" id="adminEmail" value="admin@demo.com" placeholder="Admin Email">
+                <input type="password" id="adminPassword" value="admin123" placeholder="Admin Password">
+                <button onclick="loginAsAdmin()">Login as Admin</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>📋 Admin Dashboard Data</h2>
+            <div class="form-row">
+                <button onclick="loadAdminAppointments()">Load Appointments</button>
+                <button onclick="loadAdminBookings()">Load Bookings</button>
+                <button onclick="getAdminStats()">Get Statistics</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔄 Appointment Management</h2>
+            <div class="form-row">
+                <input type="text" id="appointmentId" placeholder="Appointment ID" style="width: 200px;">
+                <button onclick="markAppointmentComplete()">Mark Complete</button>
+                <button onclick="convertToBooking()">Convert to Booking</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>💳 Payment Management</h2>
+            <div class="form-row">
+                <input type="text" id="bookingId" placeholder="Booking ID" style="width: 200px;">
+                <input type="number" id="paymentAmount" placeholder="Amount" style="width: 100px;">
+                <button onclick="recordPayment()">Record Payment</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🚀 Complete Admin Workflow</h2>
+            <div class="workflow-step">
+                <strong>Workflow Steps:</strong>
+                <ol>
+                    <li>Login as admin</li>
+                    <li>View appointments dashboard</li>
+                    <li>Mark appointment as complete</li>
+                    <li>Convert appointment to booking</li>
+                    <li>Record payment for booking</li>
+                    <li>Verify status updates</li>
+                </ol>
+            </div>
+            <div class="form-row">
+                <button onclick="testCompleteWorkflow()">🚀 Test Complete Workflow</button>
+                <button onclick="openAdminDashboard()">🔗 Open Admin Dashboard</button>
+                <button onclick="clearResults()">🗑️ Clear Results</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 Test Results</h2>
+            <div id="results"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        const FRONTEND_BASE = 'http://localhost:3001';
+        let authToken = null;
+        let currentAppointments = [];
+        let currentBookings = [];
+        
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            const timestamp = new Date().toLocaleTimeString();
+            div.innerHTML = `<strong>${timestamp}</strong>: ${message}`;
+            results.appendChild(div);
+            results.scrollTop = results.scrollHeight;
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        async function apiCall(endpoint, options = {}) {
+            try {
+                const headers = {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                };
+                
+                if (authToken) {
+                    headers['Authorization'] = `Bearer ${authToken}`;
+                }
+                
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    headers,
+                    ...options
+                });
+                
+                const data = await response.json();
+                return { response, data, success: response.ok };
+            } catch (error) {
+                return { error: error.message, success: false };
+            }
+        }
+        
+        async function loginAsAdmin() {
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
+            
+            log('🔐 Logging in as admin...');
+            
+            const { response, data, success } = await apiCall('/auth/login', {
+                method: 'POST',
+                body: JSON.stringify({ email, password })
+            });
+            
+            if (success && data.success && data.data.user.role === 'admin') {
+                authToken = data.data.token;
+                log(`✅ Admin login successful: ${email}`, 'success');
+            } else {
+                log(`❌ Admin login failed: ${data.message || 'Not admin user'}`, 'error');
+            }
+        }
+        
+        async function loadAdminAppointments() {
+            if (!authToken) {
+                log('❌ Please login as admin first', 'error');
+                return;
+            }
+            
+            log('📅 Loading admin appointments...');
+            
+            const { response, data, success } = await apiCall('/admin/appointments');
+            
+            if (success && data.success) {
+                currentAppointments = data.data.appointments || [];
+                log(`✅ Loaded ${currentAppointments.length} appointments`, 'success');
+                
+                currentAppointments.forEach((apt, index) => {
+                    log(`${index + 1}. ${apt.appointmentReference} - ${apt.status} - ${apt.customer?.firstName} ${apt.customer?.lastName}`, 'info');
+                });
+                
+                if (currentAppointments.length > 0) {
+                    document.getElementById('appointmentId').value = currentAppointments[0]._id;
+                }
+            } else {
+                log(`❌ Failed to load appointments: ${data.message || data.error?.message}`, 'error');
+            }
+        }
+        
+        async function loadAdminBookings() {
+            if (!authToken) {
+                log('❌ Please login as admin first', 'error');
+                return;
+            }
+            
+            log('📋 Loading admin bookings...');
+            
+            const { response, data, success } = await apiCall('/admin/bookings');
+            
+            if (success && data.success) {
+                currentBookings = data.data.bookings || [];
+                log(`✅ Loaded ${currentBookings.length} bookings`, 'success');
+                
+                currentBookings.forEach((booking, index) => {
+                    log(`${index + 1}. ${booking.bookingReference} - ${booking.status} - $${booking.pricing?.finalAmount || 0}`, 'info');
+                });
+                
+                if (currentBookings.length > 0) {
+                    document.getElementById('bookingId').value = currentBookings[0]._id;
+                    document.getElementById('paymentAmount').value = currentBookings[0].pricing?.finalAmount || 1000;
+                }
+            } else {
+                log(`❌ Failed to load bookings: ${data.message || data.error?.message}`, 'error');
+            }
+        }
+        
+        async function getAdminStats() {
+            await loadAdminAppointments();
+            await loadAdminBookings();
+            
+            const scheduledAppts = currentAppointments.filter(a => a.status === 'scheduled').length;
+            const completedAppts = currentAppointments.filter(a => a.status === 'completed').length;
+            const convertedAppts = currentAppointments.filter(a => a.status === 'converted').length;
+            const totalRevenue = currentBookings.reduce((sum, b) => sum + (b.pricing?.finalAmount || 0), 0);
+            const conversionRate = currentAppointments.length > 0 ? (convertedAppts / currentAppointments.length * 100).toFixed(1) : 0;
+            
+            log('📊 Admin Statistics:', 'info');
+            log(`📅 Appointments: ${currentAppointments.length} total, ${scheduledAppts} scheduled, ${completedAppts} completed`, 'info');
+            log(`📋 Bookings: ${currentBookings.length} total`, 'info');
+            log(`💰 Total Revenue: $${totalRevenue.toLocaleString()}`, 'info');
+            log(`📈 Conversion Rate: ${conversionRate}%`, 'info');
+        }
+        
+        async function markAppointmentComplete() {
+            const appointmentId = document.getElementById('appointmentId').value;
+            if (!appointmentId) {
+                log('❌ Please enter appointment ID', 'error');
+                return;
+            }
+            
+            log('✅ Marking appointment as complete...');
+            
+            const { response, data, success } = await apiCall(`/admin/appointments/${appointmentId}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    status: 'completed',
+                    callNotes: 'Test completion via admin workflow'
+                })
+            });
+            
+            if (success && data.success) {
+                log('✅ Appointment marked as complete', 'success');
+            } else {
+                log(`❌ Failed to update appointment: ${data.message || data.error?.message}`, 'error');
+            }
+        }
+        
+        async function convertToBooking() {
+            const appointmentId = document.getElementById('appointmentId').value;
+            if (!appointmentId) {
+                log('❌ Please enter appointment ID', 'error');
+                return;
+            }
+            
+            log('🔄 Converting appointment to booking...');
+            
+            const { response, data, success } = await apiCall(`/admin/appointments/${appointmentId}/convert`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    finalPrice: 1299.99,
+                    paymentMethod: 'bank-transfer',
+                    startDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                    endDate: new Date(Date.now() + 37 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                    travelers: { count: 2, adults: 2 }
+                })
+            });
+            
+            if (success && data.success) {
+                log('✅ Appointment converted to booking successfully', 'success');
+                log(`📋 New booking: ${data.data.booking?.reference || 'Created'}`, 'info');
+            } else {
+                log(`❌ Failed to convert appointment: ${data.message || data.error?.message}`, 'error');
+            }
+        }
+        
+        async function recordPayment() {
+            const bookingId = document.getElementById('bookingId').value;
+            const amount = document.getElementById('paymentAmount').value;
+            
+            if (!bookingId || !amount) {
+                log('❌ Please enter booking ID and amount', 'error');
+                return;
+            }
+            
+            log('💳 Recording payment...');
+            
+            const { response, data, success } = await apiCall(`/admin/bookings/${bookingId}/payment`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    amount: parseFloat(amount),
+                    method: 'bank-transfer',
+                    transactionId: `TXN-${Date.now()}`,
+                    notes: 'Test payment via admin workflow'
+                })
+            });
+            
+            if (success && data.success) {
+                log(`✅ Payment of $${amount} recorded successfully`, 'success');
+            } else {
+                log(`❌ Failed to record payment: ${data.message || data.error?.message}`, 'error');
+            }
+        }
+        
+        function openAdminDashboard() {
+            window.open(`${FRONTEND_BASE}/admin`, '_blank');
+            log('🔗 Opened admin dashboard in new tab', 'info');
+        }
+        
+        async function testCompleteWorkflow() {
+            log('🚀 Starting complete admin workflow test...', 'info');
+            
+            // Step 1: Login
+            await loginAsAdmin();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Step 2: Load data
+            await loadAdminAppointments();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await loadAdminBookings();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Step 3: Get statistics
+            await getAdminStats();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Step 4: Test appointment management (if appointments exist)
+            if (currentAppointments.length > 0) {
+                const scheduledApt = currentAppointments.find(a => a.status === 'scheduled');
+                if (scheduledApt) {
+                    document.getElementById('appointmentId').value = scheduledApt._id;
+                    await markAppointmentComplete();
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    await convertToBooking();
+                }
+            }
+            
+            // Step 5: Test payment recording (if bookings exist)
+            if (currentBookings.length > 0) {
+                const pendingBooking = currentBookings.find(b => b.payment?.status === 'pending');
+                if (pendingBooking) {
+                    document.getElementById('bookingId').value = pendingBooking._id;
+                    document.getElementById('paymentAmount').value = pendingBooking.pricing?.finalAmount || 1000;
+                    await recordPayment();
+                }
+            }
+            
+            log('🎉 Complete admin workflow test finished!', 'success');
+            log('📋 Check admin dashboard for updated data', 'info');
+        }
+        
+        // Initialize
+        window.onload = () => {
+            log('👨💼 Admin Workflow Test initialized', 'info');
+            log('📋 Ready to test complete admin management workflow', 'info');
+        };
+    </script>
+</body>
+</html>

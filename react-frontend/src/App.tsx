@@ -30,6 +30,7 @@ import NotFoundPage from '@/pages/NotFoundPage';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import AuthPage from '@/pages/AuthPage';
 import DashboardPage from '@/pages/DashboardPage';
+import MyTripsPage from '@/pages/MyTripsPage';
 import BookingPage from '@/pages/BookingPage';
 import TripBookingPage from '@/pages/TripBookingPage';
 import TripsHubPageRedesigned from '@/pages/TripsHubPageRedesigned';
@@ -112,7 +113,7 @@ function App() {
               <Route path="/legal" element={<LegalPage />} />
               <Route path="*" element={<NotFoundPage />} />
 
-              <Route path="/auth" element={<AuthPage />} />
+              {/* <Route path="/auth" element={<AuthPage />} /> */}
               
               {/* Protected Routes */}
               <Route path="/dashboard" element={

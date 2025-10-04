@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Implementation Validator - Phase 1 & 2</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .result { background: #f9f9f9; padding: 10px; margin: 5px 0; border-radius: 5px; font-size: 14px; }
+        .error { background: #ffebee; color: #c62828; border-left: 4px solid #c62828; }
+        .success { background: #e8f5e8; color: #2e7d32; border-left: 4px solid #2e7d32; }
+        .warning { background: #fff3e0; color: #f57c00; border-left: 4px solid #f57c00; }
+        .info { background: #e3f2fd; color: #1976d2; border-left: 4px solid #1976d2; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; border: none; border-radius: 5px; background: #1976d2; color: white; }
+        button:hover { background: #1565c0; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .form-row { display: flex; gap: 10px; align-items: center; margin: 10px 0; flex-wrap: wrap; }
+        h2 { color: #1976d2; border-bottom: 2px solid #1976d2; padding-bottom: 5px; }
+        .status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
+        .status-card { padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .status-pass { border-color: #4caf50; background: #f1f8e9; }
+        .status-fail { border-color: #f44336; background: #ffebee; }
+        .status-pending { border-color: #ff9800; background: #fff3e0; }
+        .progress-bar { width: 100%; height: 20px; background: #e0e0e0; border-radius: 10px; overflow: hidden; margin: 10px 0; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #4caf50, #8bc34a); transition: width 0.3s ease; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Implementation Validator - Phase 1 & 2</h1>
+        <p>Comprehensive testing of appointment booking system implementation</p>
+
+        <!-- Progress Overview -->
+        <div class="test-section">
+            <h2>📊 Test Progress</h2>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar" style="width: 0%"></div>
+            </div>
+            <p id="progressText">Ready to start testing...</p>
+        </div>
+
+        <!-- Phase 1: Backend Infrastructure -->
+        <div class="test-section">
+            <h2>🔧 Phase 1: Backend Infrastructure</h2>
+            <div class="form-row">
+                <button onclick="testBackendHealth()">Test Backend Health</button>
+                <button onclick="testDatabaseModels()">Test Database Models</button>
+                <button onclick="testAPIRoutes()">Test API Routes</button>
+                <button onclick="testAuthentication()">Test Authentication</button>
+            </div>
+            <div class="status-grid" id="phase1Status">
+                <div class="status-card status-pending">
+                    <h4>🖥️ Backend Server</h4>
+                    <p id="backendStatus">Not tested</p>
+                </div>
+                <div class="status-card status-pending">
+                    <h4>🗄️ Database Models</h4>
+                    <p id="modelsStatus">Not tested</p>
+                </div>
+                <div class="status-card status-pending">
+                    <h4>🛣️ API Routes</h4>
+                    <p id="routesStatus">Not tested</p>
+                </div>
+                <div class="status-card status-pending">
+                    <h4>🔐 Authentication</h4>
+                    <p id="authStatus">Not tested</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phase 2: Frontend Integration -->
+        <div class="test-section">
+            <h2>🎨 Phase 2: Frontend Integration</h2>
+            <div class="form-row">
+                <button onclick="testFrontendPages()">Test Frontend Pages</button>
+                <button onclick="testUserDashboard()">Test User Dashboard</button>
+                <button onclick="testAdminDashboard()">Test Admin Dashboard</button>
+                <button onclick="testBookingFlow()">Test Booking Flow</button>
+            </div>
+            <div class="status-grid" id="phase2Status">
+                <div class="status-card status-pending">
+                    <h4>📱 Frontend Pages</h4>
+                    <p id="pagesStatus">Not tested</p>
+                </div>
+                <div class="status-card status-pending">
+                    <h4>👤 User Dashboard</h4>
+                    <p id="userDashStatus">Not tested</p>
+                </div>
+                <div class="status-card status-pending">
+                    <h4>👨‍💼 Admin Dashboard</h4>
+                    <p id="adminDashStatus">Not tested</p>
+                </div>
+                <div class="status-card status-pending">
+                    <h4>🎫 Booking Flow</h4>
+                    <p id="bookingStatus">Not tested</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Complete Workflow Test -->
+        <div class="test-section">
+            <h2>🔄 Complete Workflow Test</h2>
+            <div class="form-row">
+                <button onclick="testCompleteWorkflow()" id="workflowBtn">🚀 Test Complete Workflow</button>
+                <button onclick="generateReport()">📊 Generate Report</button>
+                <button onclick="clearAllTests()">🗑️ Clear All Tests</button>
+            </div>
+            <div id="workflowResults"></div>
+        </div>
+
+        <!-- Test Results -->
+        <div class="test-section">
+            <h2>📋 Test Results</h2>
+            <div id="results"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        const FRONTEND_BASE = 'http://localhost:3001';
+        let authToken = null;
+        let testResults = {
+            backend: false,
+            models: false,
+            routes: false,
+            auth: false,
+            pages: false,
+            userDash: false,
+            adminDash: false,
+            booking: false
+        };
+        
+        function updateProgress() {
+            const total = Object.keys(testResults).length;
+            const passed = Object.values(testResults).filter(Boolean).length;
+            const percentage = (passed / total) * 100;
+            
+            document.getElementById('progressBar').style.width = percentage + '%';
+            document.getElementById('progressText').textContent = 
+                `${passed}/${total} tests passed (${Math.round(percentage)}%)`;
+        }
+        
+        function updateStatus(elementId, status, message, success = false) {
+            const element = document.getElementById(elementId);
+            const card = element.closest('.status-card');
+            
+            element.textContent = message;
+            card.className = 'status-card ' + (success ? 'status-pass' : 'status-fail');
+        }
+        
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            const timestamp = new Date().toLocaleTimeString();
+            div.innerHTML = `<strong>${timestamp}</strong>: ${message}`;
+            results.appendChild(div);
+            results.scrollTop = results.scrollHeight;
+        }
+        
+        async function apiCall(endpoint, options = {}) {
+            try {
+                const headers = {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                };
+                
+                if (authToken) {
+                    headers['Authorization'] = `Bearer ${authToken}`;
+                }
+                
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    headers,
+                    ...options
+                });
+                
+                const data = await response.json();
+                return { response, data, success: response.ok };
+            } catch (error) {
+                return { error: error.message, success: false };
+            }
+        }
+        
+        async function testBackendHealth() {
+            log('🔍 Testing backend health...');
+            
+            try {
+                const response = await fetch(`${API_BASE.replace('/api', '')}/health`);
+                const data = await response.json();
+                
+                if (response.ok && data.status === 'OK') {
+                    log('✅ Backend server is running and healthy', 'success');
+                    updateStatus('backendStatus', true, 'Running ✅', true);
+                    testResults.backend = true;
+                } else {
+                    log('❌ Backend health check failed', 'error');
+                    updateStatus('backendStatus', false, 'Failed ❌', false);
+                }
+            } catch (error) {
+                log(`❌ Backend not accessible: ${error.message}`, 'error');
+                updateStatus('backendStatus', false, 'Not accessible ❌', false);
+            }
+            
+            updateProgress();
+        }
+        
+        async function testDatabaseModels() {
+            log('🗄️ Testing database models...');
+            
+            // Test if we can access appointment endpoints (indicates models are loaded)
+            const { success, error } = await apiCall('/appointments/slots?date=2024-01-01');
+            
+            if (success) {
+                log('✅ Database models loaded successfully', 'success');
+                updateStatus('modelsStatus', true, 'Models loaded ✅', true);
+                testResults.models = true;
+            } else {
+                log(`❌ Database models test failed: ${error}`, 'error');
+                updateStatus('modelsStatus', false, 'Models failed ❌', false);
+            }
+            
+            updateProgress();
+        }
+        
+        async function testAPIRoutes() {
+            log('🛣️ Testing API routes...');
+            
+            const routes = [
+                '/appointments/slots?date=2024-01-01',
+                '/auth/login', // This should return method not allowed for GET
+            ];
+            
+            let routesWorking = 0;
+            
+            for (const route of routes) {
+                try {
+                    const response = await fetch(`${API_BASE}${route}`);
+                    // Even 405 (Method Not Allowed) means the route exists
+                    if (response.status !== 404) {
+                        routesWorking++;
+                        log(`✅ Route ${route} exists`, 'success');
+                    } else {
+                        log(`❌ Route ${route} not found`, 'error');
+                    }
+                } catch (error) {
+                    log(`❌ Route ${route} error: ${error.message}`, 'error');
+                }
+            }
+            
+            if (routesWorking === routes.length) {
+                updateStatus('routesStatus', true, 'Routes working ✅', true);
+                testResults.routes = true;
+            } else {
+                updateStatus('routesStatus', false, `${routesWorking}/${routes.length} routes ❌`, false);
+            }
+            
+            updateProgress();
+        }
+        
+        async function testAuthentication() {
+            log('🔐 Testing authentication...');
+            
+            const { response, data, success } = await apiCall('/auth/login', {
+                method: 'POST',
+                body: JSON.stringify({
+                    email: 'admin@demo.com',
+                    password: 'admin123'
+                })
+            });
+            
+            if (success && data.success && data.data?.token) {
+                authToken = data.data.token;
+                log('✅ Authentication working - token received', 'success');
+                updateStatus('authStatus', true, 'Auth working ✅', true);
+                testResults.auth = true;
+            } else {
+                log(`❌ Authentication failed: ${data?.message || 'Unknown error'}`, 'error');
+                updateStatus('authStatus', false, 'Auth failed ❌', false);
+            }
+            
+            updateProgress();
+        }
+        
+        async function testFrontendPages() {
+            log('📱 Testing frontend pages...');
+            
+            const pages = [
+                '/',
+                '/dashboard',
+                '/admin',
+                '/trips'
+            ];
+            
+            let pagesWorking = 0;
+            
+            for (const page of pages) {
+                try {
+                    const response = await fetch(`${FRONTEND_BASE}${page}`);
+                    if (response.ok) {
+                        pagesWorking++;
+                        log(`✅ Page ${page} accessible`, 'success');
+                    } else {
+                        log(`❌ Page ${page} returned ${response.status}`, 'warning');
+                    }
+                } catch (error) {
+                    log(`❌ Page ${page} error: ${error.message}`, 'error');
+                }
+            }
+            
+            if (pagesWorking >= pages.length - 1) { // Allow one failure for auth pages
+                updateStatus('pagesStatus', true, 'Pages accessible ✅', true);
+                testResults.pages = true;
+            } else {
+                updateStatus('pagesStatus', false, `${pagesWorking}/${pages.length} pages ❌`, false);
+            }
+            
+            updateProgress();
+        }
+        
+        async function testUserDashboard() {
+            log('👤 Testing user dashboard...');
+            
+            // Test if appointments endpoint works (user dashboard dependency)
+            if (!authToken) {
+                log('❌ Need authentication token for user dashboard test', 'error');
+                updateStatus('userDashStatus', false, 'No auth token ❌', false);
+                updateProgress();
+                return;
+            }
+            
+            const { success } = await apiCall('/appointments');
+            
+            if (success) {
+                log('✅ User dashboard endpoints working', 'success');
+                updateStatus('userDashStatus', true, 'Dashboard ready ✅', true);
+                testResults.userDash = true;
+            } else {
+                log('❌ User dashboard endpoints failed', 'error');
+                updateStatus('userDashStatus', false, 'Dashboard failed ❌', false);
+            }
+            
+            updateProgress();
+        }
+        
+        async function testAdminDashboard() {
+            log('👨‍💼 Testing admin dashboard...');
+            
+            if (!authToken) {
+                log('❌ Need authentication token for admin dashboard test', 'error');
+                updateStatus('adminDashStatus', false, 'No auth token ❌', false);
+                updateProgress();
+                return;
+            }
+            
+            const { success } = await apiCall('/admin/appointments');
+            
+            if (success) {
+                log('✅ Admin dashboard endpoints working', 'success');
+                updateStatus('adminDashStatus', true, 'Admin ready ✅', true);
+                testResults.adminDash = true;
+            } else {
+                log('❌ Admin dashboard endpoints failed', 'error');
+                updateStatus('adminDashStatus', false, 'Admin failed ❌', false);
+            }
+            
+            updateProgress();
+        }
+        
+        async function testBookingFlow() {
+            log('🎫 Testing booking flow...');
+            
+            if (!authToken) {
+                log('❌ Need authentication token for booking flow test', 'error');
+                updateStatus('bookingStatus', false, 'No auth token ❌', false);
+                updateProgress();
+                return;
+            }
+            
+            // Test appointment creation
+            const appointmentData = {
+                tripId: '507f1f77bcf86cd799439011', // Mock trip ID
+                customerInfo: {
+                    firstName: 'Test',
+                    lastName: 'User',
+                    email: 'test@example.com',
+                    phone: '+1234567890'
+                },
+                bookingDetails: {
+                    preferredDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                    timeSlot: '09:00 AM - 10:00 AM',
+                    travelers: 2,
+                    specialRequests: 'Test appointment'
+                },
+                tripInfo: {
+                    title: 'Test Trip',
+                    destination: 'Test Destination',
+                    price: 999.99
+                }
+            };
+            
+            const { success, data } = await apiCall('/appointments', {
+                method: 'POST',
+                body: JSON.stringify(appointmentData)
+            });
+            
+            if (success && data.success) {
+                log('✅ Booking flow working - appointment created', 'success');
+                updateStatus('bookingStatus', true, 'Booking ready ✅', true);
+                testResults.booking = true;
+            } else {
+                log(`❌ Booking flow failed: ${data?.message || 'Unknown error'}`, 'error');
+                updateStatus('bookingStatus', false, 'Booking failed ❌', false);
+            }
+            
+            updateProgress();
+        }
+        
+        async function testCompleteWorkflow() {
+            log('🚀 Starting complete workflow test...', 'info');
+            document.getElementById('workflowBtn').disabled = true;
+            
+            // Run all tests in sequence
+            await testBackendHealth();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testDatabaseModels();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testAPIRoutes();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testAuthentication();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testFrontendPages();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testUserDashboard();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testAdminDashboard();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testBookingFlow();
+            
+            document.getElementById('workflowBtn').disabled = false;
+            
+            const passedTests = Object.values(testResults).filter(Boolean).length;
+            const totalTests = Object.keys(testResults).length;
+            
+            if (passedTests === totalTests) {
+                log('🎉 Complete workflow test PASSED! All systems operational.', 'success');
+            } else {
+                log(`⚠️ Workflow test completed with ${passedTests}/${totalTests} tests passing.`, 'warning');
+            }
+        }
+        
+        function generateReport() {
+            const report = {
+                timestamp: new Date().toISOString(),
+                results: testResults,
+                summary: {
+                    total: Object.keys(testResults).length,
+                    passed: Object.values(testResults).filter(Boolean).length,
+                    failed: Object.values(testResults).filter(r => !r).length
+                }
+            };
+            
+            log('📊 Test Report Generated:', 'info');
+            log(JSON.stringify(report, null, 2), 'info');
+        }
+        
+        function clearAllTests() {
+            document.getElementById('results').innerHTML = '';
+            testResults = {
+                backend: false,
+                models: false,
+                routes: false,
+                auth: false,
+                pages: false,
+                userDash: false,
+                adminDash: false,
+                booking: false
+            };
+            
+            // Reset all status cards
+            document.querySelectorAll('.status-card').forEach(card => {
+                card.className = 'status-card status-pending';
+                card.querySelector('p').textContent = 'Not tested';
+            });
+            
+            updateProgress();
+            log('🗑️ All tests cleared', 'info');
+        }
+        
+        // Initialize
+        window.onload = () => {
+            log('🧪 Implementation Validator initialized', 'info');
+            log('📋 Ready to test Phase 1 & 2 implementation', 'info');
+            updateProgress();
+        };
+    </script>
+</body>
+</html>

@@ -69,9 +69,17 @@ app.use('/api/destinations', require('./src/routes/destinations.routes'));
 app.use('/api', require('./src/routes/public.routes'));
 app.use('/api/upload', require('./src/routes/upload.routes'));
 
+// Appointment routes
+app.use('/api/appointments', require('./src/routes/appointments'));
+
+// User trips (unified appointments + bookings)
+app.use('/api/user/trips', require('./src/routes/userTrips'));
+
 // Admin routes
 console.log('Loading admin routes...');
 app.use('/api/admin', require('./src/routes/admin.routes'));
+app.use('/api/admin/appointments', require('./src/routes/admin/appointments'));
+app.use('/api/admin/bookings', require('./src/routes/admin/bookings'));
 console.log('✅ Admin routes loaded successfully');
 console.log('✅ Trip routes loaded successfully');
 console.log('✅ Master data routes loaded successfully');

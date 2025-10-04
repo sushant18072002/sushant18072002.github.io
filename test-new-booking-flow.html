@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test New Booking Flow</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .result { background: #f9f9f9; padding: 10px; margin: 5px 0; border-radius: 5px; font-size: 14px; }
+        .error { background: #ffebee; color: #c62828; border-left: 4px solid #c62828; }
+        .success { background: #e8f5e8; color: #2e7d32; border-left: 4px solid #2e7d32; }
+        .warning { background: #fff3e0; color: #f57c00; border-left: 4px solid #f57c00; }
+        .info { background: #e3f2fd; color: #1976d2; border-left: 4px solid #1976d2; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; border: none; border-radius: 5px; background: #1976d2; color: white; }
+        button:hover { background: #1565c0; }
+        input, select { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; }
+        .form-row { display: flex; gap: 10px; align-items: center; margin: 10px 0; }
+        h2 { color: #1976d2; border-bottom: 2px solid #1976d2; padding-bottom: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 New Booking Flow Test</h1>
+        <p>Testing the complete appointment → booking workflow</p>
+
+        <div class="test-section">
+            <h2>🔐 Authentication</h2>
+            <div class="form-row">
+                <input type="email" id="loginEmail" value="customer@travel.com" placeholder="Email">
+                <input type="password" id="loginPassword" value="customer123" placeholder="Password">
+                <button onclick="testLogin()">Login</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>📅 Create Appointment</h2>
+            <div class="form-row">
+                <input type="text" id="tripId" value="68b2ea18c06c9dbc8cc82908" placeholder="Trip ID">
+                <input type="date" id="appointmentDate" min="">
+                <select id="timeSlot">
+                    <option value="">Select Time</option>
+                    <option value="09:00 AM - 10:00 AM">09:00 AM - 10:00 AM</option>
+                    <option value="02:00 PM - 03:00 PM">02:00 PM - 03:00 PM</option>
+                </select>
+                <button onclick="createAppointment()">Create Appointment</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>📋 User Dashboard</h2>
+            <div class="form-row">
+                <button onclick="getUserAppointments()">Get My Appointments</button>
+                <button onclick="getUserBookings()">Get My Bookings</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>👨‍💼 Admin Functions</h2>
+            <div class="form-row">
+                <button onclick="getAllAppointments()">Get All Appointments (Admin)</button>
+                <button onclick="getAllBookings()">Get All Bookings (Admin)</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔄 Complete Flow Test</h2>
+            <div class="form-row">
+                <button onclick="testCompleteFlow()">🚀 Test Complete Flow</button>
+                <button onclick="clearResults()">🗑️ Clear Results</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 Test Results</h2>
+            <div id="results"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        let authToken = null;
+        
+        // Set minimum date to tomorrow
+        document.getElementById('appointmentDate').min = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        document.getElementById('appointmentDate').value = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            const timestamp = new Date().toLocaleTimeString();
+            div.innerHTML = `<strong>${timestamp}</strong>: ${message}`;
+            results.appendChild(div);
+            results.scrollTop = results.scrollHeight;
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        async function apiCall(endpoint, options = {}) {
+            try {
+                const headers = {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                };
+                
+                if (authToken) {
+                    headers['Authorization'] = `Bearer ${authToken}`;
+                }
+                
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    headers,
+                    ...options
+                });
+                
+                const data = await response.json();
+                return { response, data, success: response.ok };
+            } catch (error) {
+                return { error: error.message, success: false };
+            }
+        }
+        
+        async function testLogin() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            log('🔐 Testing login...');
+            
+            const { response, data, success } = await apiCall('/auth/login', {
+                method: 'POST',
+                body: JSON.stringify({ email, password })
+            });
+            
+            if (success && data.success) {
+                authToken = data.data.token;
+                log(`✅ Login successful: ${email}`, 'success');
+                log(`🎫 Token received: ${authToken.substring(0, 20)}...`, 'info');
+            } else {
+                log(`❌ Login failed: ${data.message || 'Unknown error'}`, 'error');
+            }
+        }
+        
+        async function createAppointment() {
+            if (!authToken) {
+                log('❌ Please login first', 'error');
+                return;
+            }
+            
+            const tripId = document.getElementById('tripId').value;
+            const date = document.getElementById('appointmentDate').value;
+            const timeSlot = document.getElementById('timeSlot').value;
+            
+            if (!date || !timeSlot) {
+                log('❌ Please select date and time slot', 'error');
+                return;
+            }
+            
+            log('📅 Creating appointment...');
+            
+            const appointmentData = {
+                tripId,
+                customerInfo: {
+                    firstName: 'John',
+                    lastName: 'Doe',
+                    email: 'customer@travel.com',
+                    phone: '+1234567890'
+                },
+                bookingDetails: {
+                    preferredDate: date,
+                    timeSlot: timeSlot,
+                    travelers: 2,
+                    specialRequests: 'Test appointment from new flow'
+                },
+                tripInfo: {
+                    title: 'Test Trip',
+                    destination: 'Test Destination',
+                    price: 999.99,
+                    currency: 'USD'
+                }
+            };
+            
+            const { response, data, success } = await apiCall('/appointments', {
+                method: 'POST',
+                body: JSON.stringify(appointmentData)
+            });
+            
+            if (success && data.success) {
+                log(`✅ Appointment created: ${data.data.appointment.reference}`, 'success');
+                log(`📅 Scheduled: ${date} at ${timeSlot}`, 'info');
+                log(`📋 Status: ${data.data.appointment.status}`, 'info');
+            } else {
+                log(`❌ Appointment creation failed: ${data.message || data.error?.message}`, 'error');
+            }
+        }
+        
+        async function getUserAppointments() {
+            if (!authToken) {
+                log('❌ Please login first', 'error');
+                return;
+            }
+            
+            log('📋 Getting user appointments...');
+            
+            const { response, data, success } = await apiCall('/appointments');
+            
+            if (success && data.success) {
+                const appointments = data.data.appointments || [];
+                log(`✅ Found ${appointments.length} appointments`, 'success');
+                appointments.forEach((apt, index) => {
+                    log(`📅 ${index + 1}. ${apt.appointmentReference} - ${apt.status} - ${apt.trip.title}`, 'info');
+                });
+            } else {
+                log(`❌ Failed to get appointments: ${data.message || data.error?.message}`, 'error');
+            }
+        }
+        
+        async function getUserBookings() {
+            if (!authToken) {
+                log('❌ Please login first', 'error');
+                return;
+            }
+            
+            log('📋 Getting user bookings...');
+            
+            const { response, data, success } = await apiCall('/admin/bookings'); // Will be user bookings endpoint
+            
+            if (success && data.success) {
+                const bookings = data.data.bookings || [];
+                log(`✅ Found ${bookings.length} bookings`, 'success');
+                bookings.forEach((booking, index) => {
+                    log(`🎫 ${index + 1}. ${booking.bookingReference} - ${booking.status}`, 'info');
+                });
+            } else {
+                log(`❌ Failed to get bookings: ${data.message || data.error?.message}`, 'error');
+            }
+        }
+        
+        async function getAllAppointments() {
+            if (!authToken) {
+                log('❌ Please login first', 'error');
+                return;
+            }
+            
+            log('👨‍💼 Getting all appointments (admin)...');
+            
+            const { response, data, success } = await apiCall('/admin/appointments');
+            
+            if (success && data.success) {
+                const appointments = data.data.appointments || [];
+                log(`✅ Admin view: ${appointments.length} total appointments`, 'success');
+            } else {
+                log(`❌ Admin appointments failed: ${data.message || data.error?.message}`, 'error');
+            }
+        }
+        
+        async function getAllBookings() {
+            if (!authToken) {
+                log('❌ Please login first', 'error');
+                return;
+            }
+            
+            log('👨‍💼 Getting all bookings (admin)...');
+            
+            const { response, data, success } = await apiCall('/admin/bookings');
+            
+            if (success && data.success) {
+                const bookings = data.data.bookings || [];
+                log(`✅ Admin view: ${bookings.length} total bookings`, 'success');
+            } else {
+                log(`❌ Admin bookings failed: ${data.message || data.error?.message}`, 'error');
+            }
+        }
+        
+        async function testCompleteFlow() {
+            log('🚀 Starting complete booking flow test...', 'info');
+            
+            // Step 1: Login
+            await testLogin();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Step 2: Create Appointment
+            await createAppointment();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Step 3: Get User Data
+            await getUserAppointments();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Step 4: Admin View
+            await getAllAppointments();
+            
+            log('🎉 Complete flow test finished!', 'success');
+        }
+        
+        // Auto-run basic info on page load
+        window.onload = () => {
+            log('🎯 New Booking Flow Test Initialized', 'info');
+            log('📋 Testing: Appointments → Bookings → Admin Management', 'info');
+            log('🔧 Backend: TripAppointment & TripBooking models', 'info');
+        };
+    </script>
+</body>
+</html>

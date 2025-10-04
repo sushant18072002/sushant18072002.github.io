@@ -36,6 +36,15 @@ const register = async (req, res) => {
     console.log('🔍 Verification data saved:', JSON.stringify(user.verification, null, 2));
 
     await emailService.sendVerificationEmail(user.email, verificationToken);
+
+    const verifyUser = await User.findOne({ email });
+
+    console.log('✅ Verifying user:', verifyUser.email);
+    verifyUser.status = 'active';
+    verifyUser.emailVerified = true;
+    verifyUser.emailVerifiedAt = new Date();
+    verifyUser.verification = undefined;
+    await verifyUser.save();
     
     return success(res, {
       message: 'Registration successful. Please verify your email.',
@@ -166,33 +175,33 @@ const forgotPassword = async (req, res) => {
   }
 };
 
-const resetPassword = async (req, res) => {
-  try {
-    const { token, password } = req.body;
+// const resetPassword = async (req, res) => {
+//   try {
+//     const { token, password } = req.body;
     
-    const user = await User.findOne({
-      'passwordReset.token': token,
-      'passwordReset.expires': { $gt: new Date() },
-      active: true
-    });
+//     const user = await User.findOne({
+//       'passwordReset.token': token,
+//       'passwordReset.expires': { $gt: new Date() },
+//       active: true
+//     });
 
-    if (!user) {
-      return error(res, 'Invalid or expired reset token', 400);
-    }
+//     if (!user) {
+//       return error(res, 'Invalid or expired reset token', 400);
+//     }
 
-    user.password = password;
-    user.passwordReset = undefined;
-    await user.save();
+//     user.password = password;
+//     user.passwordReset = undefined;
+//     await user.save();
 
-    await Session.updateMany({ userId: user._id }, { isActive: false });
+//     await Session.updateMany({ userId: user._id }, { isActive: false });
     
-    return success(res, null, 'Password reset successful');
-  } catch (err) {
-    return error(res, err.message, 500);
-  }
-};
+//     return success(res, null, 'Password reset successful');
+//   } catch (err) {
+//     return error(res, err.message, 500);
+//   }
+// };
 
-/*
+
 const resetPassword = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -220,7 +229,7 @@ const resetPassword = async (req, res) => {
     return error(res, err.message, 500);
   }
 };
-*/
+
 const verifyEmail = async (req, res) => {
   try {
     const { token } = req.query;

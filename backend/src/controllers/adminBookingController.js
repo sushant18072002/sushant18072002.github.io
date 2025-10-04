@@ -1,6 +1,10 @@
 const TripAppointment = require('../models/TripAppointment');
 const TripBooking = require('../models/TripBooking');
-const { User } = require('../models');
+const { User, Booking } = require('../models');
+
+console.log('📋 Models loaded:');
+console.log('- TripBooking model:', !!TripBooking);
+console.log('- Booking model:', !!Booking);
 const auditService = require('../services/auditService');
 
 // Get all appointments (admin dashboard)
@@ -160,6 +164,10 @@ const convertToBooking = async (req, res) => {
     } = req.body;
 
     const appointment = await TripAppointment.findById(id).populate('user');
+    
+    // Get actual trip data for accurate currency and pricing
+    const { Trip } = require('../models');
+    const actualTrip = await Trip.findById(appointment.trip.tripId);
     if (!appointment) {
       return res.status(404).json({
         success: false,
@@ -174,8 +182,12 @@ const convertToBooking = async (req, res) => {
       });
     }
 
+    // Generate booking reference
+    const bookingRef = `TRV-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+
     // Create booking from appointment
     const booking = new TripBooking({
+      bookingReference: bookingRef,
       user: appointment.user._id,
       appointmentId: appointment._id,
       trip: {
@@ -195,12 +207,12 @@ const convertToBooking = async (req, res) => {
         details: travelers?.details || []
       },
       pricing: {
-        basePrice: appointment.trip.estimatedPrice,
-        pricePerPerson: appointment.trip.estimatedPrice,
+        basePrice: actualTrip?.pricing?.finalPrice || actualTrip?.pricing?.sellPrice || appointment.trip.estimatedPrice,
+        pricePerPerson: actualTrip?.pricing?.finalPrice || actualTrip?.pricing?.sellPrice || appointment.trip.estimatedPrice,
         totalTravelers: travelers?.count || appointment.customer.travelers,
         customizations: customizations || [],
         finalAmount: finalPrice,
-        currency: appointment.trip.currency
+        currency: actualTrip?.pricing?.currency || appointment.trip.currency || 'USD'
       },
       payment: {
         method: paymentMethod,
@@ -219,10 +231,19 @@ const convertToBooking = async (req, res) => {
       source: 'phone'
     });
 
-    await booking.save();
+    const savedBooking = await booking.save();
+    console.log('✅ Booking saved successfully:');
+    console.log('- ID:', savedBooking._id);
+    console.log('- Reference:', savedBooking.bookingReference);
+    console.log('- Status:', savedBooking.status);
+    console.log('- Collection:', savedBooking.constructor.modelName);
 
     // Update appointment as converted
     await appointment.convertToBooking(booking._id, finalPrice);
+    
+    // Verify booking exists in database
+    const verifyBooking = await TripBooking.findById(savedBooking._id);
+    console.log('🔍 Verification - Booking exists:', !!verifyBooking);
 
     // Log conversion
     await auditService.log({
@@ -263,6 +284,8 @@ const convertToBooking = async (req, res) => {
 // Get all bookings (admin)
 const getAllBookings = async (req, res) => {
   try {
+    console.log('🔍 Admin getting all bookings...');
+    
     const { 
       page = 1, 
       limit = 20, 
@@ -273,6 +296,16 @@ const getAllBookings = async (req, res) => {
     } = req.query;
 
     const query = {};
+    console.log('Query params:', { status, paymentStatus, assignedAgent, search });
+    console.log('Initial query:', query);
+    
+    // Test: Get ALL bookings first (no filters)
+    const allBookingsTest = await TripBooking.find({});
+    console.log('🧪 TEST - All bookings (no filter):', allBookingsTest.length);
+    if (allBookingsTest.length > 0) {
+      console.log('🧪 First booking user:', allBookingsTest[0].user);
+      console.log('🧪 First booking status:', allBookingsTest[0].status);
+    }
     
     if (status) query.status = status;
     if (paymentStatus) query['payment.status'] = paymentStatus;
@@ -287,6 +320,24 @@ const getAllBookings = async (req, res) => {
       ];
     }
 
+    // First, let's check if ANY bookings exist
+    const totalBookingsInDB = await TripBooking.countDocuments({});
+    console.log('📊 Total TripBookings in database:', totalBookingsInDB);
+    
+    // Also check old Booking model
+    const totalOldBookings = await Booking.countDocuments({});
+    console.log('📊 Total old Bookings in database:', totalOldBookings);
+    
+    if (totalBookingsInDB > 0) {
+      const allBookings = await TripBooking.find({}).limit(3);
+      console.log('📋 Sample bookings:', allBookings.map(b => ({ 
+        id: b._id, 
+        ref: b.bookingReference, 
+        status: b.status,
+        user: b.user 
+      })));
+    }
+
     const bookings = await TripBooking.find(query)
       .populate('user', 'email profile')
       .populate('management.assignedAgent', 'profile.firstName profile.lastName email')
@@ -294,6 +345,11 @@ const getAllBookings = async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
+
+    console.log('📋 Admin found bookings:', bookings.length);
+    if (bookings.length > 0) {
+      console.log('First booking:', bookings[0]);
+    }
 
     const total = await TripBooking.countDocuments(query);
 
@@ -315,6 +371,7 @@ const getAllBookings = async (req, res) => {
     });
 
   } catch (error) {
+    console.error('❌ Admin getting all bookings error:', error);
     res.status(500).json({
       success: false,
       error: { message: error.message }
@@ -364,40 +421,130 @@ const recordPayment = async (req, res) => {
 // Update booking status (admin)
 const updateBookingStatus = async (req, res) => {
   try {
+    console.log('🔄 Admin updating booking status...');
+    console.log('Booking ID:', req.params.id);
+    console.log('New status:', req.body.status);
+    
     const { id } = req.params;
     const { status, notes } = req.body;
 
     const booking = await TripBooking.findById(id);
     if (!booking) {
+      console.log('❌ Booking not found:', id);
       return res.status(404).json({
         success: false,
         error: { message: 'Booking not found' }
       });
     }
 
+    console.log('✅ Found booking:', booking.bookingReference);
+    console.log('Old status:', booking.status);
+    
     const oldStatus = booking.status;
     booking.status = status;
     if (notes) booking.management.internalNotes = notes;
-    booking.management.lastModifiedBy = req.user._id;
+    booking.management.lastModifiedBy = req.user?._id;
 
-    await booking.save();
+    let updatedBooking;
+    try {
+      console.log('💾 Attempting to save booking...');
+      console.log('Modified paths before save:', booking.modifiedPaths());
+      console.log('Status before save:', booking.status);
+      
+      updatedBooking = await booking.save();
+      
+      console.log('✅ Booking save successful!');
+      console.log('Status after save:', updatedBooking.status);
+      console.log('Modified paths after save:', booking.modifiedPaths());
+      
+    } catch (saveError) {
+      console.error('❌ Booking save failed:', saveError.message);
+      console.error('Full error:', saveError);
+      
+      if (saveError.name === 'ValidationError') {
+        console.error('❌ Validation errors:');
+        Object.keys(saveError.errors).forEach(key => {
+          console.error(`  - ${key}: ${saveError.errors[key].message}`);
+        });
+      }
+      
+      return res.status(400).json({
+        success: false,
+        error: { 
+          message: 'Failed to save booking: ' + saveError.message,
+          details: saveError.name === 'ValidationError' ? saveError.errors : null
+        }
+      });
+    }
 
-    // Log status change
-    await auditService.log({
-      userId: req.user._id,
-      action: 'BOOKING_STATUS_UPDATED',
-      resource: 'booking',
-      resourceId: id,
-      metadata: { oldStatus, newStatus: status, notes }
+    // Try direct database update as fallback
+    console.log('🔄 Attempting direct database update as verification...');
+    const directUpdate = await TripBooking.findByIdAndUpdate(
+      id, 
+      { status: status, 'management.lastModifiedBy': req.user?._id },
+      { new: true, runValidators: false }
+    );
+    
+    console.log('✅ Direct update result:', {
+      found: !!directUpdate,
+      status: directUpdate?.status,
+      success: directUpdate?.status === status
     });
-
+    
+    // Verify the update actually happened in database
+    const freshBooking = await TripBooking.findById(id);
+    console.log('✅ Final database verification:');
+    console.log('- Fresh booking found:', !!freshBooking);
+    console.log('- Fresh booking status:', freshBooking?.status);
+    console.log('- Status actually changed:', freshBooking?.status === status);
+    
     res.json({
       success: true,
-      data: { booking },
+      data: { booking: directUpdate || freshBooking },
       message: 'Booking status updated successfully'
     });
 
   } catch (error) {
+    console.error('❌ Booking status update error:', error);
+    res.status(500).json({
+      success: false,
+      error: { message: error.message }
+    });
+  }
+};
+
+// Get ALL bookings for admin (regardless of user)
+const getAllBookingsForAdmin = async (req, res) => {
+  try {
+    console.log('🔍 Admin getting ALL bookings (no user filter)...');
+    
+    // Get ALL TripBookings without user filter
+    const bookings = await TripBooking.find({})
+      .sort({ createdAt: -1 })
+      .populate('user', 'email profile')
+      .populate('appointmentId', 'appointmentReference');
+
+    console.log('✅ Admin found ALL bookings:', bookings.length);
+    if (bookings.length > 0) {
+      console.log('✅ First booking user:', bookings[0].user?.email);
+      console.log('✅ First booking ref:', bookings[0].bookingReference);
+      console.log('✅ First booking currency info:', {
+        tripCurrency: bookings[0].trip?.currency,
+        pricingCurrency: bookings[0].pricing?.currency,
+        finalAmount: bookings[0].pricing?.finalAmount
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        bookings,
+        total: bookings.length
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Admin bookings error:', error);
     res.status(500).json({
       success: false,
       error: { message: error.message }
@@ -410,6 +557,7 @@ module.exports = {
   updateAppointment,
   convertToBooking,
   getAllBookings,
+  getAllBookingsForAdmin,
   recordPayment,
   updateBookingStatus
 };

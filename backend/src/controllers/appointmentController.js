@@ -1,6 +1,5 @@
 const TripAppointment = require('../models/TripAppointment');
-const TripBooking = require('../models/TripBooking');
-const { User } = require('../models');
+const { TripBooking, User } = require('../models');
 const auditService = require('../services/auditService');
 
 // Create new appointment (customer-facing)
@@ -30,16 +29,24 @@ const createAppointment = async (req, res) => {
       });
     }
 
+    // Generate appointment reference
+    const appointmentRef = `APT-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
+
+    // Get actual trip data to ensure correct currency
+    const { Trip } = require('../models');
+    const actualTrip = await Trip.findById(tripId);
+    
     // Create appointment
     const appointment = new TripAppointment({
+      appointmentReference: appointmentRef,
       user: req.user._id,
       trip: {
         tripId,
-        title: tripInfo?.title,
-        destination: tripInfo?.destination,
-        duration: tripInfo?.duration,
-        estimatedPrice: tripInfo?.price,
-        currency: tripInfo?.currency || 'USD'
+        title: actualTrip?.title || tripInfo?.title,
+        destination: actualTrip?.primaryDestination || tripInfo?.destination,
+        duration: actualTrip?.duration || tripInfo?.duration,
+        estimatedPrice: actualTrip?.pricing?.finalPrice || actualTrip?.pricing?.sellPrice || tripInfo?.price,
+        currency: actualTrip?.pricing?.currency || 'USD'
       },
       customer: {
         firstName: customerInfo.firstName,
@@ -54,7 +61,7 @@ const createAppointment = async (req, res) => {
       },
       specialRequests: bookingDetails.specialRequests,
       pricing: {
-        estimatedTotal: (tripInfo?.price || 0) * (bookingDetails.travelers || 1)
+        estimatedTotal: (actualTrip?.pricing?.finalPrice || actualTrip?.pricing?.sellPrice || tripInfo?.price || 0) * (bookingDetails.travelers || 1)
       },
       source: 'website',
       metadata: {
@@ -269,10 +276,103 @@ const cancelAppointment = async (req, res) => {
   }
 };
 
+// Get user bookings
+const getUserBookings = async (req, res) => {
+  try {
+    const { page = 1, limit = 10, status } = req.query;
+
+    console.log('🔍 Getting user bookings for user:', req.user._id);
+
+    const query = { user: req.user._id };
+    if (status) query.status = status;
+
+    const bookings = await TripBooking.find(query)
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
+      .populate('appointmentId', 'appointmentReference');
+
+    console.log('📋 Found bookings:', bookings.length);
+
+    const total = await TripBooking.countDocuments(query);
+
+    res.json({
+      success: true,
+      data: {
+        bookings,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ User bookings error:', error);
+    res.status(500).json({
+      success: false,
+      error: { message: error.message }
+    });
+  }
+};
+
+// Update booking status (admin)
+const updateBookingStatus = async (req, res) => {
+  try {
+    console.log('🔄 Updating TripBooking status...');
+    console.log('Booking ID:', req.params.id);
+    console.log('New status:', req.body.status);
+    
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const booking = await TripBooking.findById(id);
+    if (!booking) {
+      console.log('❌ TripBooking not found:', id);
+      return res.status(404).json({
+        success: false,
+        error: { message: 'Booking not found' }
+      });
+    }
+
+    console.log('✅ Found TripBooking:', booking.bookingReference);
+    console.log('Old status:', booking.status);
+    console.log('✅ Currency info:', {
+      tripCurrency: booking.trip?.currency,
+      pricingCurrency: booking.pricing?.currency
+    });
+    
+    // Update status
+    booking.status = status;
+    const updatedBooking = await booking.save();
+    
+    console.log('✅ TripBooking status updated successfully');
+    console.log('New status:', updatedBooking.status);
+
+    res.json({
+      success: true,
+      data: { booking: updatedBooking },
+      message: 'Booking status updated successfully'
+    });
+
+  } catch (error) {
+    console.error('❌ TripBooking status update error:', error);
+    res.status(500).json({
+      success: false,
+      error: { message: error.message }
+    });
+  }
+};
+
 module.exports = {
   createAppointment,
   getUserAppointments,
   getAvailableSlots,
   rescheduleAppointment,
-  cancelAppointment
+  cancelAppointment,
+  getUserBookings,
+  updateBookingStatus
 };
+

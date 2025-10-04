@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const tripAppointmentSchema = new mongoose.Schema({
   // Reference and identification
-  appointmentReference: { type: String, required: true, unique: true },
+  appointmentReference: { type: String, unique: true },
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   
   // Trip information
@@ -140,11 +140,22 @@ tripAppointmentSchema.virtual('customer.fullName').get(function() {
 
 // Virtual for appointment date/time display
 tripAppointmentSchema.virtual('schedule.displayDateTime').get(function() {
+  if (!this.schedule?.preferredDate || !this.schedule?.timeSlot) {
+    return 'Date/Time TBD';
+  }
   return `${this.schedule.preferredDate.toDateString()} at ${this.schedule.timeSlot}`;
 });
 
 // Pre-save middleware to generate reference
 tripAppointmentSchema.pre('save', function(next) {
+  if (!this.appointmentReference) {
+    this.appointmentReference = `APT-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
+  }
+  next();
+});
+
+// Also generate on validate
+tripAppointmentSchema.pre('validate', function(next) {
   if (!this.appointmentReference) {
     this.appointmentReference = `APT-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
   }

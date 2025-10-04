@@ -12,8 +12,10 @@ const loginSchema = z.object({
 });
 
 const signupSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
+  firstName: z.string().min(2, 'First name must be at least 2 characters'),
+  lastName: z.string().min(2, 'Last name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
+  phone: z.string().min(10, 'Phone number must be at least 10 digits'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   confirmPassword: z.string()
 }).refine((data) => data.password === data.confirmPassword, {
@@ -29,9 +31,23 @@ interface AuthModalProps {
 
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'login' }) => {
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
+  
+  // Reset everything when modal opens with new initialMode
+  useEffect(() => {
+    if (isOpen) {
+      setMode(initialMode);
+      setErrorMessage('');
+      setShowPassword(false);
+      setShowConfirmPassword(false);
+      setVerificationSent(false);
+      loginForm.reset();
+      signupForm.reset();
+    }
+  }, [isOpen, initialMode]);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [verificationSent, setVerificationSent] = useState(false);
   const { login, register, isLoading } = useAuthStore();
 
   const loginForm = useForm({
@@ -41,7 +57,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'l
 
   const signupForm = useForm({
     resolver: zodResolver(signupSchema),
-    defaultValues: { name: '', email: '', password: '', confirmPassword: '' }
+    defaultValues: { firstName: '', lastName: '', email: '', phone: '', password: '', confirmPassword: '' }
   });
 
   // Close modal on Escape key
@@ -88,16 +104,30 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'l
   const handleSignup = async (data: z.infer<typeof signupSchema>) => {
     try {
       setErrorMessage('');
-      const [firstName, ...lastNameParts] = data.name.split(' ');
-      const lastName = lastNameParts.join(' ') || '';
-      await register({
-        email: data.email,
-        password: data.password,
-        firstName,
-        lastName,
-        phone: ''
+      
+      // Call register API directly with proper URL
+      const response = await fetch('http://localhost:3000/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          phone: data.phone
+        }),
       });
-      onClose();
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        setVerificationSent(true);
+        setErrorMessage('');
+      } else {
+        throw new Error(result.message || 'Registration failed');
+      }
     } catch (error: any) {
       console.error('Signup failed:', error);
       setErrorMessage(error.message || 'Signup failed. Please try again.');
@@ -210,20 +240,52 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'l
               {isLoading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
+        ) : verificationSent ? (
+          <div className="text-center py-8">
+            <div className="text-6xl mb-4">📧</div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Check Your Email</h3>
+            <p className="text-gray-600 mb-6">
+              We've sent a verification link to your email address. Please click the link to activate your account.
+            </p>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setVerificationSent(false);
+                signupForm.reset();
+              }}
+            >
+              Back to Signup
+            </Button>
+          </div>
         ) : (
           <form onSubmit={signupForm.handleSubmit(handleSignup)} className="space-y-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">Full Name</label>
-              <input
-                {...signupForm.register('name')}
-                type="text"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                placeholder="Enter your full name"
-                autoComplete="name"
-              />
-              {signupForm.formState.errors.name && (
-                <p className="text-red-500 text-sm mt-1">{signupForm.formState.errors.name.message}</p>
-              )}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-900 mb-2">First Name</label>
+                <input
+                  {...signupForm.register('firstName')}
+                  type="text"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                  placeholder="First name"
+                  autoComplete="given-name"
+                />
+                {signupForm.formState.errors.firstName && (
+                  <p className="text-red-500 text-sm mt-1">{signupForm.formState.errors.firstName.message}</p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-900 mb-2">Last Name</label>
+                <input
+                  {...signupForm.register('lastName')}
+                  type="text"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                  placeholder="Last name"
+                  autoComplete="family-name"
+                />
+                {signupForm.formState.errors.lastName && (
+                  <p className="text-red-500 text-sm mt-1">{signupForm.formState.errors.lastName.message}</p>
+                )}
+              </div>
             </div>
 
             <div>
@@ -322,6 +384,27 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'l
               )}
             </div>
 
+            <div>
+              <label className="block text-sm font-semibold text-gray-900 mb-2">Phone Number</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
+                </div>
+                <input
+                  {...signupForm.register('phone')}
+                  type="tel"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                  placeholder="+1 (555) 123-4567"
+                  autoComplete="tel"
+                />
+              </div>
+              {signupForm.formState.errors.phone && (
+                <p className="text-red-500 text-sm mt-1">{signupForm.formState.errors.phone.message}</p>
+              )}
+            </div>
+
             <Button type="submit" fullWidth size="lg" disabled={isLoading}>
               {isLoading ? 'Creating account...' : 'Create Account'}
             </Button>
@@ -333,8 +416,15 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'l
             {mode === 'login' ? "Don't have an account?" : 'Already have an account?'}
             <button
               onClick={() => {
-                setMode(mode === 'login' ? 'signup' : 'login');
+                const newMode = mode === 'login' ? 'signup' : 'login';
+                setMode(newMode);
                 setErrorMessage('');
+                setShowPassword(false);
+                setShowConfirmPassword(false);
+                setVerificationSent(false);
+                // Reset forms
+                loginForm.reset();
+                signupForm.reset();
               }}
               className="ml-2 text-blue-600 font-semibold hover:underline transition-colors"
             >
