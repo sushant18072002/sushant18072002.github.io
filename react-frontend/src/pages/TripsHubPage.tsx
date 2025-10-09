@@ -394,7 +394,7 @@ const TripsHubPage: React.FC = () => {
       </section>
 
       {/* Alternative Options - Compact */}
-      <section className="py-6 bg-gray-50 border-t border-gray-200">
+      {/* <section className="py-6 bg-gray-50 border-t border-gray-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-4">
             <h3 className="text-lg font-bold text-primary-900 mb-1 font-['DM_Sans']">Can't find what you're looking for?</h3>
@@ -402,13 +402,13 @@ const TripsHubPage: React.FC = () => {
           </div>
           
           <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-2xl mx-auto">
-            <button 
+            {/* <button 
               onClick={() => navigate('/ai-itinerary')}
               className="flex items-center gap-2 bg-white hover:bg-blue-50 border border-blue-200 hover:border-blue-ocean text-primary-900 px-4 py-3 rounded-lg font-medium font-['DM_Sans'] transition-all duration-300 hover:shadow-sm text-sm"
             >
               <span className="text-lg">🧠</span>
               <span>AI Trip Builder</span>
-            </button>
+            </button> }
             
             <button 
               onClick={() => navigate('/custom-builder')}
@@ -419,7 +419,7 @@ const TripsHubPage: React.FC = () => {
             </button>
           </div>
         </div>
-      </section>
+      </section> */}
 
 
 
