@@ -1326,6 +1326,7 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
                             if (percent > 0) {
                               form.setValue('discountAmount', 0); // Clear amount when using percent
                             }
+                            setTimeout(() => calculatePricing(), 0);
                           }} />
                       </div>
                       <div>
@@ -1340,6 +1341,7 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
                               if (amount > 0) {
                                 form.setValue('discountPercent', 0); // Clear percent when using amount
                               }
+                              setTimeout(() => calculatePricing(), 0);
                             }} />
                         </div>
                       </div>
