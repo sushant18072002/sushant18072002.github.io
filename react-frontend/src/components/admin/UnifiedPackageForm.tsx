@@ -207,6 +207,26 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
     };
   }, [isEditMode, packageId]);
   
+  // Auto-calculate pricing when breakdown values change
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name && [
+        'priceBreakdownFlights',
+        'priceBreakdownAccommodation', 
+        'priceBreakdownActivities',
+        'priceBreakdownFood',
+        'priceBreakdownTransport',
+        'priceBreakdownOther',
+        'basePrice',
+        'discountPercent',
+        'discountAmount'
+      ].includes(name)) {
+        calculatePricing();
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form, calculatePricing]);
+  
   const loadCategories = async () => {
     try {
       const [categoriesResponse, citiesResponse, countriesResponse] = await Promise.all([
@@ -1214,8 +1234,7 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
                         <div className="relative">
                           <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-600">{getCurrencySymbol(form.watch('currency') || APP_CONSTANTS.DEFAULT_CURRENCY)}</span>
                           <input {...form.register('priceBreakdownFlights')} type="number" min="0" 
-                            className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" placeholder="400" 
-                            onChange={calculatePricing} />
+                            className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" placeholder="400" />
                         </div>
                       </div>
                       <div>
@@ -1223,8 +1242,7 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
                         <div className="relative">
                           <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-600">{getCurrencySymbol(form.watch('currency') || APP_CONSTANTS.DEFAULT_CURRENCY)}</span>
                           <input {...form.register('priceBreakdownAccommodation')} type="number" min="0" 
-                            className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" placeholder="700" 
-                            onChange={calculatePricing} />
+                            className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" placeholder="700" />
                         </div>
                       </div>
                       <div>
@@ -1232,8 +1250,7 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
                         <div className="relative">
                           <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-600">{getCurrencySymbol(form.watch('currency') || APP_CONSTANTS.DEFAULT_CURRENCY)}</span>
                           <input {...form.register('priceBreakdownActivities')} type="number" min="0" 
-                            className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" placeholder="10" 
-                            onChange={calculatePricing} />
+                            className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" placeholder="10" />
                         </div>
                       </div>
                       <div>
@@ -1241,8 +1258,7 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
                         <div className="relative">
                           <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-600">{getCurrencySymbol(form.watch('currency') || APP_CONSTANTS.DEFAULT_CURRENCY)}</span>
                           <input {...form.register('priceBreakdownFood')} type="number" min="0" 
-                            className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" placeholder="30" 
-                            onChange={calculatePricing} />
+                            className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" placeholder="30" />
                         </div>
                       </div>
                       <div>
@@ -1250,8 +1266,7 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
                         <div className="relative">
                           <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-600">{getCurrencySymbol(form.watch('currency') || APP_CONSTANTS.DEFAULT_CURRENCY)}</span>
                           <input {...form.register('priceBreakdownTransport')} type="number" min="0" 
-                            className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" placeholder="10" 
-                            onChange={calculatePricing} />
+                            className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" placeholder="10" />
                         </div>
                       </div>
                       <div>
@@ -1259,8 +1274,7 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
                         <div className="relative">
                           <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-600">{getCurrencySymbol(form.watch('currency') || APP_CONSTANTS.DEFAULT_CURRENCY)}</span>
                           <input {...form.register('priceBreakdownOther')} type="number" min="0" 
-                            className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" placeholder="40" 
-                            onChange={calculatePricing} />
+                            className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" placeholder="40" />
                         </div>
                       </div>
                     </div>
@@ -1288,7 +1302,6 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
                               safeParseFloat(form.watch('priceBreakdownTransport')) +
                               safeParseFloat(form.watch('priceBreakdownOther'));
                             
-                            calculatePricing();
                             return `${symbol}${total.toFixed(2)}`;
                           })()}
                         </span>
