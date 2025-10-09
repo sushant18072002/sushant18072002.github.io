@@ -2,8 +2,8 @@
 export const APP_CONSTANTS = {
   APP_NAME: 'TurnTapTravel',
   APP_DESCRIPTION: 'Turn your travel dreams into reality with just a tap',
-  LOGO_PATH: '/asserts/logo.png',
-  LOGO_TEXT_PATH: '/asserts/text.png',
+  LOGO_PATH: '/assets/logo.png',
+  LOGO_TEXT_PATH: '/assets/text.png',
   
   // Default Values
   DEFAULT_CURRENCY: 'USD',
