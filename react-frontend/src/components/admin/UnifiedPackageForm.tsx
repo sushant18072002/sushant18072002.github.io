@@ -144,48 +144,62 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
   });
 
   const calculatePricing = useCallback(() => {
-    // Calculate sellPrice from breakdown components (schema-compliant)
     const safeParseFloat = (value: any) => {
       const parsed = parseFloat(value?.toString() || '0');
       return isNaN(parsed) ? 0 : parsed;
     };
     
+    // Get current form values
+    const formValues = form.getValues();
+    
     const breakdown = {
-      flights: safeParseFloat(form.getValues('priceBreakdownFlights')),
-      accommodation: safeParseFloat(form.getValues('priceBreakdownAccommodation')),
-      activities: safeParseFloat(form.getValues('priceBreakdownActivities')),
-      food: safeParseFloat(form.getValues('priceBreakdownFood')),
-      transport: safeParseFloat(form.getValues('priceBreakdownTransport')),
-      other: safeParseFloat(form.getValues('priceBreakdownOther'))
+      flights: safeParseFloat(formValues.priceBreakdownFlights),
+      accommodation: safeParseFloat(formValues.priceBreakdownAccommodation),
+      activities: safeParseFloat(formValues.priceBreakdownActivities),
+      food: safeParseFloat(formValues.priceBreakdownFood),
+      transport: safeParseFloat(formValues.priceBreakdownTransport),
+      other: safeParseFloat(formValues.priceBreakdownOther)
     };
     const total = Object.values(breakdown).reduce((sum, val) => sum + val, 0);
-    form.setValue('sellPrice', total); // sellPrice = breakdown total
     
-    // Calculate profit margin: (sellPrice - basePrice) / basePrice * 100
-    const basePrice = safeParseFloat(form.getValues('basePrice'));
+    // Calculate profit margin
+    const basePrice = safeParseFloat(formValues.basePrice);
+    let profitMargin = 0;
     if (basePrice > 0 && total > 0) {
-      const profitMargin = ((total - basePrice) / basePrice * 100);
-      form.setValue('profitMargin', isNaN(profitMargin) ? 0 : parseFloat(profitMargin.toFixed(1)));
+      profitMargin = ((total - basePrice) / basePrice * 100);
     }
     
-    // Calculate finalPrice: sellPrice - discount = what customer pays
-    const discountPercent = safeParseFloat(form.getValues('discountPercent'));
-    const discountAmount = safeParseFloat(form.getValues('discountAmount'));
+    // Calculate final price with discount
+    const discountPercent = safeParseFloat(formValues.discountPercent);
+    const discountAmount = safeParseFloat(formValues.discountAmount);
     let finalPrice = total;
+    let actualDiscountAmount = 0;
+    let actualDiscountPercent = 0;
     
     if (discountPercent > 0 && total > 0) {
-      finalPrice = total - (total * discountPercent / 100);
-      const calculatedDiscountAmount = total * discountPercent / 100;
-      form.setValue('discountAmount', isNaN(calculatedDiscountAmount) ? 0 : parseFloat(calculatedDiscountAmount.toFixed(2)));
+      actualDiscountAmount = total * discountPercent / 100;
+      finalPrice = total - actualDiscountAmount;
+      actualDiscountPercent = discountPercent;
     } else if (discountAmount > 0 && total > 0) {
+      actualDiscountAmount = discountAmount;
       finalPrice = total - discountAmount;
-      const calculatedDiscountPercent = (discountAmount / total * 100);
-      form.setValue('discountPercent', isNaN(calculatedDiscountPercent) ? 0 : parseFloat(calculatedDiscountPercent.toFixed(1)));
+      actualDiscountPercent = (discountAmount / total * 100);
     }
     
     // Ensure final price is never negative
     finalPrice = Math.max(0, finalPrice);
-    form.setValue('finalPrice', isNaN(finalPrice) ? 0 : parseFloat(finalPrice.toFixed(2)));
+    
+    // Update form values
+    form.setValue('sellPrice', total);
+    form.setValue('profitMargin', parseFloat(profitMargin.toFixed(1)));
+    form.setValue('finalPrice', parseFloat(finalPrice.toFixed(2)));
+    
+    // Only update discount fields if they changed to avoid loops
+    if (discountPercent > 0) {
+      form.setValue('discountAmount', parseFloat(actualDiscountAmount.toFixed(2)));
+    } else if (discountAmount > 0) {
+      form.setValue('discountPercent', parseFloat(actualDiscountPercent.toFixed(1)));
+    }
   }, [form]);
 
   const steps = [
