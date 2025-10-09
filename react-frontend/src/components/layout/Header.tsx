@@ -177,7 +177,7 @@ const Header: React.FC = () => {
                       >
                         Dashboard
                       </Link>
-                      <Link
+                      {/* <Link
                         to="/profile"
                         className="block px-4 py-2 text-sm text-primary-700 hover:bg-primary-50"
                       >
@@ -188,15 +188,8 @@ const Header: React.FC = () => {
                         className="block px-4 py-2 text-sm text-primary-700 hover:bg-primary-50"
                       >
                         My Bookings
-                      </Link>
-                      {user?.corporate?.company && (
-                        <Link
-                          to="/corporate/dashboard"
-                          className="block px-4 py-2 text-sm text-primary-700 hover:bg-primary-50 font-semibold"
-                        >
-                          Corporate Dashboard
-                        </Link>
-                      )}
+                      </Link> */}
+                      
                       {user?.role === 'admin' && (
                         <Link
                           to="/admin"

@@ -145,38 +145,45 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
 
   const calculatePricing = useCallback(() => {
     // Calculate sellPrice from breakdown components (schema-compliant)
+    const safeParseFloat = (value: any) => {
+      const parsed = parseFloat(value?.toString() || '0');
+      return isNaN(parsed) ? 0 : parsed;
+    };
+    
     const breakdown = {
-      flights: parseFloat(form.getValues('priceBreakdownFlights')) || 0,
-      accommodation: parseFloat(form.getValues('priceBreakdownAccommodation')) || 0,
-      activities: parseFloat(form.getValues('priceBreakdownActivities')) || 0,
-      food: parseFloat(form.getValues('priceBreakdownFood')) || 0,
-      transport: parseFloat(form.getValues('priceBreakdownTransport')) || 0,
-      other: parseFloat(form.getValues('priceBreakdownOther')) || 0
+      flights: safeParseFloat(form.getValues('priceBreakdownFlights')),
+      accommodation: safeParseFloat(form.getValues('priceBreakdownAccommodation')),
+      activities: safeParseFloat(form.getValues('priceBreakdownActivities')),
+      food: safeParseFloat(form.getValues('priceBreakdownFood')),
+      transport: safeParseFloat(form.getValues('priceBreakdownTransport')),
+      other: safeParseFloat(form.getValues('priceBreakdownOther'))
     };
     const total = Object.values(breakdown).reduce((sum, val) => sum + val, 0);
     form.setValue('sellPrice', total); // sellPrice = breakdown total
     
     // Calculate profit margin: (sellPrice - basePrice) / basePrice * 100
-    const basePrice = parseFloat(form.getValues('basePrice')) || 0;
+    const basePrice = safeParseFloat(form.getValues('basePrice'));
     if (basePrice > 0 && total > 0) {
-      const profitMargin = ((total - basePrice) / basePrice * 100).toFixed(1);
-      form.setValue('profitMargin', parseFloat(profitMargin));
+      const profitMargin = ((total - basePrice) / basePrice * 100);
+      form.setValue('profitMargin', isNaN(profitMargin) ? 0 : parseFloat(profitMargin.toFixed(1)));
     }
     
     // Calculate finalPrice: sellPrice - discount = what customer pays
-    const discountPercent = parseFloat(form.getValues('discountPercent')) || 0;
-    const discountAmount = parseFloat(form.getValues('discountAmount')) || 0;
+    const discountPercent = safeParseFloat(form.getValues('discountPercent'));
+    const discountAmount = safeParseFloat(form.getValues('discountAmount'));
     let finalPrice = total;
     
     if (discountPercent > 0) {
       finalPrice = total - (total * discountPercent / 100);
-      form.setValue('discountAmount', parseFloat((total * discountPercent / 100).toFixed(2)));
+      const calculatedDiscountAmount = total * discountPercent / 100;
+      form.setValue('discountAmount', isNaN(calculatedDiscountAmount) ? 0 : parseFloat(calculatedDiscountAmount.toFixed(2)));
     } else if (discountAmount > 0) {
       finalPrice = total - discountAmount;
-      form.setValue('discountPercent', parseFloat((discountAmount / total * 100).toFixed(1)));
+      const calculatedDiscountPercent = (discountAmount / total * 100);
+      form.setValue('discountPercent', isNaN(calculatedDiscountPercent) ? 0 : parseFloat(calculatedDiscountPercent.toFixed(1)));
     }
     
-    form.setValue('finalPrice', parseFloat(finalPrice.toFixed(2)));
+    form.setValue('finalPrice', isNaN(finalPrice) ? 0 : parseFloat(finalPrice.toFixed(2)));
   }, [form]);
 
   const steps = [
@@ -1184,11 +1191,11 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
                             type="number" min="0" step="0.01" className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" 
                             placeholder="800" 
                             onChange={() => {
-                              const basePrice = parseFloat(form.getValues('basePrice')) || 0;
-                              const sellPrice = parseFloat(form.getValues('sellPrice')) || 0;
+                              const basePrice = parseFloat(form.getValues('basePrice')?.toString() || '0') || 0;
+                              const sellPrice = parseFloat(form.getValues('sellPrice')?.toString() || '0') || 0;
                               if (basePrice > 0 && sellPrice > 0) {
-                                const profitMargin = ((sellPrice - basePrice) / basePrice * 100).toFixed(1);
-                                form.setValue('profitMargin', parseFloat(profitMargin));
+                                const profitMargin = ((sellPrice - basePrice) / basePrice * 100);
+                                form.setValue('profitMargin', isNaN(profitMargin) ? 0 : parseFloat(profitMargin.toFixed(1)));
                               }
                             }} />
                         </div>
@@ -1268,12 +1275,18 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
                             const symbol = currency === 'INR' ? '₹' : 
                                          currency === 'EUR' ? '€' : 
                                          currency === 'GBP' ? '£' : '$';
-                            const total = (form.watch('priceBreakdownFlights') || 0) +
-                              (form.watch('priceBreakdownAccommodation') || 0) +
-                              (form.watch('priceBreakdownActivities') || 0) +
-                              (form.watch('priceBreakdownFood') || 0) +
-                              (form.watch('priceBreakdownTransport') || 0) +
-                              (form.watch('priceBreakdownOther') || 0);
+                            
+                            const safeParseFloat = (value: any) => {
+                              const parsed = parseFloat(value?.toString() || '0');
+                              return isNaN(parsed) ? 0 : parsed;
+                            };
+                            
+                            const total = safeParseFloat(form.watch('priceBreakdownFlights')) +
+                              safeParseFloat(form.watch('priceBreakdownAccommodation')) +
+                              safeParseFloat(form.watch('priceBreakdownActivities')) +
+                              safeParseFloat(form.watch('priceBreakdownFood')) +
+                              safeParseFloat(form.watch('priceBreakdownTransport')) +
+                              safeParseFloat(form.watch('priceBreakdownOther'));
                             
                             calculatePricing();
                             return `${symbol}${total.toFixed(2)}`;
@@ -1327,7 +1340,8 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
                             const symbol = currency === 'INR' ? '₹' : 
                                          currency === 'EUR' ? '€' : 
                                          currency === 'GBP' ? '£' : '$';
-                            return `${symbol}${Number(form.watch('basePrice') || 0)}`;
+                            const basePrice = parseFloat(form.watch('basePrice')?.toString() || '0') || 0;
+                            return `${symbol}${basePrice.toFixed(2)}`;
                           })()}
                         </div>
                         <div className="text-xs text-red-600 font-medium mt-1">Your Cost</div>
@@ -1339,7 +1353,8 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
                             const symbol = currency === 'INR' ? '₹' : 
                                          currency === 'EUR' ? '€' : 
                                          currency === 'GBP' ? '£' : '$';
-                            return `${symbol}${Number(form.watch('sellPrice') || 0)}`;
+                            const sellPrice = parseFloat(form.watch('sellPrice')?.toString() || '0') || 0;
+                            return `${symbol}${sellPrice.toFixed(2)}`;
                           })()}
                         </div>
                         <div className="text-xs text-blue-600 font-medium mt-1">Sell Price</div>
@@ -1351,13 +1366,14 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
                             const symbol = currency === 'INR' ? '₹' : 
                                          currency === 'EUR' ? '€' : 
                                          currency === 'GBP' ? '£' : '$';
-                            return `${symbol}${Number(form.watch('finalPrice') || 0)}`;
+                            const finalPrice = parseFloat(form.watch('finalPrice')?.toString() || '0') || 0;
+                            return `${symbol}${finalPrice.toFixed(2)}`;
                           })()}
                         </div>
                         <div className="text-xs text-green-600 font-medium mt-1">Customer Pays</div>
                       </div>
                       <div className="text-center p-4 bg-purple-50 rounded-lg border border-purple-200">
-                        <div className="text-xl font-bold text-purple-600">{Number(form.watch('profitMargin') || 0)}%</div>
+                        <div className="text-xl font-bold text-purple-600">{(parseFloat(form.watch('profitMargin')?.toString() || '0') || 0).toFixed(1)}%</div>
                         <div className="text-xs text-purple-600 font-medium mt-1">Profit Margin</div>
                       </div>
                     </div>
