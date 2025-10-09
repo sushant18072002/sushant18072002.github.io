@@ -173,16 +173,18 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
     const discountAmount = safeParseFloat(form.getValues('discountAmount'));
     let finalPrice = total;
     
-    if (discountPercent > 0) {
+    if (discountPercent > 0 && total > 0) {
       finalPrice = total - (total * discountPercent / 100);
       const calculatedDiscountAmount = total * discountPercent / 100;
       form.setValue('discountAmount', isNaN(calculatedDiscountAmount) ? 0 : parseFloat(calculatedDiscountAmount.toFixed(2)));
-    } else if (discountAmount > 0) {
+    } else if (discountAmount > 0 && total > 0) {
       finalPrice = total - discountAmount;
       const calculatedDiscountPercent = (discountAmount / total * 100);
       form.setValue('discountPercent', isNaN(calculatedDiscountPercent) ? 0 : parseFloat(calculatedDiscountPercent.toFixed(1)));
     }
     
+    // Ensure final price is never negative
+    finalPrice = Math.max(0, finalPrice);
     form.setValue('finalPrice', isNaN(finalPrice) ? 0 : parseFloat(finalPrice.toFixed(2)));
   }, [form]);
 
@@ -1318,7 +1320,13 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
                         <label className="block text-sm font-semibold text-primary-900 mb-2">Discount %</label>
                         <input {...form.register('discountPercent')} 
                           type="number" min="0" max="100" step="0.1" className="w-full px-4 py-3 border border-primary-200 rounded-lg" 
-                          placeholder="10" />
+                          placeholder="10" 
+                          onChange={(e) => {
+                            const percent = parseFloat(e.target.value) || 0;
+                            if (percent > 0) {
+                              form.setValue('discountAmount', 0); // Clear amount when using percent
+                            }
+                          }} />
                       </div>
                       <div>
                         <label className="block text-sm font-semibold text-primary-900 mb-2">OR Discount Amount</label>
@@ -1326,7 +1334,13 @@ const UnifiedPackageForm: React.FC<UnifiedPackageFormProps> = ({ packageId, onCl
                           <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-600">{getCurrencySymbol(form.watch('currency') || APP_CONSTANTS.DEFAULT_CURRENCY)}</span>
                           <input {...form.register('discountAmount')} 
                             type="number" min="0" step="0.01" className="w-full pl-8 pr-4 py-3 border border-primary-200 rounded-lg" 
-                            placeholder="100" />
+                            placeholder="100" 
+                            onChange={(e) => {
+                              const amount = parseFloat(e.target.value) || 0;
+                              if (amount > 0) {
+                                form.setValue('discountPercent', 0); // Clear percent when using amount
+                              }
+                            }} />
                         </div>
                       </div>
                       <div>
