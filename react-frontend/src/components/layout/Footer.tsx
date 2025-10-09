@@ -143,7 +143,7 @@ const Footer: React.FC = () => {
         {/* Bottom Bar */}
         <div className="border-t border-primary-800 mt-8 pt-8 flex flex-col lg:flex-row items-center justify-between">
           <p className="text-primary-400 text-sm mb-4 lg:mb-0">
-            © 2024 {APP_CONSTANTS.APP_NAME}. All rights reserved.
+            © 2025 {APP_CONSTANTS.APP_NAME}. All rights reserved.
           </p>
           
           <div className="flex items-center space-x-6 text-sm text-primary-400">

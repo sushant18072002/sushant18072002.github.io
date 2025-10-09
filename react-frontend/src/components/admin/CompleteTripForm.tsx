@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
 import ImageUpload from './ImageUpload';
+import API_CONFIG from '@/config/api.config';
 
 interface CompleteFlightFormProps {
   editingFlight?: any;
@@ -23,9 +24,9 @@ const CompleteFlightForm: React.FC<CompleteFlightFormProps> = ({ editingFlight, 
   const loadFormData = async () => {
     try {
       const [airlinesRes, airportsRes, categoriesRes] = await Promise.all([
-        fetch('http://localhost:3000/api/master/airlines').then(r => r.json()),
-        fetch('http://localhost:3000/api/master/airports').then(r => r.json()),
-        fetch('http://localhost:3000/api/master/categories?type=flight').then(r => r.json())
+        fetch(`${API_CONFIG.BASE_URL}/master/airlines`).then(r => r.json()),
+        fetch(`${API_CONFIG.BASE_URL}/master/airports`).then(r => r.json()),
+        fetch(`${API_CONFIG.BASE_URL}/master/categories?type=flight`).then(r => r.json())
       ]);
       
       setAirlines(airlinesRes.data?.airlines || []);

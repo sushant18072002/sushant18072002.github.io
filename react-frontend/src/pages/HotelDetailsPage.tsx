@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Button from '@/components/common/Button';
 import Card from '@/components/common/Card';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
+import API_CONFIG from '@/config/api.config';
 
 interface Hotel {
   _id: string;
@@ -92,7 +93,7 @@ const HotelDetailsPage: React.FC = () => {
 
   const loadHotel = async (hotelId: string) => {
     try {
-      const response = await fetch(`${(import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:3000/api'}/hotels/${hotelId}`);
+      const response = await fetch(`${API_CONFIG.BASE_URL}/hotels/${hotelId}`);
       
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -236,7 +237,7 @@ const HotelDetailsPage: React.FC = () => {
                       src={allImages[0]?.url 
                         ? (allImages[0].url.startsWith('http') 
                             ? allImages[0].url 
-                            : `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api'}${allImages[0].url}`)
+                            : `${API_CONFIG.BASE_URL.replace('/api', '')}${allImages[0].url}`)
                         : 'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=832&h=832&fit=crop'}
                       alt={hotel.name}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
@@ -511,7 +512,7 @@ const HotelDetailsPage: React.FC = () => {
                             <img
                               src={room.images[0].url?.startsWith('http') || room.images[0].url?.startsWith('blob:') 
                                 ? room.images[0].url 
-                                : `http://localhost:3000${room.images[0].url}`}
+                                : `${API_CONFIG.BASE_URL.replace('/api', '')}${room.images[0].url}`}
                               alt={room.images[0].alt}
                               className="w-32 h-24 object-cover rounded-lg"
                               onError={(e) => {
@@ -736,7 +737,7 @@ const HotelDetailsPage: React.FC = () => {
                   {allImages.map((image, index) => (
                     <div key={index} className="relative group cursor-pointer" onClick={() => setSelectedImageIndex(index)}>
                       <img
-                        src={image.url?.startsWith('http') ? image.url : `${(import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:3000/api'}${image.url}`}
+                        src={image.url?.startsWith('http') ? image.url : `${API_CONFIG.BASE_URL.replace('/api', '')}${image.url}`}
                         alt={image.alt || `${hotel.name} - Image ${index + 1}`}
                         className="w-full h-48 object-cover rounded-xl transition-transform duration-300 group-hover:scale-105"
                         onError={(e) => {

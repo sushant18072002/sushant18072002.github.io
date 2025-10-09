@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import Button from '@/components/common/Button';
 import ItineraryBuilder from './ItineraryBuilder';
 import ImageUpload from './ImageUpload';
+import API_CONFIG from '@/config/api.config';
 
 interface PackageFormData {
   title: string;
@@ -260,7 +261,7 @@ const EnhancedPackageForm: React.FC<EnhancedPackageFormProps> = ({ packageId, on
                     {uploadedImages.map((image, index) => (
                       <div key={index} className="relative">
                         <img 
-                          src={`http://localhost:3000${image.url}`} 
+                          src={`${API_CONFIG.BASE_URL.replace('/api', '')}${image.url}`} 
                           alt={image.alt} 
                           className="w-full h-24 object-cover rounded-lg"
                         />

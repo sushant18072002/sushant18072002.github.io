@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
 import EnhancedHotelForm from './EnhancedHotelForm';
+import API_CONFIG from '@/config/api.config';
 
 const HotelManagement: React.FC = () => {
   const [hotels, setHotels] = useState<any[]>([]);
@@ -15,7 +16,7 @@ const HotelManagement: React.FC = () => {
 
   const loadHotels = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/hotels');
+      const response = await fetch(`${API_CONFIG.BASE_URL}/hotels`);
       const data = await response.json();
       if (data.success) {
         setHotels(data.data.hotels || []);
@@ -106,7 +107,7 @@ const HotelManagement: React.FC = () => {
           editingHotel={editingHotel}
           onSave={async (hotelData) => {
             try {
-              const response = await fetch(`http://localhost:3000/api/hotels${editingHotel ? `/${editingHotel._id}` : ''}`, {
+              const response = await fetch(`${API_CONFIG.BASE_URL}/hotels${editingHotel ? `/${editingHotel._id}` : ''}`, {
                 method: editingHotel ? 'PUT' : 'POST',
                 headers: {
                   'Content-Type': 'application/json'

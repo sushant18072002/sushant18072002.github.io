@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
+import API_CONFIG from '@/config/api.config';
+
 
 interface Airport {
   _id: string;
@@ -29,6 +31,7 @@ interface Flight {
   images?: Array<{ url: string; alt: string }>;
 }
 
+
 const PopularRoutesCards: React.FC = () => {
   const navigate = useNavigate();
   const [routes, setRoutes] = useState<Route[]>([]);
@@ -39,7 +42,7 @@ const PopularRoutesCards: React.FC = () => {
 
   const loadPopularRoutes = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/flights/popular-routes');
+      const response = await fetch(`${API_CONFIG.BASE_URL}/flights/popular-routes`);
       const data = await response.json();
       if (data.success) {
         setRoutes(data.data.routes || []);
@@ -99,7 +102,7 @@ const FlightDealsCards: React.FC = () => {
 
   const loadFlightDeals = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/flights/deals');
+      const response = await fetch(`${API_CONFIG.BASE_URL}/flights/deals`);
       const data = await response.json();
       if (data.success) {
         setDeals(data.data.deals || []);

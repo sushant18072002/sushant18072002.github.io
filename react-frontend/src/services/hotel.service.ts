@@ -1,4 +1,5 @@
 import { apiService } from './api';
+import { API_CONFIG } from '@/config/api.config';
 import { Hotel, HotelSearchParams, Review } from '@/types/api.types';
 
 class HotelService {
@@ -64,7 +65,7 @@ class HotelService {
   }
 
   async getHotelDeals() {
-    const response = await fetch('https://localhost:3000/api/hotels/deals');
+    const response = await fetch(`${API_CONFIG.BASE_URL}/hotels/deals`);
     return response.json();
   }
 
@@ -88,7 +89,7 @@ class HotelService {
   }
 
   async getPopularDestinations() {
-    const response = await fetch('https://localhost:3000/api/hotels/popular-destinations');
+    const response = await fetch(`${API_CONFIG.BASE_URL}/hotels/popular-destinations`);
     return response.json();
   }
 

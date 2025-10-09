@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
+import API_CONFIG from '@/config/api.config';
 
 interface EnhancedFlightFormProps {
   editingFlight?: any;
@@ -130,7 +131,7 @@ const EnhancedFlightForm: React.FC<EnhancedFlightFormProps> = ({ editingFlight, 
     });
     
     try {
-      const response = await fetch('http://localhost:3000/api/upload/multiple', {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/upload/multiple`, {
         method: 'POST',
         body: formData
       });
@@ -504,7 +505,7 @@ const EnhancedFlightForm: React.FC<EnhancedFlightFormProps> = ({ editingFlight, 
                   {uploadedImages.map((image, index) => (
                     <div key={index} className="relative">
                       <img 
-                        src={`http://localhost:3000${image.url}`} 
+                        src={`${API_CONFIG.BASE_URL.replace('/api', '')}${image.url}`} 
                         alt={image.alt} 
                         className="w-full h-24 object-cover rounded-lg"
                       />

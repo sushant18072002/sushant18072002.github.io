@@ -5,6 +5,7 @@ import { masterDataService, Category } from '@/services/masterData.service';
 import Button from '@/components/common/Button';
 import Card from '@/components/common/Card';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
+import API_CONFIG from '@/config/api.config';
 
 const QuickTripAccess: React.FC = () => {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ const QuickTripAccess: React.FC = () => {
 
   const loadSlugs = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/trips/slugs');
+      const response = await fetch(`${API_CONFIG.BASE_URL}/trips/slugs`);
       const data = await response.json();
       if (data.success) {
         setSlugs(data.data.slugs || []);
@@ -48,7 +49,7 @@ const QuickTripAccess: React.FC = () => {
           onClick={() => setShowAll(!showAll)}
           className="text-xs text-blue-600 hover:text-blue-800 font-medium"
         >
-          {showAll ? 'Show Less' : `Show All ${slugs.length} Trips`}
+          {showAll ? 'Show Less' : `Show All ₹{slugs.length} Trips`}
         </button>
       )}
     </div>
@@ -207,7 +208,7 @@ const TripsHubPage: React.FC = () => {
     setLoading(true);
     try {
       // Get destination info first
-      const destResponse = await fetch(`http://localhost:3000/api/destinations/${destinationId}`);
+      const destResponse = await fetch(`${API_CONFIG.BASE_URL}/destinations/${destinationId}`);
       const destData = await destResponse.json();
       
       if (destData.success && destData.data.destination) {
@@ -253,17 +254,17 @@ const TripsHubPage: React.FC = () => {
     // Add destination suggestions from featured trips
     featuredTrips.forEach(trip => {
       if (trip.primaryDestination?.name?.toLowerCase().includes(lowerQuery)) {
-        suggestions.push(`📍 ${trip.primaryDestination.name}`);
+        suggestions.push(`📍 ₹{trip.primaryDestination.name}`);
       }
       if (trip.title?.toLowerCase().includes(lowerQuery)) {
-        suggestions.push(`🎯 ${trip.title.replace(/<[^>]*>/g, '')}`);
+        suggestions.push(`🎯 ₹{trip.title.replace(/<[^>]*>/g, '')}`);
       }
     });
     
     // Add category suggestions
     categories.forEach(cat => {
       if (cat.name?.toLowerCase().includes(lowerQuery)) {
-        suggestions.push(`${cat.icon} ${cat.name}`);
+        suggestions.push(`${cat.icon} ₹{cat.name}`);
       }
     });
     
@@ -271,7 +272,7 @@ const TripsHubPage: React.FC = () => {
     const popularTerms = ['Adventure', 'Beach', 'Mountain', 'City', 'Culture', 'Luxury', 'Budget', 'Family'];
     popularTerms.forEach(term => {
       if (term.toLowerCase().includes(lowerQuery)) {
-        suggestions.push(`🔍 ${term} trips`);
+        suggestions.push(`🔍 ₹{term} trips`);
       }
     });
     
@@ -301,11 +302,11 @@ const TripsHubPage: React.FC = () => {
       <section className="bg-white py-8 sm:py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-primary-900 mb-4 font-['DM_Sans'] leading-[0.85] tracking-tight">
-            {destinationName ? `Trips to ${destinationName}` : 'Your next amazing trip starts here'}
+            {destinationName ? `Trips to ₹{destinationName}` : 'Your next amazing trip starts here'}
           </h1>
           <p className="text-base sm:text-lg text-primary-600 mb-8 font-['Poppins'] font-medium leading-relaxed max-w-2xl mx-auto">
             {destinationName 
-              ? `Explore amazing experiences and adventures in ${destinationName}`
+              ? `Explore amazing experiences and adventures in ₹{destinationName}`
               : 'See beautiful itineraries, pick what you love, customize to make it yours'
             }
           </p>
@@ -448,7 +449,7 @@ const TripsHubPage: React.FC = () => {
                         <button
                           key={cat.key}
                           onClick={() => setFilters(prev => ({ ...prev, category: cat.key }))}
-                          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ₹{
                             filters.category === cat.key
                               ? 'bg-blue-ocean text-white'
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -465,14 +466,14 @@ const TripsHubPage: React.FC = () => {
                     <div className="flex flex-wrap gap-2">
                       {[
                         { key: '', label: 'Any Budget' },
-                        { key: 'budget', label: '💰 Under $1,500' },
-                        { key: 'mid-range', label: '💵 $1,500 - $3,500' },
-                        { key: 'luxury', label: '💎 Above $3,500' }
+                        { key: 'budget', label: '💰 Under ₹1,500' },
+                        { key: 'mid-range', label: '💵 ₹1,500 - ₹3,500' },
+                        { key: 'luxury', label: '💎 Above ₹3,500' }
                       ].map(price => (
                         <button
                           key={price.key}
                           onClick={() => setFilters(prev => ({ ...prev, priceRange: price.key }))}
-                          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ₹{
                             filters.priceRange === price.key
                               ? 'bg-emerald text-white'
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -497,7 +498,7 @@ const TripsHubPage: React.FC = () => {
                         <button
                           key={duration.key}
                           onClick={() => setFilters(prev => ({ ...prev, duration: duration.key }))}
-                          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ₹{
                             filters.duration === duration.key
                               ? 'bg-purple-600 text-white'
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -521,7 +522,7 @@ const TripsHubPage: React.FC = () => {
                         <button
                           key={diff.key}
                           onClick={() => setFilters(prev => ({ ...prev, difficulty: diff.key }))}
-                          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ₹{
                             (filters as any).difficulty === diff.key
                               ? 'bg-orange-600 text-white'
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -550,7 +551,7 @@ const TripsHubPage: React.FC = () => {
               <div className="mb-6">
                 <h2 className="text-2xl font-black text-primary-900 font-['DM_Sans'] leading-[0.9] tracking-tight mb-2">
                   {destinationName
-                    ? `${displayTrips.length} trips to ${destinationName}`
+                    ? `${displayTrips.length} trips to ₹{destinationName}`
                     : hasActiveFilters
                     ? `${displayTrips.length} trips found`
                     : '✨ Amazing Trips People Love'
@@ -605,7 +606,7 @@ const TripsHubPage: React.FC = () => {
                       src={trip.images?.[0]?.url?.startsWith('http') 
         ? trip.images[0].url 
         : trip.images?.[0]?.url 
-          ? `http://localhost:3000${trip.images[0].url}` 
+          ? `${API_CONFIG.BASE_URL.replace('/api', '')}${trip.images[0].url}` 
           : 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=500&h=300&fit=crop&auto=format'}
                       alt={trip.title}
                       className="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-500"

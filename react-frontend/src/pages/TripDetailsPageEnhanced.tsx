@@ -6,8 +6,9 @@ import { sanitizeHtml, sanitizeUrl } from '@/utils/sanitize';
 import { APP_CONSTANTS } from '@/constants/app.constants';
 import { useAuthStore } from '@/store/authStore';
 import AuthModal from '@/components/auth/AuthModal';
+import API_CONFIG from '@/config/api.config';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:3000';
+const API_BASE_URL = API_CONFIG.BASE_URL.replace('/api', '');
 
 
 
@@ -386,7 +387,7 @@ const TripDetailsPageEnhanced: React.FC = () => {
           <p className="text-[#777E90] mb-4 font-['Poppins']">Unable to connect to the server. Please check if the backend is running.</p>
           <div className="bg-[#F4F5F6] rounded-lg p-4 mb-6 text-left">
             <p className="text-sm text-[#777E90] font-['Poppins'] mb-2">Development Info:</p>
-            <p className="text-xs text-[#777E90] font-mono">Backend: http://localhost:3000</p>
+            <p className="text-xs text-[#777E90] font-mono">Backend: {API_CONFIG.BASE_URL}</p>
             <p className="text-xs text-[#777E90] font-mono">Frontend: http://localhost:3001</p>
             <p className="text-xs text-[#777E90] font-mono">Trip ID: {id}</p>
           </div>
@@ -1219,11 +1220,8 @@ const TripDetailsPageEnhanced: React.FC = () => {
                 </div>
 
                 {/* Booking Actions */}
-                <div className="flex flex-col sm:flex-row gap-2 lg:gap-2 mb-6 lg:mb-8">
-                  <button className="sm:w-auto bg-white border border-[#E6E8EC] text-[#23262F] py-2.5 lg:py-3 px-4 lg:px-6 rounded-2xl lg:rounded-3xl font-bold font-['DM_Sans'] hover:border-[#3B71FE] hover:bg-[#3B71FE]/5 transition-all duration-200 flex items-center justify-center gap-2 text-sm lg:text-base">
-                    <span>❤️</span>
-                    <span>Save</span>
-                  </button>
+                <div className="space-y-3 mb-6 lg:mb-8">
+                  {/* Individual Booking */}
                   <button 
                     onClick={(e) => {
                       e.preventDefault();
@@ -1235,7 +1233,7 @@ const TripDetailsPageEnhanced: React.FC = () => {
                       }
                       
                       const tripId = trip?._id || trip?.id;
-                      console.log('Main button clicked, tripId:', tripId);
+                      console.log('Individual booking clicked, tripId:', tripId);
                       if (tripId) {
                         navigate(`/trip-booking/${tripId}`);
                       } else {
@@ -1243,12 +1241,46 @@ const TripDetailsPageEnhanced: React.FC = () => {
                         alert('Trip information not available. Please try again.');
                       }
                     }}
-                    className="flex-1 bg-gradient-to-r from-[#3B71FE] to-[#58C27D] text-white py-3 lg:py-3 px-6 rounded-2xl lg:rounded-3xl font-bold font-['DM_Sans'] hover:shadow-lg hover:scale-[1.02] transition-all duration-200 text-sm lg:text-base flex items-center justify-center gap-2"
-                    aria-label="Book consultation for this trip"
+                    className="w-full bg-gradient-to-r from-[#3B71FE] to-[#58C27D] text-white py-3 lg:py-3 px-6 rounded-2xl lg:rounded-3xl font-bold font-['DM_Sans'] hover:shadow-lg hover:scale-[1.02] transition-all duration-200 text-sm lg:text-base flex items-center justify-center gap-2"
+                    aria-label="Book individual consultation for this trip"
                     disabled={!trip?._id && !trip?.id}
                   >
                     <span>📞</span>
-                    <span>Free Consultation</span>
+                    <span>Individual Booking</span>
+                  </button>
+                  
+                  {/* Corporate Booking */}
+                  <button 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      
+                      if (!isAuthenticated) {
+                        setShowAuthModal(true);
+                        return;
+                      }
+                      
+                      const tripId = trip?._id || trip?.id;
+                      console.log('Corporate booking clicked, tripId:', tripId);
+                      if (tripId) {
+                        navigate(`/corporate-booking/trip/${tripId}`);
+                      } else {
+                        console.error('Trip ID not available for corporate booking');
+                        alert('Trip information not available. Please try again.');
+                      }
+                    }}
+                    className="w-full bg-white border-2 border-[#3B71FE] text-[#3B71FE] py-3 lg:py-3 px-6 rounded-2xl lg:rounded-3xl font-bold font-['DM_Sans'] hover:bg-[#3B71FE] hover:text-white transition-all duration-200 text-sm lg:text-base flex items-center justify-center gap-2"
+                    aria-label="Book corporate trip for your team"
+                    disabled={!trip?._id && !trip?.id}
+                  >
+                    <span>🏢</span>
+                    <span>Group Booking (2+ People)</span>
+                  </button>
+                  
+                  {/* Save Button */}
+                  <button className="w-full bg-white border border-[#E6E8EC] text-[#23262F] py-2.5 lg:py-3 px-4 lg:px-6 rounded-2xl lg:rounded-3xl font-bold font-['DM_Sans'] hover:border-[#3B71FE] hover:bg-[#3B71FE]/5 transition-all duration-200 flex items-center justify-center gap-2 text-sm lg:text-base">
+                    <span>❤️</span>
+                    <span>Save Trip</span>
                   </button>
                 </div>
 
@@ -1584,7 +1616,7 @@ const TripDetailsPageEnhanced: React.FC = () => {
                   }
                   
                   const tripId = trip?._id || trip?.id;
-                  console.log('Bottom button clicked, tripId:', tripId);
+                  console.log('Bottom individual button clicked, tripId:', tripId);
                   if (tripId) {
                     navigate(`/trip-booking/${tripId}`);
                   } else {
@@ -1592,12 +1624,37 @@ const TripDetailsPageEnhanced: React.FC = () => {
                     alert('Trip information not available. Please try again.');
                   }
                 }}
-                className="bg-gradient-to-r from-[#3B71FE] to-[#58C27D] text-white py-4 px-8 sm:px-10 rounded-2xl font-bold font-['DM_Sans'] hover:shadow-xl hover:scale-[1.02] transition-all duration-300 text-base sm:text-lg flex items-center justify-center gap-2"
+                className="bg-gradient-to-r from-[#3B71FE] to-[#58C27D] text-white py-4 px-6 sm:px-8 rounded-2xl font-bold font-['DM_Sans'] hover:shadow-xl hover:scale-[1.02] transition-all duration-300 text-base sm:text-lg flex items-center justify-center gap-2"
               >
                 <span>📞</span>
-                <span>Book Free Call</span>
-                <span>→</span>
+                <span>Individual Booking</span>
               </button>
+              
+              <button 
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  
+                  if (!isAuthenticated) {
+                    setShowAuthModal(true);
+                    return;
+                  }
+                  
+                  const tripId = trip?._id || trip?.id;
+                  console.log('Bottom corporate button clicked, tripId:', tripId);
+                  if (tripId) {
+                    navigate(`/corporate-booking/trip/${tripId}`);
+                  } else {
+                    console.error('Trip ID not available for corporate booking');
+                    alert('Trip information not available. Please try again.');
+                  }
+                }}
+                className="bg-white border-2 border-[#3B71FE] text-[#3B71FE] py-4 px-6 sm:px-8 rounded-2xl font-bold font-['DM_Sans'] hover:bg-[#3B71FE] hover:text-white transition-all duration-300 text-base sm:text-lg flex items-center justify-center gap-2"
+              >
+                <span>🏢</span>
+                <span>Group Booking</span>
+              </button>
+              
               {trip.sharing?.allowCopy && (
                 <button className="bg-white border-2 border-[#E6E8EC] text-[#23262F] py-4 px-6 rounded-2xl font-bold font-['DM_Sans'] hover:border-[#3B71FE] hover:bg-[#3B71FE]/5 transition-all duration-200 text-sm sm:text-base flex items-center gap-2">
                   <span>📎</span>

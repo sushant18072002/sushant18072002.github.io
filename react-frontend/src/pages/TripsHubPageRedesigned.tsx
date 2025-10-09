@@ -4,8 +4,9 @@ import { tripService, Trip, TripFilters } from '@/services/trip.service';
 import { masterDataService, Category } from '@/services/masterData.service';
 import { apiService } from '@/services/api.service';
 import { sanitizeHtml } from '@/utils/sanitize';
+import API_CONFIG from '@/config/api.config';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:3000';
+const API_BASE_URL = API_CONFIG.BASE_URL.replace('/api', '');
 
 // Emoji pattern for cleaning suggestions
 const EMOJI_PATTERN = /^[📍🔍🎯🏷️✨🎨⚡📂🏖️🌊☀️🏔️⛰️🥾🏛️🎭💎🥂🛎️💰🎒💵👨👩👧👦🎠👶💕🌹💑🎢🧗🚁]\s/;
@@ -412,9 +413,9 @@ const TripsHubPageRedesigned: React.FC = () => {
           <div className="flex flex-wrap gap-3 justify-center mt-4">
             {[
               { key: '', label: 'Any Budget' },
-              { key: 'budget', label: '💰 Under $1,500' },
-              { key: 'mid-range', label: '💵 $1,500 - $3,500' },
-              { key: 'luxury', label: '💎 Above $3,500' }
+              { key: 'budget', label: '💰 Under ₹1,500' },
+              { key: 'mid-range', label: '💵 ₹1,500 - ₹3,500' },
+              { key: 'luxury', label: '💎 Above ₹3,500' }
             ].map(filter => (
               <button
                 key={filter.key}

@@ -48,6 +48,7 @@ app.use('/api/users', require('./src/routes/users.routes'));
 // app.use('/api/flights', require('./src/routes/flights.routes')); // Will be replaced with new implementation
 app.use('/api/hotels', require('./src/routes/hotels.routes'));
 app.use('/api/bookings', require('./src/routes/bookings.routes'));
+app.use('/api/appointments', require('./src/routes/corporateGroup.routes'));
 app.use('/api/reviews', require('./src/routes/reviews.routes'));
 app.use('/api/search', require('./src/routes/search.routes'));
 app.use('/api/notifications', require('./src/routes/notifications.routes'));
@@ -71,16 +72,24 @@ app.use('/api/upload', require('./src/routes/upload.routes'));
 
 // Appointment routes
 app.use('/api/appointments', require('./src/routes/appointments'));
+// Corporate group bookings (using appointments structure)
+app.use('/api/appointments', require('./src/routes/corporateGroup.routes'));
 
 // User trips (unified appointments + bookings)
 app.use('/api/user/trips', require('./src/routes/userTrips'));
+
+// Corporate routes
+app.use('/api/corporate', require('./src/routes/corporate.routes'));
+console.log('✅ Corporate group booking routes loaded');
 
 // Admin routes
 console.log('Loading admin routes...');
 app.use('/api/admin', require('./src/routes/admin.routes'));
 app.use('/api/admin/appointments', require('./src/routes/admin/appointments'));
 app.use('/api/admin/bookings', require('./src/routes/admin/bookings'));
+app.use('/api/admin/corporate', require('./src/routes/admin/corporate.routes'));
 console.log('✅ Admin routes loaded successfully');
+console.log('✅ Admin corporate routes loaded successfully');
 console.log('✅ Trip routes loaded successfully');
 console.log('✅ Master data routes loaded successfully');
 

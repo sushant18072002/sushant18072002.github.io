@@ -243,6 +243,21 @@ router.get('/debug/categories', async (req, res) => {
   }
 });
 
+// Trip customization endpoints
+const tripCustomizationController = require('../controllers/tripCustomizationController');
+
+// Get flight options for trip
+router.get('/:tripId/flights', tripCustomizationController.getTripFlights);
+
+// Get hotel options for trip
+router.get('/:tripId/hotels', tripCustomizationController.getTripHotels);
+
+// Customize trip
+router.post('/:tripId/customize', tripCustomizationController.customizeTrip);
+
+// Get trip quote
+router.post('/quote', tripCustomizationController.getTripQuote);
+
 // Create sample trips
 router.post('/create-samples', async (req, res) => {
   try {

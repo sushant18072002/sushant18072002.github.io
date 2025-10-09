@@ -3,8 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { apiService } from '@/services/api.service';
 import { TripData } from '@/types/trip.types';
 import { sanitizeHtml, sanitizeUrl } from '@/utils/sanitize';
+import API_CONFIG from '@/config/api.config';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:3000';
+const API_BASE_URL = API_CONFIG.BASE_URL.replace('/api', '');
 
 const TripDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();

@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   password: { type: String, required: true, minlength: 6 },
-  role: { type: String, enum: ['customer', 'admin'], default: 'customer', index: true },
+  role: { type: String, enum: ['customer', 'admin', 'corporate-user', 'corporate-admin'], default: 'customer', index: true },
   active: { type: Boolean, default: true, index: true },
   profile: {
     firstName: String,
@@ -49,7 +49,24 @@ const userSchema = new mongoose.Schema({
   },
   loyaltyPoints: { type: Number, default: 0 },
   totalBookings: { type: Number, default: 0 },
-  totalSpent: { type: Number, default: 0 }
+  totalSpent: { type: Number, default: 0 },
+  
+  // Corporate user fields
+  corporate: {
+    company: { type: mongoose.Schema.Types.ObjectId, ref: 'Company' },
+    employeeId: String,
+    department: String,
+    designation: String,
+    manager: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    approvalLimit: { type: Number, default: 0 },
+    canApprove: { type: Boolean, default: false },
+    permissions: [{
+      type: String,
+      enum: ['book-travel', 'approve-bookings', 'manage-team', 'view-reports', 'manage-budget']
+    }],
+    joinedAt: Date,
+    isActive: { type: Boolean, default: true }
+  }
 }, { 
   timestamps: true,
   toJSON: { virtuals: true, transform: (doc, ret) => { delete ret.password; return ret; } },

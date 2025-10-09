@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import Button from '@/components/common/Button';
 import Card from '@/components/common/Card';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
+import API_CONFIG from '@/config/api.config';
 
 interface Flight {
   _id: string;
@@ -48,7 +49,7 @@ const FlightSearchResultsPage: React.FC = () => {
       if (to) params.append('arrival', to);
       if (date) params.append('date', date);
 
-      const response = await fetch(`http://localhost:3000/api/flights?${params}`);
+      const response = await fetch(`${API_CONFIG.BASE_URL}/flights?${params}`);
       const data = await response.json();
       
       if (data.success) {

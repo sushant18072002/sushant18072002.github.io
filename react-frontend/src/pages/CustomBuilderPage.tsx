@@ -204,9 +204,9 @@ const CustomBuilderPage: React.FC = () => {
                 <label className="block text-lg font-semibold text-primary-900 mb-4">Budget per person</label>
                 <div className="space-y-3">
                   {[
-                    { id: 'budget', label: 'Budget', range: '$500 - $1,500' },
-                    { id: 'mid', label: 'Mid-range', range: '$1,500 - $3,000' },
-                    { id: 'luxury', label: 'Luxury', range: '$3,000 - $6,000' },
+                    { id: 'budget', label: 'Budget', range: '$500 - ₹1,500' },
+                    { id: 'mid', label: 'Mid-range', range: '$1,500 - ₹3,000' },
+                    { id: 'luxury', label: 'Luxury', range: '$3,000 - ₹6,000' },
                     { id: 'ultra', label: 'Ultra Luxury', range: '$6,000+' }
                   ].map(budget => (
                     <button

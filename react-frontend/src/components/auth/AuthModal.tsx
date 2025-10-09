@@ -106,7 +106,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'l
       setErrorMessage('');
       
       // Call register API directly with proper URL
-      const response = await fetch('http://localhost:3000/api/auth/register', {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

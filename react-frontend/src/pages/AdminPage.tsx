@@ -23,6 +23,7 @@ import FlightManagement from '@/components/admin/FlightManagement';
 import UserManagement from '@/components/admin/UserManagement';
 import HotelManagement from '@/components/admin/HotelManagement';
 import HeroManagement from '@/components/admin/HeroManagement';
+import CorporateManagement from '@/components/admin/CorporateManagement';
 
 const AdminPage: React.FC = () => {
   const navigate = useNavigate();
@@ -395,6 +396,7 @@ const AdminPage: React.FC = () => {
                   { id: 'bookings', label: 'Bookings', icon: '📋' },
                   { id: 'blog', label: 'Blog', icon: '📝' },
                   { id: 'analytics', label: 'Analytics', icon: '📈' },
+                  { id: 'corporate', label: 'Corporate', icon: '🏢' },
                   { id: 'hero', label: 'Hero Content', icon: '🎬' }
                 ].map(item => (
                   <button
@@ -809,6 +811,8 @@ const AdminPage: React.FC = () => {
             )}
 
             {activeTab === 'analytics' && <AnalyticsDashboard />}
+
+            {activeTab === 'corporate' && <CorporateManagement />}
 
             {activeTab === 'hero' && <HeroManagement />}
           </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
+import API_CONFIG from '@/config/api.config';
 
 interface EnhancedHotelFormProps {
   editingHotel?: any;
@@ -208,7 +209,7 @@ const EnhancedHotelForm: React.FC<EnhancedHotelFormProps> = ({ editingHotel, onS
     });
     
     try {
-      const response = await fetch('http://localhost:3000/api/upload/multiple', {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/upload/multiple`, {
         method: 'POST',
         body: formData
       });
@@ -682,7 +683,7 @@ const EnhancedHotelForm: React.FC<EnhancedHotelFormProps> = ({ editingHotel, onS
                   {uploadedImages.map((image, index) => (
                     <div key={index} className="relative">
                       <img 
-                        src={image.url.startsWith('http') ? image.url : `http://localhost:3000${image.url}`} 
+                        src={image.url.startsWith('http') ? image.url : `${API_CONFIG.BASE_URL.replace('/api', '')}${image.url}`} 
                         alt={image.alt} 
                         className="w-full h-24 object-cover rounded-lg"
                         onError={(e) => {

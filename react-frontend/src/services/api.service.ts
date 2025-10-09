@@ -1,5 +1,4 @@
 import { API_CONFIG, API_ENDPOINTS } from '@/config/api.config';
-import { APP_CONSTANTS } from '@/constants/app.constants';
 
 interface ApiResponse<T = any> {
   success: boolean;

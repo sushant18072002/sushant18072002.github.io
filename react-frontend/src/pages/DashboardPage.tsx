@@ -578,7 +578,7 @@ const DashboardPage: React.FC = () => {
               </div>
             )}
 
-            {false && activeTab === 'favorites' && (
+            {activeTab === 'favorites' && (
               <div>
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-bold text-primary-900">Saved Favorites</h2>
@@ -615,7 +615,7 @@ const DashboardPage: React.FC = () => {
               </div>
             )}
 
-            {false && activeTab === 'profile' && (
+            {activeTab === 'profile' && (
               <Card className="p-6">
                 <h2 className="text-2xl font-bold text-primary-900 mb-6">Profile Information</h2>
                 <div className="space-y-6">
@@ -658,7 +658,7 @@ const DashboardPage: React.FC = () => {
               </Card>
             )}
 
-            {false && activeTab === 'settings' && (
+            {activeTab === 'settings' && (
               <Card className="p-6">
                 <h2 className="text-2xl font-bold text-primary-900 mb-6">Settings</h2>
                 <div className="space-y-6">

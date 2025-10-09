@@ -1,3 +1,5 @@
+import Card from '@/components/common/Card';
+import API_CONFIG from '@/config/api.config';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -70,10 +72,6 @@ interface HotelData {
     checkOut?: string;
   };
 }
-import Button from '@/components/common/Button';
-import Card from '@/components/common/Card';
-import { debounce } from '@/utils/performance';
-
 interface HotelSearchForm {
   location: string;
   checkIn: string;
@@ -131,8 +129,8 @@ const HotelsPage: React.FC = () => {
   const loadInitialData = async () => {
     try {
       const [destinationsRes, dealsRes] = await Promise.all([
-        fetch(`${(import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:3000/api'}/hotels/popular-destinations`).then(r => r.json()),
-        fetch(`${(import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:3000/api'}/hotels/deals`).then(r => r.json())
+        fetch(`${API_CONFIG.BASE_URL}/hotels/popular-destinations`).then(r => r.json()),
+        fetch(`${API_CONFIG.BASE_URL}/hotels/deals`).then(r => r.json())
       ]);
       
       console.log('📊 Destinations response:', destinationsRes);
@@ -193,7 +191,7 @@ const HotelsPage: React.FC = () => {
       }
       
       console.log('🔍 Searching hotels with params:', queryParams.toString());
-      const response = await fetch(`${(import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:3000/api'}/hotels?${queryParams}`);
+      const response = await fetch(`${API_CONFIG.BASE_URL}/hotels?${queryParams}`);
       const data = await response.json();
       console.log('📊 Search response:', data);
       
@@ -246,7 +244,7 @@ const HotelsPage: React.FC = () => {
       ];
       
       try {
-        const response = await fetch(`${(import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:3000/api'}/locations/search?q=${encodeURIComponent(query)}`);
+        const response = await fetch(`${API_CONFIG.BASE_URL}/locations/search?q=${encodeURIComponent(query)}`);
         if (!response.ok) {
           const filtered = sampleLocations.filter(location => 
             location.name.toLowerCase().includes(query.toLowerCase()) ||
@@ -687,7 +685,7 @@ const HotelsPage: React.FC = () => {
                       <button 
                         onClick={async () => {
                           try {
-                            await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api'}/hotels/create-samples`, { method: 'POST' });
+                            await fetch(`${API_CONFIG.BASE_URL}/hotels/create-samples`, { method: 'POST' });
                             handleSearch();
                           } catch (error) {
                             setError('Failed to create sample hotels. Please try again.');
@@ -717,7 +715,7 @@ const HotelsPage: React.FC = () => {
                             src={hotel.images && hotel.images.length > 0 && hotel.images[0]?.url
                               ? (hotel.images[0].url.startsWith('http') 
                                   ? hotel.images[0].url 
-                                  : `http://localhost:3000${hotel.images[0].url}`)
+                                  : `${API_CONFIG.BASE_URL.replace('/api', '')}${hotel.images[0].url}`)
                               : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop'}
                             alt={hotel.name}
                             className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"

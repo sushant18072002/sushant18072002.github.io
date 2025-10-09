@@ -1,9 +1,10 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { ApiResponse, PaginatedResponse } from '@/types/api.types';
+import { API_CONFIG } from '@/config/api.config';
 
 class ApiService {
   private api: AxiosInstance;
-  private baseURL = 'http://localhost:3000/api';
+  private baseURL = API_CONFIG.BASE_URL;
 
   constructor() {
     this.api = axios.create({

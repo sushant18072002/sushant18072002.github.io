@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Button from '@/components/common/Button';
-import { API_CONFIG } from '@/config/api.config';
+import { API_CONFIG, API_ENDPOINTS } from '@/config/api.config';
 import { APP_CONSTANTS } from '@/constants/app.constants';
 
 interface ImageUploadProps {

@@ -1,4 +1,5 @@
 import { apiService } from './api';
+import { API_CONFIG } from '@/config/api.config';
 import { User } from '@/types/api.types';
 
 export interface LoginCredentials {
@@ -24,7 +25,7 @@ export interface AuthResponse {
 class AuthService {
   async login(credentials: LoginCredentials) {
     try {
-      const response = await fetch('http://localhost:3000/api/auth/login', {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -56,7 +57,7 @@ class AuthService {
 
   async register(userData: RegisterData) {
     try {
-      const response = await fetch('http://localhost:3000/api/auth/register', {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

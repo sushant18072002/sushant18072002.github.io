@@ -3,10 +3,10 @@ const mongoose = require('mongoose');
 const bookingSchema = new mongoose.Schema({
   bookingReference: { type: String, required: true, unique: true },
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  type: { type: String, enum: ['flight', 'hotel', 'package', 'activity', 'combo', 'trip', 'trip-appointment'], required: true },
+  type: { type: String, enum: ['flight', 'hotel', 'package', 'activity', 'combo', 'trip', 'trip-appointment', 'corporate-group'], required: true },
   status: { 
     type: String, 
-    enum: ['draft', 'pending', 'confirmed', 'completed', 'cancelled', 'refunded', 'appointment-scheduled', 'consultation-completed', 'appointment-cancelled', 'appointment-rescheduled', 'booking-confirmed'], 
+    enum: ['draft', 'pending', 'confirmed', 'completed', 'cancelled', 'refunded', 'appointment-scheduled', 'consultation-completed', 'appointment-cancelled', 'appointment-rescheduled', 'booking-confirmed', 'pending-confirmation'], 
     default: 'draft' 
   },
   
@@ -67,10 +67,20 @@ const bookingSchema = new mongoose.Schema({
   },
   
   // Booking metadata
-  source: { type: String, enum: ['web', 'mobile', 'api', 'admin', 'website'], default: 'web' },
+  source: { type: String, enum: ['web', 'mobile', 'api', 'admin', 'website', 'corporate-web'], default: 'web' },
   metadata: mongoose.Schema.Types.Mixed,
   notes: String,
   
+  // Corporate group booking fields
+  corporate: {
+    companyName: String,
+    contactPerson: String,
+    contactEmail: String,
+    contactPhone: String,
+    gstNumber: String,
+    billingAddress: String
+  },
+
   // System fields
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }

@@ -16,7 +16,8 @@ import HotelDetailsPage from '@/pages/HotelDetailsPage';
 import TripsHubPage from '@/pages/TripsHubPage';
 import TripDetailsPage from '@/pages/TripDetailsPage';
 import TripDetailsPageEnhanced from '@/pages/TripDetailsPageEnhanced';
-import TripCustomizationPage from '@/pages/TripCustomizationPage';
+import { TripCustomizationPage } from '@/features/trips/TripCustomizationPage';
+// import TripCustomizationPage from '@/pages/TripCustomizationPage'; // Legacy
 import AIItineraryPage from '@/pages/AIItineraryPage';
 import CustomBuilderPage from '@/pages/CustomBuilderPage';
 import SearchResultsPage from '@/pages/SearchResultsPage';
@@ -34,6 +35,11 @@ import MyTripsPage from '@/pages/MyTripsPage';
 import BookingPage from '@/pages/BookingPage';
 import TripBookingPage from '@/pages/TripBookingPage';
 import TripsHubPageRedesigned from '@/pages/TripsHubPageRedesigned';
+import CorporateBookingPage from '@/pages/CorporateBookingPage';
+import CorporateDashboardPage from '@/pages/CorporateDashboardPage';
+import CorporateSetupPage from '@/pages/CorporateSetupPage';
+import CorporateBookingSimplePage from '@/pages/CorporateBookingSimplePage';
+import BookingConfirmationPage from '@/pages/BookingConfirmationPage';
 
 // Store
 import { useAuthStore } from '@/store/authStore';
@@ -98,6 +104,33 @@ function App() {
               <Route path="/trip-booking/:id" element={
                 <ProtectedRoute>
                   <TripBookingPage />
+                </ProtectedRoute>
+              } />
+              
+              {/* Corporate Routes */}
+              <Route path="/corporate/booking/:type/:id" element={
+                <ProtectedRoute>
+                  <CorporateBookingPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/corporate/dashboard" element={
+                <ProtectedRoute>
+                  <CorporateDashboardPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/corporate/setup" element={
+                <ProtectedRoute>
+                  <CorporateSetupPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/corporate-booking/:type/:id" element={
+                <ProtectedRoute>
+                  <CorporateBookingSimplePage />
+                </ProtectedRoute>
+              } />
+              <Route path="/booking-confirmation" element={
+                <ProtectedRoute>
+                  <BookingConfirmationPage />
                 </ProtectedRoute>
               } />
               <Route path="/search" element={<SearchResultsPage />} />

@@ -24,6 +24,10 @@ const TripAppointment = require('./TripAppointment');
 const TripBooking = require('./TripBooking');
 const { Country, State, City } = require('./MasterData');
 
+// Corporate Models
+const Company = require('./Company');
+const CorporateBooking = require('./CorporateBooking');
+
 module.exports = {
   // Core Models
   User,
@@ -48,6 +52,10 @@ module.exports = {
   TripAppointment,
   TripBooking,
   Category,
+  
+  // Corporate Models
+  Company,
+  CorporateBooking,
   
   // Master Data Models
   Country,

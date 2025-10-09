@@ -1,6 +1,7 @@
 import React from 'react';
 import Button from '@/components/common/Button';
 import Card from '@/components/common/Card';
+import API_CONFIG from '@/config/api.config';
 
 interface Trip {
   _id: string;
@@ -40,7 +41,7 @@ const TripCard: React.FC<TripCardProps> = ({
       {primaryImage && (
         <div className="h-48 overflow-hidden">
           <img
-            src={primaryImage.url?.startsWith('http') ? primaryImage.url : `http://localhost:3000${primaryImage.url}`}
+            src={primaryImage.url?.startsWith('http') ? primaryImage.url : `${API_CONFIG.BASE_URL.replace('/api', '')}${primaryImage.url}`}
             alt={primaryImage.alt || trip.title}
             className="w-full h-full object-cover"
             onError={(e) => {
