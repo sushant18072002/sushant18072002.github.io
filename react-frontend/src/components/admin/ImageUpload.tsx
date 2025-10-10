@@ -119,7 +119,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             Click to select images or drag and drop
           </div>
           <div className="text-xs text-primary-500 mt-1">
-            {images.length}/{maxImages} images • Max 5MB per image
+            {images.length}/{maxImages} images • Max 50MB per image
           </div>
         </label>
       </div>
