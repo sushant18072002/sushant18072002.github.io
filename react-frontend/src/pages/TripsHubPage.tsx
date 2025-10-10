@@ -753,7 +753,7 @@ const TripsHubPage: React.FC = () => {
                     </Button>
                     <Button 
                       variant="outline" 
-                      onClick={() => navigate('/ai-itinerary')}
+                      onClick={() => navigate('/custom-builder')}
                       className="border-2 border-blue-ocean text-blue-ocean hover:bg-blue-ocean hover:text-white transition-all duration-300 font-bold font-['DM_Sans'] px-5 py-2.5 rounded-xl text-sm"
                     >
                       Create Custom Trip
