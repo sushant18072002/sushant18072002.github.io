@@ -438,12 +438,12 @@ const CustomBuilderPage: React.FC = () => {
           </button>
           
           <div className="flex gap-4">
-            <button 
+            {/* <button 
               onClick={() => navigate('/ai-itinerary')}
               className="px-4 py-2 bg-primary-100 text-primary-700 rounded-lg font-semibold hover:bg-primary-200"
             >
               🤖 AI Builder
-            </button>
+            </button> */}
             <button 
               onClick={() => navigate('/trips')}
               className="px-4 py-2 bg-primary-100 text-primary-700 rounded-lg font-semibold hover:bg-primary-200"
