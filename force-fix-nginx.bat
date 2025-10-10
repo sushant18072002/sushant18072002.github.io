@@ -3,14 +3,6 @@ echo ========================================
 echo Force Fix Nginx Upload Limits
 echo ========================================
 
-set SERVER_IP=34.228.143.158
-set SERVER_USER=ubuntu
-set PEM_FILE=ssh\turntaptravel.pem
-
-ssh -i %PEM_FILE% %SERVER_USER%@%SERVER_IP% "
-echo 'Backing up current config...'
-sudo cp /etc/nginx/sites-available/travelai /etc/nginx/sites-available/travelai.backup
-
 echo 'Creating new Nginx config with 50MB limit...'
 sudo tee /etc/nginx/sites-available/travelai > /dev/null << 'EOF'
 server {
