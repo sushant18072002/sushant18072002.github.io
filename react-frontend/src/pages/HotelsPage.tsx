@@ -1,7 +1,9 @@
 import Card from '@/components/common/Card';
+import Button from '@/components/common/Button';
 import API_CONFIG from '@/config/api.config';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { debounce } from '@/utils/performance';
 
 
 // Extend Hotel interface for missing properties
@@ -314,7 +316,7 @@ const HotelsPage: React.FC = () => {
 
           {/* Compact Search Form */}
           <Card className="max-w-4xl mx-auto" padding="md">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 sm:gap-6 items-end">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 sm:gap-6 items-end justify-items-end">
               {/* Location */}
               <div className="relative col-span-1 sm:col-span-2 xl:col-span-2">
                 <label className="block text-xs font-bold text-primary-700 mb-2 font-['DM_Sans'] uppercase tracking-wider">Where are you going?</label>
@@ -426,7 +428,7 @@ const HotelsPage: React.FC = () => {
               </div>
 
               {/* Search Button */}
-              <div className="flex justify-center sm:justify-end col-span-1">
+              <div className="flex justify-end col-span-1">
                 <button
                   onClick={handleSearch}
                   disabled={loading}
